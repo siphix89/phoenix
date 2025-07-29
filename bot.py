@@ -8,6 +8,13 @@ load_dotenv()
 print("Lancement du bot...")
 bot = commands.Bot(command_prefix="!", intents=discord.Intents.all())
 
+@bot.command()
+async def test_bouton(ctx):
+    view = discord.ui.View()
+    bouton = discord.ui.Button(label="Clique ici", style=discord.ButtonStyle.green)
+    view.add_item(bouton)
+    await ctx.send("Voici un bouton :", view=view)
+
 @bot.event
 async def on_ready():
     print("bot allumé !")
