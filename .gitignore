@@ -1,2 +1,4 @@
 .env
 myenv/
+_pycache_/
+keep_alive.py
