@@ -2,6 +2,7 @@ import discord
 import os
 from dotenv import load_dotenv
 from discord.ext import commands
+from keep_alive import keep_alive
 load_dotenv()
 
 print("Lancement du bot...")
@@ -43,7 +44,8 @@ async def test(interaction: discord.Interaction):
     embed.set_footer(text="liste évolutive")
     await interaction.response.send_message(embed=embed)
     
-    @bot.tree.command(name="test", description="tester les embeds")
+
+@bot.tree.command(name="test", description="tester les embeds")
 async def test(interaction: discord.Interaction):
     embed = discord.Embed(
         title="affillié",
@@ -70,5 +72,5 @@ async def info(interaction: discord.Interaction, membre: discord.Member):
 async def nonaffillié(interaction: discord.Interaction):
     await interaction.response.send_message("voici la liste des non affillié :https://www.twitch.tv/siphix89")
 
-
+keep_alive()
 bot.run(os.getenv('DISCORD_TOKEN'))
