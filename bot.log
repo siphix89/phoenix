@@ -1,0 +1,125 @@
+2025-07-30 06:32:28,622 - discord.client - WARNING - __init__:318 - PyNaCl is not installed, voice will NOT be supported
+2025-07-30 06:32:28,636 - root - INFO - init_database:235 - ✅ Database initialized successfully
+2025-07-30 06:32:28,640 - root - INFO - create_default_env:813 - 📝 Creating default .env file...
+2025-07-30 06:32:28,641 - root - INFO - create_default_env:841 - ✅ Fichier .env créé
+2025-07-30 06:32:28,641 - root - INFO - create_default_env:842 - 🔧 Éditez le fichier .env avec vos informations
+2025-07-30 06:33:38,369 - discord.client - WARNING - __init__:318 - PyNaCl is not installed, voice will NOT be supported
+2025-07-30 06:33:38,374 - root - INFO - init_database:235 - ✅ Database initialized successfully
+2025-07-30 06:33:38,380 - root - INFO - main:946 - 📋 Résumé de la configuration:
+2025-07-30 06:33:38,380 - root - INFO - main:947 -   - Token Discord: ✅ Configuré
+2025-07-30 06:33:38,380 - root - INFO - main:948 -   - Channel Affilié: ✅ (1399829264655712297)
+2025-07-30 06:33:38,381 - root - INFO - main:949 -   - Channel Non-Affilié: ✅ (1399829349280120923)
+2025-07-30 06:33:38,381 - root - INFO - main:950 -   - Twitch API: ✅
+2025-07-30 06:33:38,381 - root - INFO - main:951 -   - Notifications Auto: ✅
+2025-07-30 06:33:38,382 - root - INFO - main:977 - 🚀 Démarrage du bot...
+2025-07-30 06:33:38,382 - root - INFO - main:978 - ==================================================
+2025-07-30 06:33:38,384 - discord.client - INFO - login:643 - logging in using static token
+2025-07-30 06:33:39,699 - root - INFO - init_client:339 - ✅ Twitch API initialized
+2025-07-30 06:33:39,700 - root - INFO - setup_hook:415 - 🤖 Bot setup completed
+2025-07-30 06:33:40,246 - discord.gateway - INFO - received_message:562 - Shard ID None has connected to Gateway (Session ID: ab8bf79ca07b3b0926a2043997168b74).
+2025-07-30 06:33:42,257 - root - INFO - on_ready:718 - 🤖 Bot is online!
+2025-07-30 06:33:42,258 - root - INFO - on_ready:719 - 🆔 phoenix (1399445546405724293) connected
+2025-07-30 06:33:42,259 - root - INFO - on_ready:723 - 📊 0 streamers loaded
+2025-07-30 06:33:42,510 - root - INFO - on_ready:728 - ⚡ 6 slash commands synced
+2025-07-30 06:33:42,511 - root - INFO - on_ready:735 - 🔔 Live notification system started
+2025-07-30 06:33:42,511 - root - INFO - on_ready:745 - ✅ Bot fully initialized!
+2025-07-30 06:33:42,512 - root - INFO - check_streamers_live:595 - 🔍 Checking live streamers...
+2025-07-30 06:33:59,801 - root - INFO - main:1022 - 🧹 Nettoyage final...
+2025-07-30 06:33:59,802 - root - INFO - main:1027 - ✅ Tâches de fond arrêtées
+2025-07-30 06:33:59,802 - root - INFO - main:1031 - 🏁 Arrêt du bot terminé
+2025-07-30 06:33:59,802 - root - INFO - main:1032 - ==================================================
+2025-07-31 01:14:54,360 - root - INFO - init_database:246 - ✅ Base de données initialisée avec succès
+2025-07-31 01:14:54,363 - root - INFO - main:2131 - 📋 Résumé de la configuration:
+2025-07-31 01:14:54,363 - root - INFO - main:2132 -   - Token Discord: ✅ Configuré
+2025-07-31 01:14:54,363 - root - INFO - main:2133 -   - Channel Affilié: ✅ (1399525054890377239)
+2025-07-31 01:14:54,364 - root - INFO - main:2134 -   - Channel Non-Affilié: ✅ (1399525130878582934)
+2025-07-31 01:14:54,364 - root - INFO - main:2135 -   - Channel Bienvenue: ✅ (1398347968242778113)
+2025-07-31 01:14:54,364 - root - INFO - main:2136 -   - Channel Logs: ✅ (1399955312823242853)
+2025-07-31 01:14:54,364 - root - INFO - main:2137 -   - API Twitch: ✅
+2025-07-31 01:14:54,365 - root - INFO - main:2138 -   - Notifications Auto: ✅
+2025-07-31 01:14:54,365 - root - INFO - main:2139 -   - Interface Web: ✅ http://127.0.0.1:5000
+2025-07-31 01:14:54,365 - root - INFO - main:2140 -   - Système de Règlement: ✅ Activé avec DB
+2025-07-31 01:14:54,366 - root - INFO - main:2141 -   - Formulaire Web: ✅ Ajout de streamers intégré
+2025-07-31 01:14:54,366 - root - INFO - main:2144 - 🚀 Démarrage du bot avec toutes les fonctionnalités...
+2025-07-31 01:14:54,366 - root - INFO - main:2145 - 🌐 Interface web disponible sur: http://127.0.0.1:5000
+2025-07-31 01:14:54,367 - root - INFO - main:2146 - 🎉 Système de bienvenue activé!
+2025-07-31 01:14:54,367 - root - INFO - main:2147 - 📋 Système de règlement personnalisable activé!
+2025-07-31 01:14:54,367 - root - INFO - main:2148 - ➕ Formulaire d'ajout de streamers via interface web activé!
+2025-07-31 01:14:54,368 - root - INFO - main:2149 - ============================================================
+2025-07-31 01:14:54,369 - discord.client - INFO - login:643 - logging in using static token
+2025-07-31 01:14:55,855 - root - INFO - init_client:409 - ✅ API Twitch initialisée
+2025-07-31 01:14:55,861 - root - INFO - run_server:1069 - 🌐 Démarrage du serveur web sur http://127.0.0.1:5000
+2025-07-31 01:14:55,861 - root - INFO - start_server:1076 - ✅ Serveur web démarré en arrière-plan
+2025-07-31 01:14:55,862 - root - INFO - setup_hook:1122 - 🤖 Configuration du bot terminée avec serveur web
+2025-07-31 01:14:55,881 - werkzeug - INFO - _log:97 - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-07-31 01:14:55,881 - werkzeug - INFO - _log:97 - [33mPress CTRL+C to quit[0m
+2025-07-31 01:14:56,240 - discord.gateway - INFO - received_message:562 - Shard ID None has connected to Gateway (Session ID: aa1c4354bbebe90591bf675ed83328d1).
+2025-07-31 01:14:58,253 - root - INFO - on_ready:1299 - 🤖 Bot en ligne!
+2025-07-31 01:14:58,254 - root - INFO - on_ready:1300 - 🆔 phoenix (1399445546405724293) connecté
+2025-07-31 01:14:58,265 - root - INFO - on_ready:1304 - 📊 0 streamers chargés
+2025-07-31 01:14:58,572 - root - INFO - on_ready:1309 - ⚡ 11 commandes slash synchronisées
+2025-07-31 01:14:58,573 - root - INFO - on_ready:1316 - 🔔 Système de notifications live démarré
+2025-07-31 01:14:58,573 - root - INFO - on_ready:1326 - ✅ Bot entièrement initialisé avec interface web, système de bienvenue et dashboard de règlement!
+2025-07-31 01:14:58,574 - root - INFO - check_streamers_live:1177 - 🔍 Vérification des streamers en live...
+2025-07-31 01:15:08,684 - werkzeug - INFO - _log:97 - 127.0.0.1 - - [31/Jul/2025 01:15:08] "GET /api/health HTTP/1.1" 200 -
+2025-07-31 01:15:30,208 - root - INFO - stop_server:1079 - 🛑 Arrêt du serveur web...
+2025-07-31 01:15:30,211 - root - INFO - main:2167 - 🧹 Nettoyage final...
+2025-07-31 01:15:30,211 - root - INFO - main:2172 - ✅ Tâches de fond arrêtées
+2025-07-31 01:15:30,212 - root - INFO - main:2176 - 🏁 Arrêt du bot terminé
+2025-07-31 01:25:59,808 - root - INFO - init_database:247 - ✅ Base de données initialisée avec succès
+2025-07-31 01:25:59,811 - root - INFO - main:2132 - 📋 Résumé de la configuration:
+2025-07-31 01:25:59,811 - root - INFO - main:2133 -   - Token Discord: ✅ Configuré
+2025-07-31 01:25:59,813 - root - INFO - main:2134 -   - Channel Affilié: ✅ (1399525054890377239)
+2025-07-31 01:25:59,813 - root - INFO - main:2135 -   - Channel Non-Affilié: ✅ (1399525130878582934)
+2025-07-31 01:25:59,814 - root - INFO - main:2136 -   - Channel Bienvenue: ✅ (1398347968242778113)
+2025-07-31 01:25:59,814 - root - INFO - main:2137 -   - Channel Logs: ✅ (1399955312823242853)
+2025-07-31 01:25:59,815 - root - INFO - main:2138 -   - API Twitch: ✅
+2025-07-31 01:25:59,815 - root - INFO - main:2139 -   - Notifications Auto: ✅
+2025-07-31 01:25:59,816 - root - INFO - main:2140 -   - Interface Web: ✅ http://127.0.0.1:5000
+2025-07-31 01:25:59,816 - root - INFO - main:2141 -   - Système de Règlement: ✅ Activé avec DB
+2025-07-31 01:25:59,817 - root - INFO - main:2142 -   - Formulaire Web: ✅ Ajout de streamers intégré
+2025-07-31 01:25:59,817 - root - INFO - main:2145 - 🚀 Démarrage du bot avec toutes les fonctionnalités...
+2025-07-31 01:25:59,818 - root - INFO - main:2146 - 🌐 Interface web disponible sur: http://127.0.0.1:5000
+2025-07-31 01:25:59,818 - root - INFO - main:2147 - 🎉 Système de bienvenue activé!
+2025-07-31 01:25:59,819 - root - INFO - main:2148 - 📋 Système de règlement personnalisable activé!
+2025-07-31 01:25:59,820 - root - INFO - main:2149 - ➕ Formulaire d'ajout de streamers via interface web activé!
+2025-07-31 01:25:59,820 - root - INFO - main:2150 - ============================================================
+2025-07-31 01:25:59,822 - discord.client - INFO - login:643 - logging in using static token
+2025-07-31 01:25:59,844 - werkzeug - INFO - _log:97 - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8080
+ * Running on http://192.168.1.237:8080
+2025-07-31 01:25:59,845 - werkzeug - INFO - _log:97 - [33mPress CTRL+C to quit[0m
+2025-07-31 01:26:01,145 - root - INFO - init_client:410 - ✅ API Twitch initialisée
+2025-07-31 01:26:01,151 - root - INFO - run_server:1070 - 🌐 Démarrage du serveur web sur http://127.0.0.1:5000
+2025-07-31 01:26:01,151 - root - INFO - start_server:1077 - ✅ Serveur web démarré en arrière-plan
+2025-07-31 01:26:01,152 - root - INFO - setup_hook:1123 - 🤖 Configuration du bot terminée avec serveur web
+2025-07-31 01:26:01,158 - werkzeug - INFO - _log:97 - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-07-31 01:26:01,159 - werkzeug - INFO - _log:97 - [33mPress CTRL+C to quit[0m
+2025-07-31 01:26:01,508 - discord.gateway - INFO - received_message:562 - Shard ID None has connected to Gateway (Session ID: d164d427c2a5421f91d428ae838a0ede).
+2025-07-31 01:26:03,522 - root - INFO - on_ready:1300 - 🤖 Bot en ligne!
+2025-07-31 01:26:03,523 - root - INFO - on_ready:1301 - 🆔 phoenix (1399445546405724293) connecté
+2025-07-31 01:26:03,524 - root - INFO - on_ready:1305 - 📊 0 streamers chargés
+2025-07-31 01:26:04,004 - root - INFO - on_ready:1310 - ⚡ 11 commandes slash synchronisées
+2025-07-31 01:26:04,005 - root - INFO - on_ready:1317 - 🔔 Système de notifications live démarré
+2025-07-31 01:26:04,006 - root - INFO - on_ready:1327 - ✅ Bot entièrement initialisé avec interface web, système de bienvenue et dashboard de règlement!
+2025-07-31 01:26:04,006 - root - INFO - check_streamers_live:1178 - 🔍 Vérification des streamers en live...
+2025-07-31 01:26:08,857 - werkzeug - INFO - _log:97 - 127.0.0.1 - - [31/Jul/2025 01:26:08] "GET /api/health HTTP/1.1" 200 -
+2025-07-31 01:26:36,429 - root - INFO - stop_server:1080 - 🛑 Arrêt du serveur web...
+2025-07-31 01:26:36,432 - root - INFO - main:2168 - 🧹 Nettoyage final...
+2025-07-31 01:26:36,432 - root - INFO - main:2173 - ✅ Tâches de fond arrêtées
+2025-07-31 01:26:36,433 - root - INFO - main:2177 - 🏁 Arrêt du bot terminé
+2025-07-31 01:26:37,640 - werkzeug - INFO - _log:97 - 127.0.0.1 - - [31/Jul/2025 01:26:37] "GET /api/stats HTTP/1.1" 200 -
+2025-07-31 01:26:38,859 - werkzeug - INFO - _log:97 - 127.0.0.1 - - [31/Jul/2025 01:26:38] "GET /api/health HTTP/1.1" 200 -
+2025-07-31 01:27:08,859 - werkzeug - INFO - _log:97 - 127.0.0.1 - - [31/Jul/2025 01:27:08] "GET /api/health HTTP/1.1" 200 -
+2025-07-31 01:27:37,641 - werkzeug - INFO - _log:97 - 127.0.0.1 - - [31/Jul/2025 01:27:37] "GET /api/stats HTTP/1.1" 200 -
+2025-07-31 01:27:38,864 - werkzeug - INFO - _log:97 - 127.0.0.1 - - [31/Jul/2025 01:27:38] "GET /api/health HTTP/1.1" 200 -
+2025-07-31 01:28:08,871 - werkzeug - INFO - _log:97 - 127.0.0.1 - - [31/Jul/2025 01:28:08] "GET /api/health HTTP/1.1" 200 -
+2025-07-31 01:28:37,646 - werkzeug - INFO - _log:97 - 127.0.0.1 - - [31/Jul/2025 01:28:37] "GET /api/stats HTTP/1.1" 200 -
+2025-07-31 01:28:38,871 - werkzeug - INFO - _log:97 - 127.0.0.1 - - [31/Jul/2025 01:28:38] "GET /api/health HTTP/1.1" 200 -
+2025-07-31 01:29:08,884 - werkzeug - INFO - _log:97 - 127.0.0.1 - - [31/Jul/2025 01:29:08] "GET /api/health HTTP/1.1" 200 -
+2025-07-31 01:29:37,647 - werkzeug - INFO - _log:97 - 127.0.0.1 - - [31/Jul/2025 01:29:37] "GET /api/stats HTTP/1.1" 200 -
+2025-07-31 01:29:38,899 - werkzeug - INFO - _log:97 - 127.0.0.1 - - [31/Jul/2025 01:29:38] "GET /api/health HTTP/1.1" 200 -
+2025-07-31 01:30:08,910 - werkzeug - INFO - _log:97 - 127.0.0.1 - - [31/Jul/2025 01:30:08] "GET /api/health HTTP/1.1" 200 -
