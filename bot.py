@@ -79,5 +79,4 @@ async def info(interaction: discord.Interaction, membre: discord.Member):
 async def nonaffillié(interaction: discord.Interaction):
     await interaction.response.send_message("voici la liste des non affillié :https://www.twitch.tv/siphix89")
 
-keep_alive()
 bot.run(os.getenv('DISCORD_TOKEN'))
