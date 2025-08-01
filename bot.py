@@ -38,6 +38,21 @@ except ImportError:
 # Charger les variables d'environnement
 load_dotenv()
 
+# ==================== DÉTECTION ENVIRONNEMENT ====================
+def is_production_environment():
+    """Détecter si on est dans un environnement de production"""
+    return any([
+        os.getenv('RENDER'),
+        os.getenv('HEROKU'),
+        os.getenv('RAILWAY_ENVIRONMENT'),
+        os.getenv('VERCEL'),
+        os.getenv('NODE_ENV') == 'production',
+        os.getenv('ENVIRONMENT') == 'production',
+        not (hasattr(sys.stdin, 'isatty') and sys.stdin.isatty())
+    ])
+
+IS_PRODUCTION = is_production_environment()
+
 # ==================== CONFIGURATION LOGGING ====================
 def setup_logging():
     """Configure le système de logging avancé avec rotation"""
@@ -96,7 +111,7 @@ class HealthStatus(Enum):
 # ==================== CLASSES DE CONFIGURATION ====================
 @dataclass
 class BotConfig:
-    """Configuration simplifiée du bot"""
+    """Configuration complète du bot avec système de rôle"""
     # Paramètres principaux
     discord_token: str
     command_prefix: str = "!"
@@ -110,6 +125,10 @@ class BotConfig:
     # API Twitch
     twitch_client_id: str = ""
     twitch_client_secret: str = ""
+    
+    # Système de rôle de règlement
+    rules_role_id: int = 0
+    rules_role_name: str = ""
     
     # Fonctionnalités
     auto_notifications: bool = True
@@ -127,6 +146,9 @@ class BotConfig:
             logs_channel=int(os.getenv('CHANNEL_LOGS', '0')),
             twitch_client_id=os.getenv('TWITCH_CLIENT_ID', ''),
             twitch_client_secret=os.getenv('TWITCH_CLIENT_SECRET', ''),
+            # Système de rôle de règlement
+            rules_role_id=int(os.getenv('RULES_ROLE_ID', '0')),
+            rules_role_name=os.getenv('RULES_ROLE_NAME', 'Membre Vérifié'),
             auto_notifications=os.getenv('AUTO_NOTIFICATIONS', 'true').lower() == 'true',
             notification_interval_minutes=int(os.getenv('NOTIFICATION_INTERVAL', '2'))
         )
@@ -193,6 +215,83 @@ class BotMetrics:
         self.commands_executed += 1
         self.unique_users_served.add(user_id)
         self.most_used_commands[command_name] = self.most_used_commands.get(command_name, 0) + 1
+
+# ==================== VUE POUR LE BOUTON DE RÔLE ====================
+class RuleAcceptanceView(discord.ui.View):
+    def __init__(self, role_id: int, role_name: str):
+        super().__init__(timeout=None)  # Pas de timeout pour un bouton permanent
+        self.role_id = role_id
+        self.role_name = role_name
+    
+    @discord.ui.button(
+        label="✅ J'accepte le règlement", 
+        style=discord.ButtonStyle.green,
+        emoji="📋",
+        custom_id="accept_rules_button"
+    )
+    async def accept_rules(self, interaction: discord.Interaction, button: discord.ui.Button):
+        """Bouton pour accepter le règlement et recevoir le rôle"""
+        try:
+            # Récupérer le rôle
+            role = interaction.guild.get_role(self.role_id)
+            
+            if not role:
+                embed = discord.Embed(
+                    title="❌ Erreur",
+                    description="Le rôle configuré est introuvable. Contactez un administrateur.",
+                    color=discord.Color.red()
+                )
+                await interaction.response.send_message(embed=embed, ephemeral=True)
+                return
+            
+            # Vérifier si l'utilisateur a déjà le rôle
+            if role in interaction.user.roles:
+                embed = discord.Embed(
+                    title="ℹ️ Déjà possédé",
+                    description=f"Vous avez déjà le rôle **{role.name}** !",
+                    color=discord.Color.blue()
+                )
+                await interaction.response.send_message(embed=embed, ephemeral=True)
+                return
+            
+            # Accorder le rôle
+            await interaction.user.add_roles(role, reason="Acceptation du règlement")
+            
+            # Message de confirmation
+            embed = discord.Embed(
+                title="✅ Règlement accepté",
+                description=f"Félicitations ! Vous avez reçu le rôle **{role.name}** 🎉\n\nMerci d'avoir lu et accepté notre règlement !",
+                color=discord.Color.green()
+            )
+            
+            embed.add_field(
+                name="🎯 Que faire maintenant ?",
+                value="• Explorez les différents channels\n• Présentez-vous si vous le souhaitez\n• Rejoignez notre communauté !",
+                inline=False
+            )
+            
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+            
+            # Log de l'événement
+            logger.info(f"✅ Rôle '{role.name}' accordé à {interaction.user.name} ({interaction.user.id}) via bouton de règlement")
+            
+        except discord.Forbidden:
+            embed = discord.Embed(
+                title="❌ Permissions insuffisantes",
+                description="Le bot n'a pas les permissions pour accorder ce rôle. Contactez un administrateur.",
+                color=discord.Color.red()
+            )
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+            logger.error(f"❌ Permissions insuffisantes pour accorder le rôle {self.role_name} à {interaction.user.name}")
+        
+        except Exception as e:
+            embed = discord.Embed(
+                title="❌ Erreur inattendue",
+                description="Une erreur s'est produite. Contactez un administrateur.",
+                color=discord.Color.red()
+            )
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+            logger.error(f"❌ Erreur lors de l'attribution du rôle: {e}")
 
 # ==================== BASE DE DONNÉES ====================
 class DatabaseManager:
@@ -332,66 +431,6 @@ class DatabaseManager:
         except Exception as e:
             logger.error(f"❌ Erreur lors de la récupération des stats: {e}")
             return {'total_streamers': 0, 'affilies': 0, 'non_affilies': 0, 'affiliation_rate': 0}
-    
-    def update_rule_section(self, section_key: str, title: str, content: str, updated_by: str) -> bool:
-        """Mettre à jour ou créer une section de règlement"""
-        try:
-            with sqlite3.connect(self.db_path) as conn:
-                conn.execute("""
-                    INSERT OR REPLACE INTO rules_sections 
-                    (section_key, section_title, section_content, updated_at, updated_by)
-                    VALUES (?, ?, ?, CURRENT_TIMESTAMP, ?)
-                """, (section_key, title, content, updated_by))
-                conn.commit()
-                logger.info(f"✅ Section de règlement {section_key} mise à jour par {updated_by}")
-                return True
-        except Exception as e:
-            logger.error(f"❌ Erreur lors de la mise à jour de la section {section_key}: {e}")
-            return False
-    
-    def get_rule_section(self, section_key: str) -> Optional[Dict[str, str]]:
-        """Récupérer une section de règlement spécifique"""
-        try:
-            with sqlite3.connect(self.db_path) as conn:
-                conn.row_factory = sqlite3.Row
-                cursor = conn.execute(
-                    "SELECT * FROM rules_sections WHERE section_key = ?", 
-                    (section_key,)
-                )
-                row = cursor.fetchone()
-                
-                if row:
-                    return {
-                        'title': row['section_title'],
-                        'content': row['section_content'],
-                        'updated_at': row['updated_at'],
-                        'updated_by': row['updated_by']
-                    }
-                return None
-        except Exception as e:
-            logger.error(f"❌ Erreur lors de la récupération de la section {section_key}: {e}")
-            return None
-    
-    def get_all_rule_sections(self) -> Dict[str, Dict[str, str]]:
-        """Récupérer toutes les sections de règlement personnalisées"""
-        try:
-            with sqlite3.connect(self.db_path) as conn:
-                conn.row_factory = sqlite3.Row
-                cursor = conn.execute("SELECT * FROM rules_sections ORDER BY section_key")
-                
-                sections = {}
-                for row in cursor.fetchall():
-                    sections[row['section_key']] = {
-                        'title': row['section_title'],
-                        'content': row['section_content'],
-                        'updated_at': row['updated_at'],
-                        'updated_by': row['updated_by']
-                    }
-                
-                return sections
-        except Exception as e:
-            logger.error(f"❌ Erreur lors de la récupération de toutes les sections: {e}")
-            return {}
 
 # ==================== GESTIONNAIRE TWITCH ====================
 class TwitchManager:
@@ -456,7 +495,7 @@ class TwitchManager:
         except Exception as e:
             logger.error(f"Erreur de scraping pour {username}: {e}")
             return False, None
-       
+
 # ==================== SERVEUR WEB FLASK ====================
 class WebServer:
     def __init__(self, bot_instance):
@@ -647,7 +686,7 @@ class WebServer:
     <div class="container">
         <div class="header">
             <h1>🤖 Bot Discord Streamer</h1>
-            <p>Interface d'administration complète</p>
+            <p>Interface d'administration complète avec système de rôle</p>
         </div>
         
         <div id="status" class="status">🔄 Vérification du statut...</div>
@@ -736,19 +775,6 @@ class WebServer:
             document.getElementById('charCount').style.color = remaining < 50 ? '#dc3545' : '#6c757d';
         });
         
-        document.getElementById('streamerUrl').addEventListener('input', function() {
-            const url = this.value;
-            const twitchPattern = /^https:\\/\\/www\\.twitch\\.tv\\/[a-zA-Z0-9_]{4,25}$/;
-            
-            if (url && !twitchPattern.test(url)) {
-                this.style.borderColor = '#dc3545';
-                this.style.boxShadow = '0 0 0 3px rgba(220, 53, 69, 0.1)';
-            } else {
-                this.style.borderColor = '#dee2e6';
-                this.style.boxShadow = 'none';
-            }
-        });
-        
         document.getElementById('addStreamerForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
@@ -762,12 +788,6 @@ class WebServer:
             
             if (!data.name || !data.url || !data.status) {
                 showAlert('❌ Veuillez remplir tous les champs obligatoires', 'danger');
-                return;
-            }
-            
-            const twitchPattern = /^https:\\/\\/www\\.twitch\\.tv\\/[a-zA-Z0-9_]{4,25}$/;
-            if (!twitchPattern.test(data.url)) {
-                showAlert('❌ URL Twitch invalide. Format: https://www.twitch.tv/username', 'danger');
                 return;
             }
             
@@ -960,7 +980,7 @@ class WebServer:
             except Exception as e:
                 return jsonify({'success': False, 'error': str(e)}), 500
         
-        @self.app.route('/api/streamers', methods=['GET'])
+        @self.app.route('/api/streamers')
         def get_streamers():
             try:
                 streamers = self.bot.db.get_all_streamers()
@@ -1016,8 +1036,6 @@ class WebServer:
         @self.app.route('/api/force-check', methods=['POST'])
         def force_live_check():
             try:
-                import threading
-                
                 def run_check():
                     try:
                         loop = asyncio.new_event_loop()
@@ -1032,36 +1050,10 @@ class WebServer:
                         logger.error(f"❌ Erreur lors de la vérification forcée: {e}")
                 
                 threading.Thread(target=run_check, daemon=True).start()
-                
                 return jsonify({'success': True, 'message': 'Vérification des lives lancée'})
                 
             except Exception as e:
                 logger.error(f"❌ Erreur API force-check: {e}")
-                return jsonify({'success': False, 'error': f'Erreur serveur: {str(e)}'}), 500
-        
-        @self.app.route('/api/remove-streamer', methods=['POST'])
-        def remove_streamer_api():
-            try:
-                data = request.get_json()
-                
-                if not data or not data.get('name'):
-                    return jsonify({'success': False, 'error': 'Nom du streamer requis'}), 400
-                
-                name = data.get('name').strip()
-                success = self.bot.db.remove_streamer(name)
-                
-                if success:
-                    if hasattr(self.bot, 'live_streamers'):
-                        self.bot.live_streamers.pop(name, None)
-                        self.bot.live_messages.pop(name, None)
-                    
-                    logger.info(f"✅ Streamer {name} supprimé via interface web")
-                    return jsonify({'success': True, 'message': f'Streamer {name} supprimé avec succès'})
-                else:
-                    return jsonify({'success': False, 'error': f'Streamer {name} introuvable'}), 404
-                
-            except Exception as e:
-                logger.error(f"❌ Erreur API remove-streamer: {e}")
                 return jsonify({'success': False, 'error': f'Erreur serveur: {str(e)}'}), 500
     
     def start_server(self, host='127.0.0.1', port=5000, debug=False):
@@ -1110,17 +1102,27 @@ class StreamerBot(commands.Bot):
         """Hook de configuration appelé au démarrage du bot"""
         await self.twitch.init_client()
         
+        # Ajouter la vue persistante pour les boutons de règlement
+        if self.config.rules_role_id != 0:
+            self.add_view(RuleAcceptanceView(self.config.rules_role_id, self.config.rules_role_name))
+        
         # Démarrer le serveur web
         self.web_server = WebServer(self)
         
         # Configuration du serveur web depuis les variables d'environnement  
-        web_host = os.getenv('WEB_HOST', '127.0.0.1')
-        web_port = int(os.getenv('WEB_PORT', '5000'))
+        if os.getenv('RENDER'):
+            # Configuration spéciale pour Render
+            web_host = '0.0.0.0'  # Obligatoire pour Render
+            web_port = int(os.getenv('PORT', '10000'))  # Render définit PORT automatiquement
+        else:
+            web_host = os.getenv('WEB_HOST', '127.0.0.1')
+            web_port = int(os.getenv('WEB_PORT', '5000'))
+        
         web_debug = os.getenv('WEB_DEBUG', 'false').lower() == 'true'
         
         self.web_server.start_server(host=web_host, port=web_port, debug=web_debug)
         
-        logger.info("🤖 Configuration du bot terminée avec serveur web")
+        logger.info("🤖 Configuration du bot terminée avec serveur web et système de rôle")
     
     async def close(self):
         """Surcharger la méthode close pour arrêter le serveur web"""
@@ -1317,14 +1319,21 @@ async def on_ready():
         logger.info("🔔 Système de notifications live démarré")
     
     # Définir le statut du bot
+    if os.getenv('RENDER'):
+        web_info = f"Web: Render App"
+    else:
+        web_host = os.getenv('WEB_HOST', '127.0.0.1')
+        web_port = os.getenv('WEB_PORT', '5000')
+        web_info = f"Web: {web_host}:{web_port}"
+    
     await bot.change_presence(
         activity=discord.Activity(
             type=discord.ActivityType.watching, 
-            name=f"{streamers_count} streamers | Web: {os.getenv('WEB_HOST', '127.0.0.1')}:{os.getenv('WEB_PORT', '5000')}"
+            name=f"{streamers_count} streamers | {web_info}"
         )
     )
     
-    logger.info("✅ Bot entièrement initialisé avec interface web, système de bienvenue et dashboard de règlement!")
+    logger.info("✅ Bot entièrement initialisé!")
 
 @bot.event
 async def on_member_join(member: discord.Member):
@@ -1384,28 +1393,6 @@ async def on_member_join(member: discord.Member):
         # Log de l'événement
         logger.info(f"✅ Message de bienvenue envoyé pour {member.name} ({member.id})")
         
-        # Message privé de bienvenue
-        try:
-            dm_embed = discord.Embed(
-                title="👋 Bienvenue !",
-                description=f"Salut {member.name} !\n\nMerci de rejoindre **{member.guild.name}** !\n\n🔴 **Important:** Utilise `/reglement` dans le serveur pour voir les règles complètes ! 📋",
-                color=discord.Color.blue()
-            )
-            
-            dm_embed.add_field(
-                name="🆘 Besoin d'aide ?",
-                value="Contacte un modérateur ou utilise la commande `/reglement` dans le serveur !",
-                inline=False
-            )
-            
-            await member.send(embed=dm_embed)
-            logger.info(f"✅ MP de bienvenue envoyé à {member.name}")
-            
-        except discord.Forbidden:
-            logger.info(f"⚠️ Impossible d'envoyer un MP à {member.name} (MP désactivés)")
-        except Exception as e:
-            logger.error(f"❌ Erreur lors de l'envoi du MP à {member.name}: {e}")
-    
     except Exception as e:
         logger.error(f"❌ Erreur dans le message de bienvenue pour {member.name}: {e}")
 
@@ -1426,6 +1413,8 @@ async def on_message(message):
         await message.reply(embed=embed, mention_author=False)
     
     elif content_lower in ['aide', 'help', 'commandes']:
+        web_info = "Interface Web: Render App" if os.getenv('RENDER') else f"http://{os.getenv('WEB_HOST', '127.0.0.1')}:{os.getenv('WEB_PORT', '5000')}"
+        
         embed = discord.Embed(
             title="🆘 Aide Rapide",
             description="**Commandes disponibles :**\n"
@@ -1437,13 +1426,7 @@ async def on_message(message):
                        "**Modérateurs :**\n"
                        "• `/ajouter-streamer` - Ajouter un streamer\n"
                        "• `/supprimer-streamer` - Supprimer un streamer\n\n"
-                       "**Administrateurs :**\n"
-                       "• `/test-bienvenue` - Tester le message de bienvenue\n"
-                       "• `/config-bienvenue` - Configurer le système de bienvenue\n"
-                       "• `/reglement-dashboard` - Créer le dashboard de règlement\n"
-                       "• `/modifier-reglement` - Modifier une section du règlement\n\n"
-                       f"**Interface Web :**\n"
-                       f"• http://{os.getenv('WEB_HOST', '127.0.0.1')}:{os.getenv('WEB_PORT', '5000')}",
+                       f"**{web_info}**",
             color=discord.Color.green()
         )
         await message.reply(embed=embed, mention_author=False)
@@ -1500,9 +1483,6 @@ async def reglement(interaction: discord.Interaction):
         color=discord.Color.blue()
     )
     
-    # Récupérer les sections personnalisées depuis la base de données
-    custom_sections = bot.db.get_all_rule_sections()
-    
     # Sections par défaut
     default_rules = [
         ("1. 🤝 Respect mutuel", "• Soyez respectueux envers tous les membres\n• Pas d'insultes, de harcèlement ou de discrimination\n• Traitez les autres comme vous aimeriez être traités"),
@@ -1513,35 +1493,13 @@ async def reglement(interaction: discord.Interaction):
         ("6. ⚖️ Sanctions", "• **1ère fois:** Avertissement verbal\n• **2ème fois:** Mute temporaire (1h-24h)\n• **3ème fois:** Kick temporaire\n• **Récidive:** Ban permanent\n• Les modérateurs ont le dernier mot")
     ]
     
-    # Ajouter les règles (personnalisées si disponibles, sinon par défaut)
-    section_mapping = {
-        "respect": 0, "communication": 1, "contenu": 2, 
-        "streams": 3, "bots": 4, "sanctions": 5
-    }
-    
+    # Ajouter les règles
     for title, content in default_rules:
-        # Vérifier si une version personnalisée existe
-        section_key = None
-        for key, idx in section_mapping.items():
-            if idx == default_rules.index((title, content)):
-                section_key = key
-                break
-        
-        if section_key and section_key in custom_sections:
-            # Utiliser la version personnalisée
-            custom_section = custom_sections[section_key]
-            embed.add_field(
-                name=custom_section['title'],
-                value=custom_section['content'][:1024],  # Limite Discord
-                inline=False
-            )
-        else:
-            # Utiliser la version par défaut
-            embed.add_field(
-                name=title,
-                value=content,
-                inline=False
-            )
+        embed.add_field(
+            name=title,
+            value=content,
+            inline=False
+        )
     
     # Informations supplémentaires
     embed.add_field(
@@ -1556,7 +1514,12 @@ async def reglement(interaction: discord.Interaction):
     )  
     embed.timestamp = datetime.datetime.now(UTC)
     
-    await interaction.response.send_message(embed=embed)
+    # Ajouter le bouton d'acceptation si le rôle est configuré
+    view = None
+    if bot.config.rules_role_id != 0:
+        view = RuleAcceptanceView(bot.config.rules_role_id, bot.config.rules_role_name)
+    
+    await interaction.response.send_message(embed=embed, view=view)
     bot.metrics.record_command("reglement", interaction.user.id)
 
 @bot.tree.command(name="stats", description="Statistiques du bot")
@@ -1587,31 +1550,6 @@ async def stats(interaction: discord.Interaction):
     
     await interaction.response.send_message(embed=embed, ephemeral=True)
     bot.metrics.record_command("stats", interaction.user.id)
-
-@bot.tree.command(name="supprimer-streamer", description="Supprimer un streamer")
-async def supprimer_streamer(interaction: discord.Interaction, nom: str):
-    if not bot.is_moderator(interaction.user):
-        await interaction.response.send_message("❌ Permissions insuffisantes!", ephemeral=True)
-        return
-    
-    success = bot.db.remove_streamer(nom)
-    
-    if success:
-        embed = discord.Embed(
-            title="✅ Streamer Supprimé",
-            description=f"**{nom}** a été supprimé!",
-            color=discord.Color.red()
-        )
-        await interaction.response.send_message(embed=embed)
-        
-        # Supprimer du suivi live
-        bot.live_streamers.pop(nom, None)
-        bot.live_messages.pop(nom, None)
-        
-        bot.metrics.record_command("supprimer-streamer", interaction.user.id)
-        logger.info(f"Streamer {nom} supprimé par {interaction.user.name}")
-    else:
-        await interaction.response.send_message(f"❌ Streamer '{nom}' introuvable!", ephemeral=True)
 
 @bot.tree.command(name="liste-affilie", description="Voir les streamers affiliés")
 async def liste_affilie(interaction: discord.Interaction):
@@ -1696,305 +1634,6 @@ async def live_status(interaction: discord.Interaction):
     await interaction.response.send_message(embed=embed, ephemeral=True)
     bot.metrics.record_command("live-status", interaction.user.id)
 
-@bot.tree.command(name="test-bienvenue", description="Tester le message de bienvenue (Admin)")
-async def test_bienvenue(interaction: discord.Interaction, utilisateur: discord.Member = None):
-    """Commande pour tester le message de bienvenue"""
-    if not bot.is_admin(interaction.user):
-        await interaction.response.send_message("❌ Seuls les administrateurs peuvent utiliser cette commande!", ephemeral=True)
-        return
-    
-    # Utiliser l'utilisateur spécifié ou celui qui fait la commande
-    target_member = utilisateur or interaction.user
-    
-    try:
-        # Simuler l'événement de bienvenue
-        await on_member_join(target_member)
-        
-        embed = discord.Embed(
-            title="✅ Test réussi",
-            description=f"Message de bienvenue envoyé pour {target_member.mention}",
-            color=discord.Color.green()
-        )
-        
-        await interaction.response.send_message(embed=embed, ephemeral=True)
-        bot.metrics.record_command("test-bienvenue", interaction.user.id)
-        logger.info(f"🧪 Test de message de bienvenue déclenché par {interaction.user.name} pour {target_member.name}")
-        
-    except Exception as e:
-        embed = discord.Embed(
-            title="❌ Erreur",
-            description=f"Erreur lors du test: {str(e)[:500]}",
-            color=discord.Color.red()
-        )
-        await interaction.response.send_message(embed=embed, ephemeral=True)
-        logger.error(f"❌ Erreur test bienvenue: {e}")
-
-@bot.tree.command(name="config-bienvenue", description="Configurer le système de bienvenue (Admin)")
-async def config_bienvenue(interaction: discord.Interaction, channel: discord.TextChannel = None):
-    """Configurer le channel de bienvenue"""
-    if not bot.is_admin(interaction.user):
-        await interaction.response.send_message("❌ Seuls les administrateurs peuvent utiliser cette commande!", ephemeral=True)
-        return
-    
-    if channel:
-        # Mettre à jour le channel de bienvenue
-        bot.config.welcome_channel = channel.id
-        
-        # Mettre à jour la variable d'environnement en mémoire
-        os.environ['CHANNEL_WELCOME'] = str(channel.id)
-        
-        embed = discord.Embed(
-            title="✅ Configuration mise à jour",
-            description=f"Channel de bienvenue configuré: {channel.mention}",
-            color=discord.Color.green()
-        )
-        
-        embed.add_field(
-            name="💡 Note",
-            value="Pour rendre cette configuration permanente, mettez à jour `CHANNEL_WELCOME` dans votre fichier .env",
-            inline=False
-        )
-        
-        await interaction.response.send_message(embed=embed)
-        bot.metrics.record_command("config-bienvenue", interaction.user.id)
-        logger.info(f"✅ Channel de bienvenue configuré sur {channel.name} par {interaction.user.name}")
-    
-    else:
-        # Afficher la configuration actuelle
-        current_channel = bot.get_channel(bot.config.welcome_channel) if bot.config.welcome_channel != 0 else None
-        
-        embed = discord.Embed(
-            title="⚙️ Configuration de bienvenue",
-            color=discord.Color.blue()
-        )
-        
-        if current_channel:
-            embed.add_field(
-                name="📍 Channel actuel",
-                value=f"{current_channel.mention} (`{current_channel.id}`)",
-                inline=False
-            )
-        else:
-            embed.add_field(
-                name="⚠️ Aucun channel configuré",
-                value="Utilisez `/config-bienvenue #channel` pour configurer",
-                inline=False
-            )
-        
-        embed.add_field(
-            name="🔧 Utilisation",
-            value="• `/config-bienvenue #channel` - Définir le channel\n• `/test-bienvenue` - Tester le message\n• `/config-bienvenue` - Voir la config actuelle",
-            inline=False
-        )
-        
-        await interaction.response.send_message(embed=embed, ephemeral=True)
-
-@bot.tree.command(name="reglement-dashboard", description="Créer le dashboard du règlement (Admin)")
-async def reglement_dashboard(interaction: discord.Interaction, channel: discord.TextChannel = None):
-    """Créer un dashboard permanent du règlement"""
-    if not bot.is_admin(interaction.user):
-        await interaction.response.send_message("❌ Seuls les administrateurs peuvent utiliser cette commande!", ephemeral=True)
-        return
-    
-    target_channel = channel or interaction.channel
-    
-    # Embed principal du règlement
-    main_embed = discord.Embed(
-        title="📋 RÈGLEMENT DU SERVEUR",
-        description="**Bienvenue dans notre communauté !** 🎉\n\nPour maintenir une ambiance conviale et respectueuse, merci de suivre ces règles simples :",
-        color=discord.Color.gold()
-    )
-    
-    # Règles principales découpées pour respecter la limite de 1024 caractères par champ
-    main_embed.add_field(
-        name="",
-        value=(
-            "**1. 🤝 Respect mutuel**\n"
-            "Soyez respectueux envers tous les membres. Aucune forme de harcèlement, d'insulte ou de discrimination ne sera tolérée.\n\n"
-            "**2. 💬 Communication appropriée**\n"
-            "Utilisez les bons channels, évitez le spam et gardez un langage approprié. Les discussions doivent au minimum rester constructives.\n\n"
-            "**3. 🔞 Contenu approprié**\n"
-            "Aucun contenu NSFW ou inapproprié. Respectez les limites d'âge de Discord (13+)."
-        ),
-        inline=False
-    )
-
-    main_embed.add_field(
-        name="",
-        value=(
-            "**4. 📝 Présentation de votre chaîne**\n"
-            "Votre présentation est importante : elle permet de vous attribuer le bon rôle et de se faire une idée de votre chaîne ainsi que de votre communauté.\n\n"
-            "**5. 🤝 Le follow**\n"
-            "Vous n'êtes forcé de follow personne. Suivez qui vous voulez, librement et sans pression.\n\n"
-            "**6. 🌙 Le lurk**\n"
-            "Laisser un lurk ne coûte rien : ouvrir la page Twitch en arrière-plan apporte du soutien à tout le monde."
-        ),
-        inline=False
-    )
-
-    main_embed.add_field(
-        name="",
-        value=(
-            "**7. 🛡️ Utilisation des bots**\n"
-            "Utilisez les commandes des bots de manière appropriée et dans les bons channels.\n\n"
-            "**8. ⚖️ Système de sanctions**\n"
-            "```\nAvertissement → Mute → Kick → Ban\n```\n"
-            "Les modérateurs appliquent les sanctions selon la gravité."
-        ),
-        inline=False
-    )
-    
-    # Informations utiles
-    main_embed.add_field(
-        name="🎯 Channels importants",
-        value="• 📢 <#1400035914809479219> Annonces officielles\n• 🔴 <#1399525054890377239> Streams des affiliés\n• 🔴 <#1399525130878582934> Streams des non affiliés\n• 💬 <#1400057946934739066> presentation\n• 🆘 <#1399525678671724604> Aide et support",
-        inline=True
-    )
-    
-    main_embed.add_field(
-        name="🤖 Commandes utiles",
-        value="• `/liste-affilie` - Voir les streamers affiliés\n• `/stats` - Statistiques du serveur\n• `/live-status` - streamers en live\n• `/reglement` - Afficher ce règlement",
-        inline=True
-    )
-    
-    # Footer
-    footer_text = f"Serveur {interaction.guild.name} • Mis à jour le"
-    main_embed.set_footer(text=footer_text, icon_url=interaction.guild.icon.url if interaction.guild.icon else None)
-    main_embed.timestamp = datetime.datetime.now(UTC)
-    
-    try:
-        # Envoyer l'embed
-        await target_channel.send(embed=main_embed)
-        
-        # Confirmation
-        success_embed = discord.Embed(
-            title="✅ Dashboard créé",
-            description=f"Le dashboard du règlement a été créé dans {target_channel.mention}",
-            color=discord.Color.green()
-        )
-        success_embed.add_field(
-            name="🔧 Modification",
-            value="Utilisez `/modifier-reglement` pour mettre à jour le contenu",
-            inline=False
-        )
-        
-        await interaction.response.send_message(embed=success_embed, ephemeral=True)
-        bot.metrics.record_command("reglement-dashboard", interaction.user.id)
-        logger.info(f"✅ Dashboard de règlement créé dans {target_channel.name} par {interaction.user.name}")
-        
-    except Exception as e:
-        error_embed = discord.Embed(
-            title="❌ Erreur",
-            description=f"Impossible de créer le dashboard: {str(e)[:500]}",
-            color=discord.Color.red()
-        )
-        await interaction.response.send_message(embed=error_embed, ephemeral=True)
-        logger.error(f"❌ Erreur création dashboard règlement: {e}")
-
-@bot.tree.command(name="modifier-reglement", description="Modifier une section du règlement (Admin)")
-async def modifier_reglement(interaction: discord.Interaction, 
-                           section: str, 
-                           titre: str,
-                           nouveau_contenu: str):
-    """Modifier une section spécifique du règlement"""
-    if not bot.is_admin(interaction.user):
-        await interaction.response.send_message("❌ Seuls les administrateurs peuvent utiliser cette commande!", ephemeral=True)
-        return
-    
-    sections_disponibles = {
-        "respect": "🤝 Respect mutuel",
-        "communication": "💬 Communication appropriée", 
-        "contenu": "🔞 Contenu approprié",
-        "streams": "🎮 Streams et promotion",
-        "bots": "🛡️ Utilisation des bots",
-        "sanctions": "⚖️ Sanctions",
-        "contact": "🆘 Contact modération"
-    }
-    
-    if section.lower() not in sections_disponibles:
-        embed = discord.Embed(
-            title="❌ Section invalide",
-            description="Sections disponibles :",
-            color=discord.Color.red()
-        )
-        
-        for key, value in sections_disponibles.items():
-            embed.add_field(name=f"`{key}`", value=value, inline=True)
-        
-        await interaction.response.send_message(embed=embed, ephemeral=True)
-        return
-    
-    # Sauvegarder la modification dans la base de données
-    success = bot.db.update_rule_section(
-        section_key=section.lower(),
-        title=titre,
-        content=nouveau_contenu,
-        updated_by=f"{interaction.user.name}#{interaction.user.discriminator}"
-    )
-    
-    if success:
-        embed = discord.Embed(
-            title="✅ Section modifiée",
-            description=f"La section **{section.lower()}** a été mise à jour",
-            color=discord.Color.green()
-        )
-        
-        embed.add_field(
-            name="📝 Nouveau titre",
-            value=titre,
-            inline=False
-        )
-        
-        embed.add_field(
-            name="📝 Nouveau contenu",
-            value=nouveau_contenu[:500] + ("..." if len(nouveau_contenu) > 500 else ""),
-            inline=False
-        )
-        
-        embed.add_field(
-            name="💡 Note",
-            value="Utilisez `/reglement-dashboard` pour recréer le dashboard avec les modifications",
-            inline=False
-        )
-        
-        await interaction.response.send_message(embed=embed, ephemeral=True)
-        bot.metrics.record_command("modifier-reglement", interaction.user.id)
-        logger.info(f"✅ Section de règlement '{section}' modifiée par {interaction.user.name}")
-    else:
-        error_embed = discord.Embed(
-            title="❌ Erreur",
-            description="Impossible de sauvegarder la modification dans la base de données.",
-            color=discord.Color.red()
-        )
-        await interaction.response.send_message(embed=error_embed, ephemeral=True)
-
-# ==================== GESTION D'ERREURS ====================
-@bot.event
-async def on_application_command_error(interaction: discord.Interaction, error):
-    """Gérer les erreurs des commandes slash"""
-    logger.error(f"Erreur de commande dans {interaction.command.name if interaction.command else 'inconnue'}: {error}")
-    
-    embed = discord.Embed(
-        title="❌ Erreur",
-        color=discord.Color.red()
-    )
-    
-    if isinstance(error, commands.MissingPermissions):
-        embed.description = "Vous n'avez pas les permissions nécessaires."
-    elif isinstance(error, commands.CommandOnCooldown):
-        embed.description = f"Commande en cooldown. Réessayez dans {error.retry_after:.1f} secondes."
-    else:
-        embed.description = "Une erreur inattendue s'est produite."
-        embed.add_field(name="Détails", value=str(error)[:500], inline=False)
-    
-    try:
-        if not interaction.response.is_done():
-            await interaction.response.send_message(embed=embed, ephemeral=True)
-        else:
-            await interaction.followup.send(embed=embed, ephemeral=True)
-    except:
-        logger.error("Échec de l'envoi du message d'erreur")
-
 # ==================== FONCTIONS UTILITAIRES ====================
 def create_default_env():
     """Créer un fichier .env par défaut s'il n'existe pas"""
@@ -2015,6 +1654,10 @@ CHANNEL_LIVE_NON_AFFILIE=0
 CHANNEL_WELCOME=0
 CHANNEL_LOGS=0
 
+# === SYSTÈME DE RÔLE DE RÈGLEMENT ===
+RULES_ROLE_ID=0
+RULES_ROLE_NAME=Membre Vérifié
+
 # === API TWITCH (Optionnel mais recommandé) ===
 TWITCH_CLIENT_ID=your_twitch_client_id
 TWITCH_CLIENT_SECRET=your_twitch_client_secret
@@ -2025,8 +1668,8 @@ AUTO_NOTIFICATIONS=true
 NOTIFICATION_INTERVAL=2
 
 # === CONFIGURATION SERVEUR WEB ===
-WEB_HOST=127.0.0.1
-WEB_PORT=5000
+WEB_HOST=0.0.0.0
+WEB_PORT=10000
 WEB_DEBUG=false
 FLASK_SECRET_KEY=your-super-secret-key-change-this-in-production
 """
@@ -2035,9 +1678,16 @@ FLASK_SECRET_KEY=your-super-secret-key-change-this-in-production
             with open(env_file, 'w', encoding='utf-8') as f:
                 f.write(default_env)
             
-            logger.info("✅ Fichier .env créé")
-            logger.info("🔧 Éditez le fichier .env avec vos informations")
-            return False
+            logger.info("✅ Fichier .env créé avec configuration pour production")
+            logger.info("🔧 Configurez vos variables d'environnement")
+            
+            if IS_PRODUCTION:
+                logger.warning("🚀 Environnement de production détecté")
+                logger.warning("⚠️ Configurez les variables d'environnement sur votre plateforme")
+                return False
+            else:
+                logger.info("💻 Environnement de développement - éditez le fichier .env")
+                return False
             
         except Exception as e:
             logger.error(f"❌ Impossible de créer .env: {e}")
@@ -2050,19 +1700,21 @@ def print_startup_banner():
     banner = """
 ╔══════════════════════════════════════════════════════════════╗
 ║                                                              ║
-║          🎮 Bot Discord Streamer v2.4 🤖                    ║
-║     avec Interface Web, Bienvenue & Dashboard Règlement 🌐  ║
+║          🎮 Bot Discord Streamer v3.0 🤖                    ║
+║   avec Interface Web, Bienvenue, Règlement & Bouton Rôle 🌐 ║
 ║                                                              ║
 ║     ✨ Fonctionnalités:                                     ║
 ║     • Notifications automatiques des streams                 ║
 ║     • Messages de bienvenue automatiques                     ║
 ║     • Système de règlement personnalisable                   ║
-║     • Dashboard de règlement interactif                      ║
+║     • Dashboard de règlement avec bouton de rôle             ║
+║     • Attribution automatique de rôles                       ║
 ║     • Commandes slash modernes                               ║
 ║     • Gestion des streamers affiliés/non-affiliés            ║
 ║     • Statistiques en temps réel                             ║
 ║     • Interface d'administration web complète                ║
 ║     • API REST avec formulaire d'ajout de streamers          ║
+║     • Support complet Render/Heroku/Railway                  ║
 ║                                                              ║
 ║     🚀 Prêt pour la production!                             ║
 ║                                                              ║
@@ -2072,9 +1724,11 @@ def print_startup_banner():
 
 # ==================== FONCTION PRINCIPALE ====================
 def main():
-    """Fonction principale avec gestion d'erreurs"""
+    """Fonction principale avec gestion d'erreurs pour production"""
     
     print_startup_banner()
+    
+    logger.info(f"🌍 Environnement: {'Production' if IS_PRODUCTION else 'Développement'}")
     
     # Vérifier les dépendances Flask
     try:
@@ -2083,85 +1737,59 @@ def main():
     except ImportError:
         logger.error("❌ Dépendances Flask manquantes!")
         logger.error("💿 Installez avec: pip install flask flask-cors")
-        input("Appuyez sur Entrée pour quitter...")
-        return
+        if not IS_PRODUCTION:
+            print("\n❌ Dépendances manquantes!")
+            print("💿 Exécutez: pip install flask flask-cors")
+            print("🔄 Puis relancez le bot.")
+        sys.exit(1)
     
-    # Vérifier le fichier .env
-    if not create_default_env():
-        print("\n❌ Configuration requise!")
-        print("📝 Un fichier .env par défaut a été créé.")
-        print("🔧 Éditez-le avec votre token Discord et les IDs des channels.")
-        print("🌐 Les paramètres web sont pré-configurés.")
-        print("🎉 N'oubliez pas de configurer CHANNEL_WELCOME pour les messages de bienvenue!")
-        print("📋 Le système de règlement est maintenant disponible avec /reglement !")
-        print("➕ Interface web avec formulaire d'ajout de streamers disponible !")
-        print("🚀 Puis relancez le bot.")
-        input("Appuyez sur Entrée pour quitter...")
-        return
+    # Vérifier le fichier .env en développement seulement
+    if not IS_PRODUCTION:
+        if not create_default_env():
+            print("\n❌ Configuration requise!")
+            print("📝 Un fichier .env par défaut a été créé.")
+            print("🔧 Éditez-le avec votre token Discord et les IDs des channels.")
+            print("🚀 Puis relancez le bot.")
+            return
     
     # Valider la configuration
     TOKEN = config.discord_token
     
     if not TOKEN or TOKEN == "your_discord_bot_token_here":
         logger.error("❌ Token Discord manquant!")
-        logger.error("💡 Éditez le fichier .env avec votre token")
-        input("Appuyez sur Entrée pour quitter...")
-        return
-    
-    # Vérifier la configuration
-    config_errors = config.validate()
-    if config_errors:
-        logger.error("❌ Erreurs de configuration:")
-        for field, error in config_errors.items():
-            logger.error(f"  - {field}: {error}")
         
-        if 'discord_token' in config_errors:
-            logger.error("🛑 Impossible de continuer sans token Discord!")
-            input("Appuyez sur Entrée pour quitter...")
-            return
+        if IS_PRODUCTION:
+            logger.error("⚙️ Configurez la variable DISCORD_TOKEN sur votre plateforme")
+            sys.exit(1)
         else:
-            logger.warning("⚠️ Le bot démarrera avec des fonctionnalités limitées")
-            response = input("Continuer quand même? (o/N): ")
-            if response.lower() != 'o':
-                return
-    
-    # Afficher le résumé de la configuration
-    web_host = os.getenv('WEB_HOST', '127.0.0.1')
-    web_port = os.getenv('WEB_PORT', '5000')
-    
-    logger.info("📋 Résumé de la configuration:")
-    logger.info(f"  - Token Discord: {'✅ Configuré' if config.discord_token else '❌ Manquant'}")
-    logger.info(f"  - Channel Affilié: {'✅' if config.live_affilie_channel else '❌'} ({config.live_affilie_channel})")
-    logger.info(f"  - Channel Non-Affilié: {'✅' if config.live_non_affilie_channel else '❌'} ({config.live_non_affilie_channel})")
-    logger.info(f"  - Channel Bienvenue: {'✅' if config.welcome_channel else '❌'} ({config.welcome_channel})")
-    logger.info(f"  - Channel Logs: {'✅' if config.logs_channel else '❌'} ({config.logs_channel})")
-    logger.info(f"  - API Twitch: {'✅' if config.twitch_client_id else '❌'}")
-    logger.info(f"  - Notifications Auto: {'✅' if config.auto_notifications else '❌'}")
-    logger.info(f"  - Interface Web: ✅ http://{web_host}:{web_port}")
-    logger.info(f"  - Système de Règlement: ✅ Activé avec DB")
-    logger.info(f"  - Formulaire Web: ✅ Ajout de streamers intégré")
+            logger.error("💡 Éditez le fichier .env avec votre token")
+            print("\n❌ Token Discord manquant!")
+            print("🔧 Éditez le fichier .env avec votre token Discord.")
+            return
     
     # Démarrer le bot
     logger.info("🚀 Démarrage du bot avec toutes les fonctionnalités...")
-    logger.info(f"🌐 Interface web disponible sur: http://{web_host}:{web_port}")
-    logger.info("🎉 Système de bienvenue activé!")
-    logger.info("📋 Système de règlement personnalisable activé!")
-    logger.info("➕ Formulaire d'ajout de streamers via interface web activé!")
+    logger.info("🔧 Support production Render/Heroku/Railway activé!")
     logger.info("=" * 60)
     
     try:
+        keep_alive()
         bot.run(TOKEN, log_handler=None)
         
     except discord.LoginFailure:
         logger.error("❌ ERREUR D'AUTHENTIFICATION!")
         logger.error("🔑 Le token Discord est invalide")
-        logger.error("💡 Vérifiez votre token dans le fichier .env")
+        sys.exit(1)
         
     except KeyboardInterrupt:
         logger.info("🛑 Bot arrêté par l'utilisateur (Ctrl+C)")
         
     except Exception as e:
         logger.error(f"❌ ERREUR CRITIQUE: {type(e).__name__}: {e}")
+        if not IS_PRODUCTION:
+            print(f"\n❌ ERREUR CRITIQUE: {type(e).__name__}: {e}")
+            print("📋 Vérifiez les logs pour plus de détails.")
+        sys.exit(1)
         
     finally:
         # Nettoyage
@@ -2181,10 +1809,14 @@ if __name__ == "__main__":
     # Vérifier la version Python
     if sys.version_info < (3, 8):
         print("❌ Python 3.8+ requis!")
-        print(f"🐍 Version actuelle: {sys.version}")
-        input("Appuyez sur Entrée pour quitter...")
-        sys.exit(1)
+        print(f"🔧 Version actuelle: {sys.version}")
+        
+        if IS_PRODUCTION:
+            logger.error("❌ Version Python insuffisante - fermeture automatique")
+            sys.exit(1)
+        else:
+            print("🔄 Mettez à jour Python et relancez le bot.")
+            sys.exit(1)
     
     # Exécuter le bot avec toutes les fonctionnalités
-    keep_alive()
     main()
