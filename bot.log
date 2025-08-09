@@ -1,125 +1,1866 @@
-2025-07-30 06:32:28,622 - discord.client - WARNING - __init__:318 - PyNaCl is not installed, voice will NOT be supported
-2025-07-30 06:32:28,636 - root - INFO - init_database:235 - ✅ Database initialized successfully
-2025-07-30 06:32:28,640 - root - INFO - create_default_env:813 - 📝 Creating default .env file...
-2025-07-30 06:32:28,641 - root - INFO - create_default_env:841 - ✅ Fichier .env créé
-2025-07-30 06:32:28,641 - root - INFO - create_default_env:842 - 🔧 Éditez le fichier .env avec vos informations
-2025-07-30 06:33:38,369 - discord.client - WARNING - __init__:318 - PyNaCl is not installed, voice will NOT be supported
-2025-07-30 06:33:38,374 - root - INFO - init_database:235 - ✅ Database initialized successfully
-2025-07-30 06:33:38,380 - root - INFO - main:946 - 📋 Résumé de la configuration:
-2025-07-30 06:33:38,380 - root - INFO - main:947 -   - Token Discord: ✅ Configuré
-2025-07-30 06:33:38,380 - root - INFO - main:948 -   - Channel Affilié: ✅ (1399829264655712297)
-2025-07-30 06:33:38,381 - root - INFO - main:949 -   - Channel Non-Affilié: ✅ (1399829349280120923)
-2025-07-30 06:33:38,381 - root - INFO - main:950 -   - Twitch API: ✅
-2025-07-30 06:33:38,381 - root - INFO - main:951 -   - Notifications Auto: ✅
-2025-07-30 06:33:38,382 - root - INFO - main:977 - 🚀 Démarrage du bot...
-2025-07-30 06:33:38,382 - root - INFO - main:978 - ==================================================
-2025-07-30 06:33:38,384 - discord.client - INFO - login:643 - logging in using static token
-2025-07-30 06:33:39,699 - root - INFO - init_client:339 - ✅ Twitch API initialized
-2025-07-30 06:33:39,700 - root - INFO - setup_hook:415 - 🤖 Bot setup completed
-2025-07-30 06:33:40,246 - discord.gateway - INFO - received_message:562 - Shard ID None has connected to Gateway (Session ID: ab8bf79ca07b3b0926a2043997168b74).
-2025-07-30 06:33:42,257 - root - INFO - on_ready:718 - 🤖 Bot is online!
-2025-07-30 06:33:42,258 - root - INFO - on_ready:719 - 🆔 phoenix (1399445546405724293) connected
-2025-07-30 06:33:42,259 - root - INFO - on_ready:723 - 📊 0 streamers loaded
-2025-07-30 06:33:42,510 - root - INFO - on_ready:728 - ⚡ 6 slash commands synced
-2025-07-30 06:33:42,511 - root - INFO - on_ready:735 - 🔔 Live notification system started
-2025-07-30 06:33:42,511 - root - INFO - on_ready:745 - ✅ Bot fully initialized!
-2025-07-30 06:33:42,512 - root - INFO - check_streamers_live:595 - 🔍 Checking live streamers...
-2025-07-30 06:33:59,801 - root - INFO - main:1022 - 🧹 Nettoyage final...
-2025-07-30 06:33:59,802 - root - INFO - main:1027 - ✅ Tâches de fond arrêtées
-2025-07-30 06:33:59,802 - root - INFO - main:1031 - 🏁 Arrêt du bot terminé
-2025-07-30 06:33:59,802 - root - INFO - main:1032 - ==================================================
-2025-07-31 01:14:54,360 - root - INFO - init_database:246 - ✅ Base de données initialisée avec succès
-2025-07-31 01:14:54,363 - root - INFO - main:2131 - 📋 Résumé de la configuration:
-2025-07-31 01:14:54,363 - root - INFO - main:2132 -   - Token Discord: ✅ Configuré
-2025-07-31 01:14:54,363 - root - INFO - main:2133 -   - Channel Affilié: ✅ (1399525054890377239)
-2025-07-31 01:14:54,364 - root - INFO - main:2134 -   - Channel Non-Affilié: ✅ (1399525130878582934)
-2025-07-31 01:14:54,364 - root - INFO - main:2135 -   - Channel Bienvenue: ✅ (1398347968242778113)
-2025-07-31 01:14:54,364 - root - INFO - main:2136 -   - Channel Logs: ✅ (1399955312823242853)
-2025-07-31 01:14:54,364 - root - INFO - main:2137 -   - API Twitch: ✅
-2025-07-31 01:14:54,365 - root - INFO - main:2138 -   - Notifications Auto: ✅
-2025-07-31 01:14:54,365 - root - INFO - main:2139 -   - Interface Web: ✅ http://127.0.0.1:5000
-2025-07-31 01:14:54,365 - root - INFO - main:2140 -   - Système de Règlement: ✅ Activé avec DB
-2025-07-31 01:14:54,366 - root - INFO - main:2141 -   - Formulaire Web: ✅ Ajout de streamers intégré
-2025-07-31 01:14:54,366 - root - INFO - main:2144 - 🚀 Démarrage du bot avec toutes les fonctionnalités...
-2025-07-31 01:14:54,366 - root - INFO - main:2145 - 🌐 Interface web disponible sur: http://127.0.0.1:5000
-2025-07-31 01:14:54,367 - root - INFO - main:2146 - 🎉 Système de bienvenue activé!
-2025-07-31 01:14:54,367 - root - INFO - main:2147 - 📋 Système de règlement personnalisable activé!
-2025-07-31 01:14:54,367 - root - INFO - main:2148 - ➕ Formulaire d'ajout de streamers via interface web activé!
-2025-07-31 01:14:54,368 - root - INFO - main:2149 - ============================================================
-2025-07-31 01:14:54,369 - discord.client - INFO - login:643 - logging in using static token
-2025-07-31 01:14:55,855 - root - INFO - init_client:409 - ✅ API Twitch initialisée
-2025-07-31 01:14:55,861 - root - INFO - run_server:1069 - 🌐 Démarrage du serveur web sur http://127.0.0.1:5000
-2025-07-31 01:14:55,861 - root - INFO - start_server:1076 - ✅ Serveur web démarré en arrière-plan
-2025-07-31 01:14:55,862 - root - INFO - setup_hook:1122 - 🤖 Configuration du bot terminée avec serveur web
-2025-07-31 01:14:55,881 - werkzeug - INFO - _log:97 - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
- * Running on http://127.0.0.1:5000
-2025-07-31 01:14:55,881 - werkzeug - INFO - _log:97 - [33mPress CTRL+C to quit[0m
-2025-07-31 01:14:56,240 - discord.gateway - INFO - received_message:562 - Shard ID None has connected to Gateway (Session ID: aa1c4354bbebe90591bf675ed83328d1).
-2025-07-31 01:14:58,253 - root - INFO - on_ready:1299 - 🤖 Bot en ligne!
-2025-07-31 01:14:58,254 - root - INFO - on_ready:1300 - 🆔 phoenix (1399445546405724293) connecté
-2025-07-31 01:14:58,265 - root - INFO - on_ready:1304 - 📊 0 streamers chargés
-2025-07-31 01:14:58,572 - root - INFO - on_ready:1309 - ⚡ 11 commandes slash synchronisées
-2025-07-31 01:14:58,573 - root - INFO - on_ready:1316 - 🔔 Système de notifications live démarré
-2025-07-31 01:14:58,573 - root - INFO - on_ready:1326 - ✅ Bot entièrement initialisé avec interface web, système de bienvenue et dashboard de règlement!
-2025-07-31 01:14:58,574 - root - INFO - check_streamers_live:1177 - 🔍 Vérification des streamers en live...
-2025-07-31 01:15:08,684 - werkzeug - INFO - _log:97 - 127.0.0.1 - - [31/Jul/2025 01:15:08] "GET /api/health HTTP/1.1" 200 -
-2025-07-31 01:15:30,208 - root - INFO - stop_server:1079 - 🛑 Arrêt du serveur web...
-2025-07-31 01:15:30,211 - root - INFO - main:2167 - 🧹 Nettoyage final...
-2025-07-31 01:15:30,211 - root - INFO - main:2172 - ✅ Tâches de fond arrêtées
-2025-07-31 01:15:30,212 - root - INFO - main:2176 - 🏁 Arrêt du bot terminé
-2025-07-31 01:25:59,808 - root - INFO - init_database:247 - ✅ Base de données initialisée avec succès
-2025-07-31 01:25:59,811 - root - INFO - main:2132 - 📋 Résumé de la configuration:
-2025-07-31 01:25:59,811 - root - INFO - main:2133 -   - Token Discord: ✅ Configuré
-2025-07-31 01:25:59,813 - root - INFO - main:2134 -   - Channel Affilié: ✅ (1399525054890377239)
-2025-07-31 01:25:59,813 - root - INFO - main:2135 -   - Channel Non-Affilié: ✅ (1399525130878582934)
-2025-07-31 01:25:59,814 - root - INFO - main:2136 -   - Channel Bienvenue: ✅ (1398347968242778113)
-2025-07-31 01:25:59,814 - root - INFO - main:2137 -   - Channel Logs: ✅ (1399955312823242853)
-2025-07-31 01:25:59,815 - root - INFO - main:2138 -   - API Twitch: ✅
-2025-07-31 01:25:59,815 - root - INFO - main:2139 -   - Notifications Auto: ✅
-2025-07-31 01:25:59,816 - root - INFO - main:2140 -   - Interface Web: ✅ http://127.0.0.1:5000
-2025-07-31 01:25:59,816 - root - INFO - main:2141 -   - Système de Règlement: ✅ Activé avec DB
-2025-07-31 01:25:59,817 - root - INFO - main:2142 -   - Formulaire Web: ✅ Ajout de streamers intégré
-2025-07-31 01:25:59,817 - root - INFO - main:2145 - 🚀 Démarrage du bot avec toutes les fonctionnalités...
-2025-07-31 01:25:59,818 - root - INFO - main:2146 - 🌐 Interface web disponible sur: http://127.0.0.1:5000
-2025-07-31 01:25:59,818 - root - INFO - main:2147 - 🎉 Système de bienvenue activé!
-2025-07-31 01:25:59,819 - root - INFO - main:2148 - 📋 Système de règlement personnalisable activé!
-2025-07-31 01:25:59,820 - root - INFO - main:2149 - ➕ Formulaire d'ajout de streamers via interface web activé!
-2025-07-31 01:25:59,820 - root - INFO - main:2150 - ============================================================
-2025-07-31 01:25:59,822 - discord.client - INFO - login:643 - logging in using static token
-2025-07-31 01:25:59,844 - werkzeug - INFO - _log:97 - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
- * Running on all addresses (0.0.0.0)
- * Running on http://127.0.0.1:8080
- * Running on http://192.168.1.237:8080
-2025-07-31 01:25:59,845 - werkzeug - INFO - _log:97 - [33mPress CTRL+C to quit[0m
-2025-07-31 01:26:01,145 - root - INFO - init_client:410 - ✅ API Twitch initialisée
-2025-07-31 01:26:01,151 - root - INFO - run_server:1070 - 🌐 Démarrage du serveur web sur http://127.0.0.1:5000
-2025-07-31 01:26:01,151 - root - INFO - start_server:1077 - ✅ Serveur web démarré en arrière-plan
-2025-07-31 01:26:01,152 - root - INFO - setup_hook:1123 - 🤖 Configuration du bot terminée avec serveur web
-2025-07-31 01:26:01,158 - werkzeug - INFO - _log:97 - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
- * Running on http://127.0.0.1:5000
-2025-07-31 01:26:01,159 - werkzeug - INFO - _log:97 - [33mPress CTRL+C to quit[0m
-2025-07-31 01:26:01,508 - discord.gateway - INFO - received_message:562 - Shard ID None has connected to Gateway (Session ID: d164d427c2a5421f91d428ae838a0ede).
-2025-07-31 01:26:03,522 - root - INFO - on_ready:1300 - 🤖 Bot en ligne!
-2025-07-31 01:26:03,523 - root - INFO - on_ready:1301 - 🆔 phoenix (1399445546405724293) connecté
-2025-07-31 01:26:03,524 - root - INFO - on_ready:1305 - 📊 0 streamers chargés
-2025-07-31 01:26:04,004 - root - INFO - on_ready:1310 - ⚡ 11 commandes slash synchronisées
-2025-07-31 01:26:04,005 - root - INFO - on_ready:1317 - 🔔 Système de notifications live démarré
-2025-07-31 01:26:04,006 - root - INFO - on_ready:1327 - ✅ Bot entièrement initialisé avec interface web, système de bienvenue et dashboard de règlement!
-2025-07-31 01:26:04,006 - root - INFO - check_streamers_live:1178 - 🔍 Vérification des streamers en live...
-2025-07-31 01:26:08,857 - werkzeug - INFO - _log:97 - 127.0.0.1 - - [31/Jul/2025 01:26:08] "GET /api/health HTTP/1.1" 200 -
-2025-07-31 01:26:36,429 - root - INFO - stop_server:1080 - 🛑 Arrêt du serveur web...
-2025-07-31 01:26:36,432 - root - INFO - main:2168 - 🧹 Nettoyage final...
-2025-07-31 01:26:36,432 - root - INFO - main:2173 - ✅ Tâches de fond arrêtées
-2025-07-31 01:26:36,433 - root - INFO - main:2177 - 🏁 Arrêt du bot terminé
-2025-07-31 01:26:37,640 - werkzeug - INFO - _log:97 - 127.0.0.1 - - [31/Jul/2025 01:26:37] "GET /api/stats HTTP/1.1" 200 -
-2025-07-31 01:26:38,859 - werkzeug - INFO - _log:97 - 127.0.0.1 - - [31/Jul/2025 01:26:38] "GET /api/health HTTP/1.1" 200 -
-2025-07-31 01:27:08,859 - werkzeug - INFO - _log:97 - 127.0.0.1 - - [31/Jul/2025 01:27:08] "GET /api/health HTTP/1.1" 200 -
-2025-07-31 01:27:37,641 - werkzeug - INFO - _log:97 - 127.0.0.1 - - [31/Jul/2025 01:27:37] "GET /api/stats HTTP/1.1" 200 -
-2025-07-31 01:27:38,864 - werkzeug - INFO - _log:97 - 127.0.0.1 - - [31/Jul/2025 01:27:38] "GET /api/health HTTP/1.1" 200 -
-2025-07-31 01:28:08,871 - werkzeug - INFO - _log:97 - 127.0.0.1 - - [31/Jul/2025 01:28:08] "GET /api/health HTTP/1.1" 200 -
-2025-07-31 01:28:37,646 - werkzeug - INFO - _log:97 - 127.0.0.1 - - [31/Jul/2025 01:28:37] "GET /api/stats HTTP/1.1" 200 -
-2025-07-31 01:28:38,871 - werkzeug - INFO - _log:97 - 127.0.0.1 - - [31/Jul/2025 01:28:38] "GET /api/health HTTP/1.1" 200 -
-2025-07-31 01:29:08,884 - werkzeug - INFO - _log:97 - 127.0.0.1 - - [31/Jul/2025 01:29:08] "GET /api/health HTTP/1.1" 200 -
-2025-07-31 01:29:37,647 - werkzeug - INFO - _log:97 - 127.0.0.1 - - [31/Jul/2025 01:29:37] "GET /api/stats HTTP/1.1" 200 -
-2025-07-31 01:29:38,899 - werkzeug - INFO - _log:97 - 127.0.0.1 - - [31/Jul/2025 01:29:38] "GET /api/health HTTP/1.1" 200 -
-2025-07-31 01:30:08,910 - werkzeug - INFO - _log:97 - 127.0.0.1 - - [31/Jul/2025 01:30:08] "GET /api/health HTTP/1.1" 200 -
+2025-08-04T01:34:30.713Z - INFO - ✅ Commande ajouter-streamer chargée
+2025-08-04T01:34:30.720Z - INFO - ✅ Commande config-reglement-role chargée
+2025-08-04T01:34:30.722Z - INFO - ✅ Commande live-status chargée
+2025-08-04T01:34:30.723Z - INFO - ✅ Commande ping chargée
+2025-08-04T01:34:30.735Z - INFO - ✅ Commande reglement chargée
+2025-08-04T01:34:30.738Z - INFO - ✅ Commande reglement-dashboard chargée
+2025-08-04T01:34:30.740Z - INFO - ✅ Commande streamers chargée
+2025-08-04T01:34:31.427Z - INFO - 🤖 Bot en ligne!
+2025-08-04T01:34:31.427Z - INFO - 🆔 phoenix#8533 connecté
+2025-08-04T01:34:31.429Z - INFO - ✅ Base de données ouverte
+2025-08-04T01:34:31.433Z - INFO - ✅ Base de données initialisée avec succès
+2025-08-04T01:34:32.365Z - INFO - 🔑 Token Twitch obtenu
+2025-08-04T01:34:32.365Z - INFO - ✅ Client Twitch initialisé
+2025-08-04T01:34:32.618Z - INFO - ⚡ 7 commandes slash synchronisées
+2025-08-04T01:34:32.622Z - INFO - 📊 1 streamers chargés
+2025-08-04T01:34:32.622Z - INFO - 🔔 Système de notifications live démarré (2 min)
+2025-08-04T01:34:32.623Z - INFO - ✅ Bot entièrement initialisé!
+2025-08-04T01:36:32.638Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T01:36:33.642Z - INFO - ✅ Notification live envoyée pour nomie_el_homie
+2025-08-04T01:36:33.642Z - INFO - 🔴 nomie_el_homie détecté en live
+2025-08-04T01:36:33.755Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-04T01:38:32.641Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T01:38:33.121Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-04T01:40:32.641Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T01:40:33.123Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-04T01:42:32.657Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T01:42:33.135Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-04T01:44:32.664Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T01:44:33.145Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-04T01:46:32.676Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T01:46:33.139Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-04T01:48:32.682Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T01:48:33.163Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-04T01:50:32.683Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T01:50:33.161Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-04T01:52:32.696Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T01:52:33.364Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-04T01:54:32.704Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T01:54:33.197Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-04T01:55:26.583Z - INFO - 🛑 Signal SIGINT reçu
+2025-08-04T01:55:26.585Z - INFO - 🛑 Arrêt du bot...
+2025-08-04T01:55:26.588Z - INFO - ⏹️ Arrêt de la vérification des streams
+2025-08-04T01:55:26.589Z - INFO - ✅ Base de données fermée
+2025-08-04T01:55:26.729Z - INFO - ✅ Bot arrêté proprement
+2025-08-04T06:51:44.608Z - INFO - ✅ Commande ajouter-streamer chargée
+2025-08-04T06:51:44.617Z - INFO - ✅ Commande config-reglement-role chargée
+2025-08-04T06:51:44.620Z - INFO - ✅ Commande live-status chargée
+2025-08-04T06:51:44.622Z - INFO - ✅ Commande affiliate chargée
+2025-08-04T06:51:44.625Z - INFO - ✅ Commande ping chargée
+2025-08-04T06:51:44.643Z - INFO - ✅ Commande reglement chargée
+2025-08-04T06:51:44.647Z - INFO - ✅ Commande reglement-dashboard chargée
+2025-08-04T06:51:44.651Z - INFO - ✅ Commande streamers chargée
+2025-08-04T06:51:45.491Z - INFO - 🤖 Bot en ligne!
+2025-08-04T06:51:45.492Z - INFO - 🆔 phoenix#8533 connecté
+2025-08-04T06:51:45.500Z - INFO - ✅ Base de données ouverte
+2025-08-04T06:51:45.511Z - INFO - ✅ Base de données initialisée avec succès
+2025-08-04T06:51:46.475Z - INFO - 🔑 Token Twitch obtenu
+2025-08-04T06:51:46.476Z - INFO - ✅ Client Twitch initialisé
+2025-08-04T06:51:46.770Z - INFO - ⚡ 8 commandes slash synchronisées
+2025-08-04T06:51:46.776Z - INFO - 📊 1 streamers chargés
+2025-08-04T06:51:46.777Z - INFO - 🔔 Système de notifications live démarré (2 min)
+2025-08-04T06:51:46.779Z - INFO - ✅ Bot entièrement initialisé!
+2025-08-04T06:52:32.550Z - INFO - ✅ Commande affiliate exécutée par siphixsecours_55253
+2025-08-04T06:53:46.785Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T06:53:47.314Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-04T06:54:33.383Z - INFO - 🛑 Signal SIGINT reçu
+2025-08-04T06:54:33.384Z - INFO - 🛑 Arrêt du bot...
+2025-08-04T06:54:33.384Z - INFO - ⏹️ Arrêt de la vérification des streams
+2025-08-04T06:54:33.387Z - INFO - ✅ Base de données fermée
+2025-08-04T06:54:33.499Z - INFO - ✅ Bot arrêté proprement
+2025-08-04T06:59:13.944Z - INFO - ✅ Commande ajouter-streamer chargée
+2025-08-04T06:59:13.952Z - INFO - ✅ Commande config-reglement-role chargée
+2025-08-04T06:59:13.955Z - INFO - ✅ Commande live-status chargée
+2025-08-04T06:59:13.958Z - ERROR - ❌ Erreur chargement commande mise a jours des affilation.js: Unexpected token '}'
+2025-08-04T06:59:13.960Z - INFO - ✅ Commande ping chargée
+2025-08-04T06:59:13.975Z - INFO - ✅ Commande reglement chargée
+2025-08-04T06:59:13.978Z - INFO - ✅ Commande reglement-dashboard chargée
+2025-08-04T06:59:13.982Z - INFO - ✅ Commande streamers chargée
+2025-08-04T06:59:14.828Z - INFO - 🤖 Bot en ligne!
+2025-08-04T06:59:14.830Z - INFO - 🆔 phoenix#8533 connecté
+2025-08-04T06:59:14.832Z - INFO - ✅ Base de données ouverte
+2025-08-04T06:59:14.837Z - INFO - ✅ Base de données initialisée avec succès
+2025-08-04T06:59:15.838Z - INFO - 🔑 Token Twitch obtenu
+2025-08-04T06:59:15.838Z - INFO - ✅ Client Twitch initialisé
+2025-08-04T06:59:16.130Z - INFO - ⚡ 7 commandes slash synchronisées
+2025-08-04T06:59:16.136Z - INFO - 📊 1 streamers chargés
+2025-08-04T06:59:16.137Z - INFO - 🔔 Système de notifications live démarré (2 min)
+2025-08-04T06:59:16.139Z - INFO - ✅ Bot entièrement initialisé!
+2025-08-04T07:01:16.145Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T07:01:16.662Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-04T07:01:58.775Z - INFO - 🛑 Signal SIGINT reçu
+2025-08-04T07:01:58.776Z - INFO - 🛑 Arrêt du bot...
+2025-08-04T07:01:58.776Z - INFO - ⏹️ Arrêt de la vérification des streams
+2025-08-04T07:01:58.777Z - INFO - ✅ Base de données fermée
+2025-08-04T07:01:58.889Z - INFO - ✅ Bot arrêté proprement
+2025-08-04T07:02:03.461Z - INFO - ✅ Commande ajouter-streamer chargée
+2025-08-04T07:02:03.468Z - INFO - ✅ Commande config-reglement-role chargée
+2025-08-04T07:02:03.472Z - INFO - ✅ Commande live-status chargée
+2025-08-04T07:02:03.475Z - ERROR - ❌ Erreur chargement commande mise a jours des affilation.js: Unexpected token '}'
+2025-08-04T07:02:03.477Z - INFO - ✅ Commande ping chargée
+2025-08-04T07:02:03.497Z - INFO - ✅ Commande reglement chargée
+2025-08-04T07:02:03.502Z - INFO - ✅ Commande reglement-dashboard chargée
+2025-08-04T07:02:03.506Z - INFO - ✅ Commande streamers chargée
+2025-08-04T07:02:03.509Z - INFO - ✅ Commande unaffiliate chargée
+2025-08-04T07:02:04.322Z - INFO - 🤖 Bot en ligne!
+2025-08-04T07:02:04.323Z - INFO - 🆔 phoenix#8533 connecté
+2025-08-04T07:02:04.325Z - INFO - ✅ Base de données ouverte
+2025-08-04T07:02:04.330Z - INFO - ✅ Base de données initialisée avec succès
+2025-08-04T07:02:05.308Z - INFO - 🔑 Token Twitch obtenu
+2025-08-04T07:02:05.309Z - INFO - ✅ Client Twitch initialisé
+2025-08-04T07:02:05.596Z - INFO - ⚡ 8 commandes slash synchronisées
+2025-08-04T07:02:05.602Z - INFO - 📊 1 streamers chargés
+2025-08-04T07:02:05.602Z - INFO - 🔔 Système de notifications live démarré (2 min)
+2025-08-04T07:02:05.604Z - INFO - ✅ Bot entièrement initialisé!
+2025-08-04T07:02:53.045Z - INFO - ✅ Commande unaffiliate exécutée par siphixsecours_55253
+2025-08-04T07:03:19.490Z - INFO - ✅ Commande unaffiliate exécutée par siphixsecours_55253
+2025-08-04T07:04:00.254Z - INFO - 🛑 Signal SIGINT reçu
+2025-08-04T07:04:00.255Z - INFO - 🛑 Arrêt du bot...
+2025-08-04T07:04:00.256Z - INFO - ⏹️ Arrêt de la vérification des streams
+2025-08-04T07:04:00.257Z - INFO - ✅ Base de données fermée
+2025-08-04T07:04:00.368Z - INFO - ✅ Bot arrêté proprement
+2025-08-04T07:05:42.297Z - INFO - ✅ Commande ajouter-streamer chargée
+2025-08-04T07:05:42.307Z - INFO - ✅ Commande config-reglement-role chargée
+2025-08-04T07:05:42.311Z - INFO - ✅ Commande live-status chargée
+2025-08-04T07:05:42.315Z - ERROR - ❌ Erreur chargement commande mise a jours des affilation.js: Unexpected token '}'
+2025-08-04T07:05:42.317Z - INFO - ✅ Commande ping chargée
+2025-08-04T07:05:42.335Z - INFO - ✅ Commande reglement chargée
+2025-08-04T07:05:42.338Z - INFO - ✅ Commande reglement-dashboard chargée
+2025-08-04T07:05:42.342Z - INFO - ✅ Commande streamers chargée
+2025-08-04T07:05:42.345Z - INFO - ✅ Commande unaffiliate chargée
+2025-08-04T07:05:43.065Z - INFO - 🤖 Bot en ligne!
+2025-08-04T07:05:43.066Z - INFO - 🆔 phoenix#8533 connecté
+2025-08-04T07:05:43.068Z - INFO - ✅ Base de données ouverte
+2025-08-04T07:05:43.073Z - INFO - ✅ Base de données initialisée avec succès
+2025-08-04T07:05:44.060Z - INFO - 🔑 Token Twitch obtenu
+2025-08-04T07:05:44.061Z - INFO - ✅ Client Twitch initialisé
+2025-08-04T07:05:44.322Z - INFO - ⚡ 8 commandes slash synchronisées
+2025-08-04T07:05:44.326Z - INFO - 📊 1 streamers chargés
+2025-08-04T07:05:44.327Z - INFO - 🔔 Système de notifications live démarré (2 min)
+2025-08-04T07:05:44.329Z - INFO - ✅ Bot entièrement initialisé!
+2025-08-04T07:06:39.854Z - INFO - ✅ Commande unaffiliate exécutée par siphixsecours_55253
+2025-08-04T07:06:52.865Z - INFO - 🛑 Signal SIGINT reçu
+2025-08-04T07:06:52.866Z - INFO - 🛑 Arrêt du bot...
+2025-08-04T07:06:52.868Z - INFO - ⏹️ Arrêt de la vérification des streams
+2025-08-04T07:06:52.870Z - INFO - ✅ Base de données fermée
+2025-08-04T07:06:53.048Z - INFO - ✅ Bot arrêté proprement
+2025-08-04T07:07:11.895Z - INFO - ✅ Commande ajouter-streamer chargée
+2025-08-04T07:07:11.903Z - INFO - ✅ Commande config-reglement-role chargée
+2025-08-04T07:07:11.905Z - INFO - ✅ Commande live-status chargée
+2025-08-04T07:07:11.907Z - ERROR - ❌ Erreur chargement commande mise a jours des affilation.js: Unexpected token '}'
+2025-08-04T07:07:11.910Z - INFO - ✅ Commande ping chargée
+2025-08-04T07:07:11.924Z - INFO - ✅ Commande reglement chargée
+2025-08-04T07:07:11.928Z - INFO - ✅ Commande reglement-dashboard chargée
+2025-08-04T07:07:11.931Z - INFO - ✅ Commande streamers chargée
+2025-08-04T07:07:11.933Z - INFO - ✅ Commande unaffiliate chargée
+2025-08-04T07:07:12.721Z - INFO - 🤖 Bot en ligne!
+2025-08-04T07:07:12.722Z - INFO - 🆔 phoenix#8533 connecté
+2025-08-04T07:07:12.725Z - INFO - ✅ Base de données ouverte
+2025-08-04T07:07:12.730Z - INFO - ✅ Base de données initialisée avec succès
+2025-08-04T07:07:13.660Z - INFO - 🔑 Token Twitch obtenu
+2025-08-04T07:07:13.660Z - INFO - ✅ Client Twitch initialisé
+2025-08-04T07:07:13.959Z - INFO - ⚡ 8 commandes slash synchronisées
+2025-08-04T07:07:13.964Z - INFO - 📊 1 streamers chargés
+2025-08-04T07:07:13.965Z - INFO - 🔔 Système de notifications live démarré (2 min)
+2025-08-04T07:07:13.966Z - INFO - ✅ Bot entièrement initialisé!
+2025-08-04T07:07:37.415Z - INFO - ✅ Commande unaffiliate exécutée par siphixsecours_55253
+2025-08-04T07:09:11.224Z - INFO - 🛑 Signal SIGINT reçu
+2025-08-04T07:09:11.226Z - INFO - 🛑 Arrêt du bot...
+2025-08-04T07:09:11.227Z - INFO - ⏹️ Arrêt de la vérification des streams
+2025-08-04T07:09:11.230Z - INFO - ✅ Base de données fermée
+2025-08-04T07:09:11.342Z - INFO - ✅ Bot arrêté proprement
+2025-08-04T07:09:16.196Z - INFO - ✅ Commande ajouter-streamer chargée
+2025-08-04T07:09:16.204Z - INFO - ✅ Commande config-reglement-role chargée
+2025-08-04T07:09:16.207Z - INFO - ✅ Commande live-status chargée
+2025-08-04T07:09:16.210Z - INFO - ✅ Commande unaffiliate chargée
+2025-08-04T07:09:16.213Z - INFO - ✅ Commande ping chargée
+2025-08-04T07:09:16.230Z - INFO - ✅ Commande reglement chargée
+2025-08-04T07:09:16.234Z - INFO - ✅ Commande reglement-dashboard chargée
+2025-08-04T07:09:16.238Z - INFO - ✅ Commande streamers chargée
+2025-08-04T07:09:16.240Z - INFO - ✅ Commande unaffiliate chargée
+2025-08-04T07:09:17.027Z - INFO - 🤖 Bot en ligne!
+2025-08-04T07:09:17.028Z - INFO - 🆔 phoenix#8533 connecté
+2025-08-04T07:09:17.030Z - INFO - ✅ Base de données ouverte
+2025-08-04T07:09:17.036Z - INFO - ✅ Base de données initialisée avec succès
+2025-08-04T07:09:17.971Z - INFO - 🔑 Token Twitch obtenu
+2025-08-04T07:09:17.972Z - INFO - ✅ Client Twitch initialisé
+2025-08-04T07:09:18.247Z - INFO - ⚡ 8 commandes slash synchronisées
+2025-08-04T07:09:18.253Z - INFO - 📊 1 streamers chargés
+2025-08-04T07:09:18.253Z - INFO - 🔔 Système de notifications live démarré (2 min)
+2025-08-04T07:09:18.255Z - INFO - ✅ Bot entièrement initialisé!
+2025-08-04T07:11:18.270Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T07:11:18.863Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-04T07:12:55.379Z - INFO - 🛑 Signal SIGINT reçu
+2025-08-04T07:12:55.380Z - INFO - 🛑 Arrêt du bot...
+2025-08-04T07:12:55.380Z - INFO - ⏹️ Arrêt de la vérification des streams
+2025-08-04T07:12:55.382Z - INFO - ✅ Base de données fermée
+2025-08-04T07:12:55.522Z - INFO - ✅ Bot arrêté proprement
+2025-08-04T07:13:02.925Z - INFO - ✅ Commande ajouter-streamer chargée
+2025-08-04T07:13:02.933Z - INFO - ✅ Commande config-reglement-role chargée
+2025-08-04T07:13:02.936Z - INFO - ✅ Commande live-status chargée
+2025-08-04T07:13:02.939Z - ERROR - ❌ Erreur chargement commande mise a jours des affilation.js: Identifier 'SlashCommandBuilder' has already been declared
+2025-08-04T07:13:02.941Z - INFO - ✅ Commande ping chargée
+2025-08-04T07:13:02.957Z - INFO - ✅ Commande reglement chargée
+2025-08-04T07:13:02.960Z - INFO - ✅ Commande reglement-dashboard chargée
+2025-08-04T07:13:02.963Z - INFO - ✅ Commande streamers chargée
+2025-08-04T07:13:02.966Z - INFO - ✅ Commande unaffiliate chargée
+2025-08-04T07:13:03.726Z - INFO - 🤖 Bot en ligne!
+2025-08-04T07:13:03.727Z - INFO - 🆔 phoenix#8533 connecté
+2025-08-04T07:13:03.728Z - INFO - ✅ Base de données ouverte
+2025-08-04T07:13:03.734Z - INFO - ✅ Base de données initialisée avec succès
+2025-08-04T07:13:04.706Z - INFO - 🔑 Token Twitch obtenu
+2025-08-04T07:13:04.706Z - INFO - ✅ Client Twitch initialisé
+2025-08-04T07:13:05.199Z - INFO - ⚡ 8 commandes slash synchronisées
+2025-08-04T07:13:05.204Z - INFO - 📊 1 streamers chargés
+2025-08-04T07:13:05.205Z - INFO - 🔔 Système de notifications live démarré (2 min)
+2025-08-04T07:13:05.207Z - INFO - ✅ Bot entièrement initialisé!
+2025-08-04T07:13:18.444Z - INFO - 🛑 Signal SIGINT reçu
+2025-08-04T07:13:18.449Z - INFO - 🛑 Arrêt du bot...
+2025-08-04T07:13:18.450Z - INFO - ⏹️ Arrêt de la vérification des streams
+2025-08-04T07:13:18.454Z - INFO - ✅ Base de données fermée
+2025-08-04T07:13:18.573Z - INFO - ✅ Bot arrêté proprement
+2025-08-04T07:17:19.526Z - INFO - ✅ Commande ajouter-streamer chargée
+2025-08-04T07:17:19.533Z - INFO - ✅ Commande config-reglement-role chargée
+2025-08-04T07:17:19.536Z - INFO - ✅ Commande affiliate chargée
+2025-08-04T07:17:19.539Z - INFO - ✅ Commande live-status chargée
+2025-08-04T07:17:19.543Z - INFO - ✅ Commande affiliate chargée
+2025-08-04T07:17:19.546Z - INFO - ✅ Commande ping chargée
+2025-08-04T07:17:19.559Z - INFO - ✅ Commande reglement chargée
+2025-08-04T07:17:19.564Z - INFO - ✅ Commande reglement-dashboard chargée
+2025-08-04T07:17:19.566Z - INFO - ✅ Commande streamers chargée
+2025-08-04T07:17:19.569Z - INFO - ✅ Commande unaffiliate chargée
+2025-08-04T07:17:20.361Z - INFO - 🤖 Bot en ligne!
+2025-08-04T07:17:20.362Z - INFO - 🆔 phoenix#8533 connecté
+2025-08-04T07:17:20.364Z - INFO - ✅ Base de données ouverte
+2025-08-04T07:17:20.368Z - INFO - ✅ Base de données initialisée avec succès
+2025-08-04T07:17:21.280Z - INFO - 🔑 Token Twitch obtenu
+2025-08-04T07:17:21.281Z - INFO - ✅ Client Twitch initialisé
+2025-08-04T07:17:21.562Z - INFO - ⚡ 9 commandes slash synchronisées
+2025-08-04T07:17:21.567Z - INFO - 📊 1 streamers chargés
+2025-08-04T07:17:21.568Z - INFO - 🔔 Système de notifications live démarré (2 min)
+2025-08-04T07:17:21.570Z - INFO - ✅ Bot entièrement initialisé!
+2025-08-04T07:17:56.919Z - INFO - ✅ Commande affiliate exécutée par siphixsecours_55253
+2025-08-04T07:18:19.397Z - INFO - ✅ Commande unaffiliate exécutée par siphixsecours_55253
+2025-08-04T07:19:21.571Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T07:19:22.072Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-04T07:20:37.301Z - INFO - 🛑 Signal SIGINT reçu
+2025-08-04T07:20:37.302Z - INFO - 🛑 Arrêt du bot...
+2025-08-04T07:20:37.302Z - INFO - ⏹️ Arrêt de la vérification des streams
+2025-08-04T07:20:37.307Z - INFO - ✅ Base de données fermée
+2025-08-04T07:20:37.441Z - INFO - ✅ Bot arrêté proprement
+2025-08-04T07:20:42.102Z - INFO - ✅ Commande ajouter-streamer chargée
+2025-08-04T07:20:42.109Z - INFO - ✅ Commande config-reglement-role chargée
+2025-08-04T07:20:42.113Z - INFO - ✅ Commande affiliate chargée
+2025-08-04T07:20:42.115Z - INFO - ✅ Commande live-status chargée
+2025-08-04T07:20:42.118Z - INFO - ✅ Commande affiliate chargée
+2025-08-04T07:20:42.121Z - INFO - ✅ Commande ping chargée
+2025-08-04T07:20:42.135Z - INFO - ✅ Commande reglement chargée
+2025-08-04T07:20:42.139Z - INFO - ✅ Commande reglement-dashboard chargée
+2025-08-04T07:20:42.143Z - INFO - ✅ Commande streamers chargée
+2025-08-04T07:20:42.146Z - INFO - ✅ Commande unaffiliate chargée
+2025-08-04T07:20:43.192Z - INFO - 🤖 Bot en ligne!
+2025-08-04T07:20:43.193Z - INFO - 🆔 phoenix#8533 connecté
+2025-08-04T07:20:43.195Z - INFO - ✅ Base de données ouverte
+2025-08-04T07:20:43.200Z - INFO - ✅ Base de données initialisée avec succès
+2025-08-04T07:20:44.110Z - INFO - 🔑 Token Twitch obtenu
+2025-08-04T07:20:44.111Z - INFO - ✅ Client Twitch initialisé
+2025-08-04T07:20:44.496Z - INFO - ⚡ 9 commandes slash synchronisées
+2025-08-04T07:20:44.502Z - INFO - 📊 1 streamers chargés
+2025-08-04T07:20:44.503Z - INFO - 🔔 Système de notifications live démarré (2 min)
+2025-08-04T07:20:44.505Z - INFO - ✅ Bot entièrement initialisé!
+2025-08-04T07:22:44.515Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T07:22:45.047Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-04T07:23:08.446Z - INFO - 🛑 Signal SIGINT reçu
+2025-08-04T07:23:08.448Z - INFO - 🛑 Arrêt du bot...
+2025-08-04T07:23:08.448Z - INFO - ⏹️ Arrêt de la vérification des streams
+2025-08-04T07:23:08.450Z - INFO - ✅ Base de données fermée
+2025-08-04T07:23:08.566Z - INFO - ✅ Bot arrêté proprement
+2025-08-04T07:25:20.389Z - INFO - ✅ Commande ajouter-streamer chargée
+2025-08-04T07:25:20.396Z - INFO - ✅ Commande config-reglement-role chargée
+2025-08-04T07:25:20.399Z - INFO - ✅ Commande liste-non-affiliates chargée
+2025-08-04T07:25:20.402Z - INFO - ✅ Commande live-status chargée
+2025-08-04T07:25:20.404Z - INFO - ✅ Commande affiliate chargée
+2025-08-04T07:25:20.407Z - INFO - ✅ Commande ping chargée
+2025-08-04T07:25:20.421Z - INFO - ✅ Commande reglement chargée
+2025-08-04T07:25:20.425Z - INFO - ✅ Commande reglement-dashboard chargée
+2025-08-04T07:25:20.429Z - INFO - ✅ Commande streamers chargée
+2025-08-04T07:25:20.431Z - INFO - ✅ Commande unaffiliate chargée
+2025-08-04T07:25:21.177Z - INFO - 🤖 Bot en ligne!
+2025-08-04T07:25:21.178Z - INFO - 🆔 phoenix#8533 connecté
+2025-08-04T07:25:21.180Z - INFO - ✅ Base de données ouverte
+2025-08-04T07:25:21.185Z - INFO - ✅ Base de données initialisée avec succès
+2025-08-04T07:25:22.109Z - INFO - 🔑 Token Twitch obtenu
+2025-08-04T07:25:22.109Z - INFO - ✅ Client Twitch initialisé
+2025-08-04T07:25:22.625Z - INFO - ⚡ 10 commandes slash synchronisées
+2025-08-04T07:25:22.630Z - INFO - 📊 1 streamers chargés
+2025-08-04T07:25:22.634Z - INFO - 🔔 Système de notifications live démarré (2 min)
+2025-08-04T07:25:22.637Z - INFO - ✅ Bot entièrement initialisé!
+2025-08-04T07:26:07.071Z - INFO - ✅ Commande liste-non-affiliates exécutée par siphixsecours_55253
+2025-08-04T07:27:10.258Z - INFO - ✅ Commande liste-non-affiliates exécutée par siphixsecours_55253
+2025-08-04T07:27:21.808Z - INFO - 🛑 Signal SIGINT reçu
+2025-08-04T07:27:21.810Z - INFO - 🛑 Arrêt du bot...
+2025-08-04T07:27:21.812Z - INFO - ⏹️ Arrêt de la vérification des streams
+2025-08-04T07:27:21.815Z - INFO - ✅ Base de données fermée
+2025-08-04T07:27:21.943Z - INFO - ✅ Bot arrêté proprement
+2025-08-04T18:28:02.165Z - INFO - ✅ Commande ajouter-streamer chargée
+2025-08-04T18:28:02.172Z - INFO - ✅ Commande config-reglement-role chargée
+2025-08-04T18:28:02.175Z - INFO - ✅ Commande liste-non-affiliates chargée
+2025-08-04T18:28:02.176Z - INFO - ✅ Commande live-status chargée
+2025-08-04T18:28:02.179Z - INFO - ✅ Commande affiliate chargée
+2025-08-04T18:28:02.182Z - ERROR - ❌ Erreur chargement commande non affilié.js: Invalid string format
+2025-08-04T18:28:02.184Z - INFO - ✅ Commande ping chargée
+2025-08-04T18:28:02.196Z - INFO - ✅ Commande reglement chargée
+2025-08-04T18:28:02.199Z - INFO - ✅ Commande reglement-dashboard chargée
+2025-08-04T18:28:02.203Z - INFO - ✅ Commande streamers chargée
+2025-08-04T18:28:03.240Z - INFO - 🤖 Bot en ligne!
+2025-08-04T18:28:03.241Z - INFO - 🆔 phoenix#8533 connecté
+2025-08-04T18:28:03.251Z - INFO - ✅ Base de données ouverte
+2025-08-04T18:28:03.258Z - INFO - ✅ Base de données initialisée avec succès
+2025-08-04T18:28:04.181Z - INFO - 🔑 Token Twitch obtenu
+2025-08-04T18:28:04.182Z - INFO - ✅ Client Twitch initialisé
+2025-08-04T18:28:04.718Z - INFO - ⚡ 9 commandes slash synchronisées
+2025-08-04T18:28:04.722Z - INFO - 📊 1 streamers chargés
+2025-08-04T18:28:04.723Z - INFO - 🔔 Système de notifications live démarré (2 min)
+2025-08-04T18:28:04.724Z - INFO - ✅ Bot entièrement initialisé!
+2025-08-04T18:28:45.680Z - INFO - 🛑 Signal SIGINT reçu
+2025-08-04T18:28:45.681Z - INFO - 🛑 Arrêt du bot...
+2025-08-04T18:28:45.681Z - INFO - ⏹️ Arrêt de la vérification des streams
+2025-08-04T18:28:45.682Z - INFO - ✅ Base de données fermée
+2025-08-04T18:28:45.815Z - INFO - ✅ Bot arrêté proprement
+2025-08-04T18:28:51.749Z - INFO - ✅ Commande ajouter-streamer chargée
+2025-08-04T18:28:51.755Z - INFO - ✅ Commande config-reglement-role chargée
+2025-08-04T18:28:51.757Z - INFO - ✅ Commande liste-non-affiliates chargée
+2025-08-04T18:28:51.759Z - INFO - ✅ Commande live-status chargée
+2025-08-04T18:28:51.762Z - INFO - ✅ Commande affiliate chargée
+2025-08-04T18:28:51.763Z - INFO - ✅ Commande ping chargée
+2025-08-04T18:28:51.775Z - INFO - ✅ Commande reglement chargée
+2025-08-04T18:28:51.778Z - INFO - ✅ Commande reglement-dashboard chargée
+2025-08-04T18:28:51.780Z - INFO - ✅ Commande streamers chargée
+2025-08-04T18:28:51.783Z - ERROR - ❌ Erreur chargement commande unaaffiliate.js: Invalid string format
+2025-08-04T18:28:54.596Z - INFO - 🤖 Bot en ligne!
+2025-08-04T18:28:54.596Z - INFO - 🆔 phoenix#8533 connecté
+2025-08-04T18:28:54.598Z - INFO - ✅ Base de données ouverte
+2025-08-04T18:28:54.602Z - INFO - ✅ Base de données initialisée avec succès
+2025-08-04T18:28:55.507Z - INFO - 🔑 Token Twitch obtenu
+2025-08-04T18:28:55.507Z - INFO - ✅ Client Twitch initialisé
+2025-08-04T18:28:55.994Z - INFO - ⚡ 9 commandes slash synchronisées
+2025-08-04T18:28:55.998Z - INFO - 📊 1 streamers chargés
+2025-08-04T18:28:55.999Z - INFO - 🔔 Système de notifications live démarré (2 min)
+2025-08-04T18:28:56.000Z - INFO - ✅ Bot entièrement initialisé!
+2025-08-04T18:29:10.733Z - INFO - 🛑 Signal SIGINT reçu
+2025-08-04T18:29:10.734Z - INFO - 🛑 Arrêt du bot...
+2025-08-04T18:29:10.734Z - INFO - ⏹️ Arrêt de la vérification des streams
+2025-08-04T18:29:10.735Z - INFO - ✅ Base de données fermée
+2025-08-04T18:29:10.844Z - INFO - ✅ Bot arrêté proprement
+2025-08-04T18:29:15.488Z - INFO - ✅ Commande ajouter-streamer chargée
+2025-08-04T18:29:15.494Z - INFO - ✅ Commande config-reglement-role chargée
+2025-08-04T18:29:15.497Z - INFO - ✅ Commande liste-non-affiliates chargée
+2025-08-04T18:29:15.499Z - INFO - ✅ Commande live-status chargée
+2025-08-04T18:29:15.501Z - INFO - ✅ Commande affiliate chargée
+2025-08-04T18:29:15.503Z - INFO - ✅ Commande ping chargée
+2025-08-04T18:29:15.514Z - INFO - ✅ Commande reglement chargée
+2025-08-04T18:29:15.517Z - INFO - ✅ Commande reglement-dashboard chargée
+2025-08-04T18:29:15.520Z - INFO - ✅ Commande streamers chargée
+2025-08-04T18:29:15.522Z - ERROR - ❌ Erreur chargement commande unaffiliate.js: Invalid string format
+2025-08-04T18:29:16.218Z - INFO - 🤖 Bot en ligne!
+2025-08-04T18:29:16.218Z - INFO - 🆔 phoenix#8533 connecté
+2025-08-04T18:29:16.220Z - INFO - ✅ Base de données ouverte
+2025-08-04T18:29:16.223Z - INFO - ✅ Base de données initialisée avec succès
+2025-08-04T18:29:17.136Z - INFO - 🔑 Token Twitch obtenu
+2025-08-04T18:29:17.136Z - INFO - ✅ Client Twitch initialisé
+2025-08-04T18:29:17.749Z - INFO - ⚡ 9 commandes slash synchronisées
+2025-08-04T18:29:17.753Z - INFO - 📊 1 streamers chargés
+2025-08-04T18:29:17.753Z - INFO - 🔔 Système de notifications live démarré (2 min)
+2025-08-04T18:29:17.754Z - INFO - ✅ Bot entièrement initialisé!
+2025-08-04T18:29:36.314Z - INFO - 🛑 Signal SIGINT reçu
+2025-08-04T18:29:36.315Z - INFO - 🛑 Arrêt du bot...
+2025-08-04T18:29:36.315Z - INFO - ⏹️ Arrêt de la vérification des streams
+2025-08-04T18:29:36.316Z - INFO - ✅ Base de données fermée
+2025-08-04T18:29:36.426Z - INFO - ✅ Bot arrêté proprement
+2025-08-04T18:29:40.527Z - INFO - ✅ Commande ajouter-streamer chargée
+2025-08-04T18:29:40.533Z - INFO - ✅ Commande config-reglement-role chargée
+2025-08-04T18:29:40.536Z - INFO - ✅ Commande liste-non-affiliates chargée
+2025-08-04T18:29:40.537Z - INFO - ✅ Commande live-status chargée
+2025-08-04T18:29:40.540Z - INFO - ✅ Commande affiliate chargée
+2025-08-04T18:29:40.542Z - INFO - ✅ Commande ping chargée
+2025-08-04T18:29:40.554Z - INFO - ✅ Commande reglement chargée
+2025-08-04T18:29:40.557Z - INFO - ✅ Commande reglement-dashboard chargée
+2025-08-04T18:29:40.559Z - INFO - ✅ Commande streamers chargée
+2025-08-04T18:29:40.561Z - INFO - ✅ Commande unaffiliate chargée
+2025-08-04T18:29:41.271Z - INFO - 🤖 Bot en ligne!
+2025-08-04T18:29:41.272Z - INFO - 🆔 phoenix#8533 connecté
+2025-08-04T18:29:41.274Z - INFO - ✅ Base de données ouverte
+2025-08-04T18:29:41.277Z - INFO - ✅ Base de données initialisée avec succès
+2025-08-04T18:29:42.172Z - INFO - 🔑 Token Twitch obtenu
+2025-08-04T18:29:42.173Z - INFO - ✅ Client Twitch initialisé
+2025-08-04T18:29:42.511Z - INFO - ⚡ 10 commandes slash synchronisées
+2025-08-04T18:29:42.515Z - INFO - 📊 1 streamers chargés
+2025-08-04T18:29:42.515Z - INFO - 🔔 Système de notifications live démarré (2 min)
+2025-08-04T18:29:42.516Z - INFO - ✅ Bot entièrement initialisé!
+2025-08-04T18:31:42.532Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T18:31:43.041Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-04T18:33:42.540Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T18:33:43.025Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-04T18:35:26.952Z - INFO - 🛑 Signal SIGINT reçu
+2025-08-04T18:35:26.952Z - INFO - 🛑 Arrêt du bot...
+2025-08-04T18:35:26.953Z - INFO - ⏹️ Arrêt de la vérification des streams
+2025-08-04T18:35:26.953Z - INFO - ✅ Base de données fermée
+2025-08-04T18:35:27.068Z - INFO - ✅ Bot arrêté proprement
+2025-08-04T18:36:05.019Z - INFO - ✅ Commande ajouter-streamer chargée
+2025-08-04T18:36:05.025Z - INFO - ✅ Commande config-reglement-role chargée
+2025-08-04T18:36:05.027Z - ERROR - ❌ Erreur chargement commande dash.js: client is not defined
+2025-08-04T18:36:05.029Z - INFO - ✅ Commande liste-non-affiliates chargée
+2025-08-04T18:36:05.031Z - INFO - ✅ Commande live-status chargée
+2025-08-04T18:36:05.033Z - INFO - ✅ Commande affiliate chargée
+2025-08-04T18:36:05.035Z - INFO - ✅ Commande ping chargée
+2025-08-04T18:36:05.046Z - INFO - ✅ Commande reglement chargée
+2025-08-04T18:36:05.049Z - INFO - ✅ Commande reglement-dashboard chargée
+2025-08-04T18:36:05.052Z - INFO - ✅ Commande streamers chargée
+2025-08-04T18:36:05.053Z - INFO - ✅ Commande unaffiliate chargée
+2025-08-04T18:36:05.742Z - INFO - 🤖 Bot en ligne!
+2025-08-04T18:36:05.743Z - INFO - 🆔 phoenix#8533 connecté
+2025-08-04T18:36:05.744Z - INFO - ✅ Base de données ouverte
+2025-08-04T18:36:05.747Z - INFO - ✅ Base de données initialisée avec succès
+2025-08-04T18:36:06.667Z - INFO - 🔑 Token Twitch obtenu
+2025-08-04T18:36:06.667Z - INFO - ✅ Client Twitch initialisé
+2025-08-04T18:36:06.997Z - INFO - ⚡ 10 commandes slash synchronisées
+2025-08-04T18:36:07.001Z - INFO - 📊 1 streamers chargés
+2025-08-04T18:36:07.001Z - INFO - 🔔 Système de notifications live démarré (2 min)
+2025-08-04T18:36:07.002Z - INFO - ✅ Bot entièrement initialisé!
+2025-08-04T18:38:02.073Z - INFO - 🛑 Signal SIGINT reçu
+2025-08-04T18:38:02.073Z - INFO - 🛑 Arrêt du bot...
+2025-08-04T18:38:02.074Z - INFO - ⏹️ Arrêt de la vérification des streams
+2025-08-04T18:38:02.075Z - INFO - ✅ Base de données fermée
+2025-08-04T18:38:02.194Z - INFO - ✅ Bot arrêté proprement
+2025-08-04T18:38:38.096Z - INFO - ✅ Commande ajouter-streamer chargée
+2025-08-04T18:38:38.102Z - INFO - ✅ Commande config-reglement-role chargée
+2025-08-04T18:38:38.103Z - ERROR - ❌ Erreur chargement commande dash.js: client is not defined
+2025-08-04T18:38:38.106Z - INFO - ✅ Commande liste-non-affiliates chargée
+2025-08-04T18:38:38.107Z - INFO - ✅ Commande live-status chargée
+2025-08-04T18:38:38.110Z - INFO - ✅ Commande affiliate chargée
+2025-08-04T18:38:38.112Z - INFO - ✅ Commande ping chargée
+2025-08-04T18:38:38.123Z - INFO - ✅ Commande reglement chargée
+2025-08-04T18:38:38.126Z - INFO - ✅ Commande reglement-dashboard chargée
+2025-08-04T18:38:38.128Z - INFO - ✅ Commande streamers chargée
+2025-08-04T18:38:38.130Z - INFO - ✅ Commande unaffiliate chargée
+2025-08-04T18:38:38.875Z - INFO - 🤖 Bot en ligne!
+2025-08-04T18:38:38.876Z - INFO - 🆔 phoenix#8533 connecté
+2025-08-04T18:38:38.877Z - INFO - ✅ Base de données ouverte
+2025-08-04T18:38:38.880Z - INFO - ✅ Base de données initialisée avec succès
+2025-08-04T18:38:39.793Z - INFO - 🔑 Token Twitch obtenu
+2025-08-04T18:38:39.793Z - INFO - ✅ Client Twitch initialisé
+2025-08-04T18:38:40.155Z - INFO - ⚡ 10 commandes slash synchronisées
+2025-08-04T18:38:40.159Z - INFO - 📊 1 streamers chargés
+2025-08-04T18:38:40.159Z - INFO - 🔔 Système de notifications live démarré (2 min)
+2025-08-04T18:38:40.160Z - INFO - ✅ Bot entièrement initialisé!
+2025-08-04T18:40:01.400Z - INFO - 🛑 Signal SIGINT reçu
+2025-08-04T18:40:01.401Z - INFO - 🛑 Arrêt du bot...
+2025-08-04T18:40:01.401Z - INFO - ⏹️ Arrêt de la vérification des streams
+2025-08-04T18:40:01.403Z - INFO - ✅ Base de données fermée
+2025-08-04T18:40:01.513Z - INFO - ✅ Bot arrêté proprement
+2025-08-04T18:57:28.444Z - INFO - ✅ Commande ajouter-streamer chargée
+2025-08-04T18:57:28.450Z - INFO - ✅ Commande config-reglement-role chargée
+2025-08-04T18:57:28.452Z - ERROR - ❌ Erreur chargement commande dash.js: client is not defined
+2025-08-04T18:57:28.454Z - INFO - ✅ Commande liste-non-affiliates chargée
+2025-08-04T18:57:28.457Z - INFO - ✅ Commande live-status chargée
+2025-08-04T18:57:28.459Z - INFO - ✅ Commande affiliate chargée
+2025-08-04T18:57:28.461Z - INFO - ✅ Commande ping chargée
+2025-08-04T18:57:28.472Z - INFO - ✅ Commande reglement chargée
+2025-08-04T18:57:28.475Z - INFO - ✅ Commande reglement-dashboard chargée
+2025-08-04T18:57:28.478Z - INFO - ✅ Commande streamers chargée
+2025-08-04T18:57:28.479Z - INFO - ✅ Commande unaffiliate chargée
+2025-08-04T18:57:29.188Z - INFO - 🤖 Bot en ligne!
+2025-08-04T18:57:29.188Z - INFO - 🆔 phoenix#8533 connecté
+2025-08-04T18:57:29.190Z - INFO - ✅ Base de données ouverte
+2025-08-04T18:57:29.193Z - INFO - ✅ Base de données initialisée avec succès
+2025-08-04T18:57:30.186Z - INFO - 🔑 Token Twitch obtenu
+2025-08-04T18:57:30.187Z - INFO - ✅ Client Twitch initialisé
+2025-08-04T18:57:30.638Z - INFO - ⚡ 10 commandes slash synchronisées
+2025-08-04T18:57:30.642Z - INFO - 📊 1 streamers chargés
+2025-08-04T18:57:30.643Z - INFO - 🔔 Système de notifications live démarré (2 min)
+2025-08-04T18:57:30.644Z - INFO - ✅ Bot entièrement initialisé!
+2025-08-04T18:59:30.644Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T18:59:31.137Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-04T19:01:30.183Z - INFO - 🛑 Signal SIGINT reçu
+2025-08-04T19:01:30.184Z - INFO - 🛑 Arrêt du bot...
+2025-08-04T19:01:30.184Z - INFO - ⏹️ Arrêt de la vérification des streams
+2025-08-04T19:01:30.185Z - INFO - ✅ Base de données fermée
+2025-08-04T19:01:30.299Z - INFO - ✅ Bot arrêté proprement
+2025-08-04T19:01:34.659Z - INFO - ✅ Commande ajouter-streamer chargée
+2025-08-04T19:01:34.665Z - INFO - ✅ Commande config-reglement-role chargée
+2025-08-04T19:01:34.667Z - INFO - ✅ Commande dash chargée
+2025-08-04T19:01:34.669Z - INFO - ✅ Commande liste-non-affiliates chargée
+2025-08-04T19:01:34.671Z - INFO - ✅ Commande live-status chargée
+2025-08-04T19:01:34.674Z - INFO - ✅ Commande affiliate chargée
+2025-08-04T19:01:34.675Z - INFO - ✅ Commande ping chargée
+2025-08-04T19:01:34.687Z - INFO - ✅ Commande reglement chargée
+2025-08-04T19:01:34.690Z - INFO - ✅ Commande reglement-dashboard chargée
+2025-08-04T19:01:34.694Z - INFO - ✅ Commande streamers chargée
+2025-08-04T19:01:34.696Z - INFO - ✅ Commande unaffiliate chargée
+2025-08-04T19:01:35.451Z - INFO - 🤖 Bot en ligne!
+2025-08-04T19:01:35.451Z - INFO - 🆔 phoenix#8533 connecté
+2025-08-04T19:01:35.453Z - INFO - ✅ Base de données ouverte
+2025-08-04T19:01:35.456Z - INFO - ✅ Base de données initialisée avec succès
+2025-08-04T19:01:36.350Z - INFO - 🔑 Token Twitch obtenu
+2025-08-04T19:01:36.351Z - INFO - ✅ Client Twitch initialisé
+2025-08-04T19:01:36.820Z - INFO - ⚡ 11 commandes slash synchronisées
+2025-08-04T19:01:36.823Z - INFO - 📊 1 streamers chargés
+2025-08-04T19:01:36.824Z - INFO - 🔔 Système de notifications live démarré (2 min)
+2025-08-04T19:01:36.825Z - INFO - ✅ Bot entièrement initialisé!
+2025-08-04T19:02:03.380Z - INFO - ✅ Commande dash exécutée par siphixsecours_55253
+2025-08-04T19:03:36.829Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T19:03:37.325Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-04T19:05:36.834Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T19:05:37.313Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-04T19:07:36.841Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T19:07:37.322Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-04T19:09:36.846Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T19:09:37.332Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-04T19:11:36.861Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T19:11:37.338Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-04T19:13:32.546Z - INFO - 🛑 Signal SIGINT reçu
+2025-08-04T19:13:32.547Z - INFO - 🛑 Arrêt du bot...
+2025-08-04T19:13:32.548Z - INFO - ⏹️ Arrêt de la vérification des streams
+2025-08-04T19:13:32.549Z - INFO - ✅ Base de données fermée
+2025-08-04T19:13:32.668Z - INFO - ✅ Bot arrêté proprement
+2025-08-04T19:14:36.142Z - INFO - ✅ Commande ajouter-streamer chargée
+2025-08-04T19:14:36.148Z - INFO - ✅ Commande config-reglement-role chargée
+2025-08-04T19:14:36.150Z - INFO - ✅ Commande dash chargée
+2025-08-04T19:14:36.152Z - INFO - ✅ Commande liste-non-affiliates chargée
+2025-08-04T19:14:36.154Z - INFO - ✅ Commande live-status chargée
+2025-08-04T19:14:36.157Z - INFO - ✅ Commande affiliate chargée
+2025-08-04T19:14:36.159Z - INFO - ✅ Commande ping chargée
+2025-08-04T19:14:36.175Z - INFO - ✅ Commande reglement chargée
+2025-08-04T19:14:36.177Z - INFO - ✅ Commande reglement-dashboard chargée
+2025-08-04T19:14:36.181Z - INFO - ✅ Commande streamers chargée
+2025-08-04T19:14:36.183Z - INFO - ✅ Commande unaffiliate chargée
+2025-08-04T19:14:36.967Z - INFO - 🤖 Bot en ligne!
+2025-08-04T19:14:36.967Z - INFO - 🆔 phoenix#8533 connecté
+2025-08-04T19:14:36.968Z - INFO - ✅ Base de données ouverte
+2025-08-04T19:14:36.972Z - INFO - ✅ Base de données initialisée avec succès
+2025-08-04T19:14:37.907Z - INFO - 🔑 Token Twitch obtenu
+2025-08-04T19:14:37.907Z - INFO - ✅ Client Twitch initialisé
+2025-08-04T19:14:38.477Z - INFO - ⚡ 11 commandes slash synchronisées
+2025-08-04T19:14:38.481Z - INFO - 📊 1 streamers chargés
+2025-08-04T19:14:38.481Z - INFO - 🔔 Système de notifications live démarré (2 min)
+2025-08-04T19:14:38.483Z - INFO - ✅ Bot entièrement initialisé!
+2025-08-04T19:15:00.828Z - ERROR - ❌ Erreur exécution commande dash: Cannot read properties of undefined (reading 'generateAuthToken')
+2025-08-04T19:16:38.484Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T19:16:38.991Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-04T19:17:01.413Z - INFO - 🛑 Signal SIGINT reçu
+2025-08-04T19:17:01.414Z - INFO - 🛑 Arrêt du bot...
+2025-08-04T19:17:01.414Z - INFO - ⏹️ Arrêt de la vérification des streams
+2025-08-04T19:17:01.415Z - INFO - ✅ Base de données fermée
+2025-08-04T19:17:01.542Z - INFO - ✅ Bot arrêté proprement
+2025-08-04T19:19:31.981Z - INFO - ✅ Commande ajouter-streamer chargée
+2025-08-04T19:19:31.987Z - INFO - ✅ Commande config-reglement-role chargée
+2025-08-04T19:19:31.989Z - INFO - ✅ Commande dash chargée
+2025-08-04T19:19:31.991Z - INFO - ✅ Commande liste-non-affiliates chargée
+2025-08-04T19:19:31.992Z - INFO - ✅ Commande live-status chargée
+2025-08-04T19:19:31.995Z - INFO - ✅ Commande affiliate chargée
+2025-08-04T19:19:31.997Z - INFO - ✅ Commande ping chargée
+2025-08-04T19:19:32.018Z - INFO - ✅ Commande reglement chargée
+2025-08-04T19:19:32.021Z - INFO - ✅ Commande reglement-dashboard chargée
+2025-08-04T19:19:32.025Z - INFO - ✅ Commande streamers chargée
+2025-08-04T19:19:32.027Z - INFO - ✅ Commande unaffiliate chargée
+2025-08-04T19:19:32.910Z - INFO - 🤖 Bot en ligne!
+2025-08-04T19:19:32.910Z - INFO - 🆔 phoenix#8533 connecté
+2025-08-04T19:19:32.912Z - INFO - ✅ Base de données ouverte
+2025-08-04T19:19:32.916Z - INFO - ✅ Base de données initialisée avec succès
+2025-08-04T19:19:33.835Z - INFO - 🔑 Token Twitch obtenu
+2025-08-04T19:19:33.836Z - INFO - ✅ Client Twitch initialisé
+2025-08-04T19:19:34.131Z - INFO - ⚡ 11 commandes slash synchronisées
+2025-08-04T19:19:34.135Z - INFO - 📊 1 streamers chargés
+2025-08-04T19:19:34.135Z - INFO - 🔔 Système de notifications live démarré (2 min)
+2025-08-04T19:19:34.137Z - INFO - ✅ Bot entièrement initialisé!
+2025-08-04T19:19:52.021Z - ERROR - ❌ Erreur exécution commande dash: Cannot read properties of undefined (reading 'generateAuthToken')
+2025-08-04T19:21:34.138Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T19:21:34.729Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-04T19:22:08.449Z - INFO - 🛑 Signal SIGINT reçu
+2025-08-04T19:22:08.449Z - INFO - 🛑 Arrêt du bot...
+2025-08-04T19:22:08.450Z - INFO - ⏹️ Arrêt de la vérification des streams
+2025-08-04T19:22:08.451Z - INFO - ✅ Base de données fermée
+2025-08-04T19:22:08.577Z - INFO - ✅ Bot arrêté proprement
+2025-08-04T19:26:21.753Z - INFO - ✅ Commande ajouter-streamer chargée
+2025-08-04T19:26:21.759Z - INFO - ✅ Commande config-reglement-role chargée
+2025-08-04T19:26:21.760Z - INFO - ✅ Commande dash chargée
+2025-08-04T19:26:21.763Z - INFO - ✅ Commande liste-non-affiliates chargée
+2025-08-04T19:26:21.764Z - INFO - ✅ Commande live-status chargée
+2025-08-04T19:26:21.767Z - INFO - ✅ Commande affiliate chargée
+2025-08-04T19:26:21.769Z - INFO - ✅ Commande ping chargée
+2025-08-04T19:26:21.781Z - INFO - ✅ Commande reglement chargée
+2025-08-04T19:26:21.783Z - INFO - ✅ Commande reglement-dashboard chargée
+2025-08-04T19:26:21.786Z - INFO - ✅ Commande streamers chargée
+2025-08-04T19:26:21.787Z - INFO - ✅ Commande unaffiliate chargée
+2025-08-04T19:26:22.600Z - INFO - 🤖 Bot en ligne!
+2025-08-04T19:26:22.600Z - INFO - 🆔 phoenix#8533 connecté
+2025-08-04T19:26:22.602Z - INFO - ✅ Base de données ouverte
+2025-08-04T19:26:22.605Z - INFO - ✅ Base de données initialisée avec succès
+2025-08-04T19:26:23.514Z - INFO - 🔑 Token Twitch obtenu
+2025-08-04T19:26:23.515Z - INFO - ✅ Client Twitch initialisé
+2025-08-04T19:26:23.947Z - INFO - ⚡ 11 commandes slash synchronisées
+2025-08-04T19:26:23.951Z - INFO - 📊 1 streamers chargés
+2025-08-04T19:26:23.951Z - INFO - 🔔 Système de notifications live démarré (2 min)
+2025-08-04T19:26:23.952Z - INFO - ✅ Bot entièrement initialisé!
+2025-08-04T19:26:51.951Z - ERROR - ❌ Erreur exécution commande dash: Cannot read properties of undefined (reading 'generateAuthToken')
+2025-08-04T19:28:23.960Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T19:28:24.491Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-04T19:28:46.566Z - INFO - 🛑 Signal SIGINT reçu
+2025-08-04T19:28:46.567Z - INFO - 🛑 Arrêt du bot...
+2025-08-04T19:28:46.567Z - INFO - ⏹️ Arrêt de la vérification des streams
+2025-08-04T19:28:46.568Z - INFO - ✅ Base de données fermée
+2025-08-04T19:28:46.691Z - INFO - ✅ Bot arrêté proprement
+2025-08-04T19:35:13.491Z - INFO - ✅ Commande ajouter-streamer chargée
+2025-08-04T19:35:13.497Z - INFO - ✅ Commande config-reglement-role chargée
+2025-08-04T19:35:13.499Z - INFO - ✅ Commande dash chargée
+2025-08-04T19:35:13.501Z - INFO - ✅ Commande liste-non-affiliates chargée
+2025-08-04T19:35:13.502Z - INFO - ✅ Commande live-status chargée
+2025-08-04T19:35:13.505Z - INFO - ✅ Commande affiliate chargée
+2025-08-04T19:35:13.507Z - INFO - ✅ Commande ping chargée
+2025-08-04T19:35:13.519Z - INFO - ✅ Commande reglement chargée
+2025-08-04T19:35:13.522Z - INFO - ✅ Commande reglement-dashboard chargée
+2025-08-04T19:35:13.524Z - INFO - ✅ Commande streamers chargée
+2025-08-04T19:35:13.527Z - INFO - ✅ Commande unaffiliate chargée
+2025-08-04T19:35:14.520Z - INFO - 🤖 Bot en ligne!
+2025-08-04T19:35:14.521Z - INFO - 🆔 phoenix#8533 connecté
+2025-08-04T19:35:14.522Z - INFO - ✅ Base de données ouverte
+2025-08-04T19:35:14.526Z - INFO - ✅ Base de données initialisée avec succès
+2025-08-04T19:35:15.439Z - INFO - 🔑 Token Twitch obtenu
+2025-08-04T19:35:15.440Z - INFO - ✅ Client Twitch initialisé
+2025-08-04T19:35:15.902Z - INFO - ⚡ 11 commandes slash synchronisées
+2025-08-04T19:35:15.905Z - INFO - 📊 1 streamers chargés
+2025-08-04T19:35:15.906Z - INFO - 🔔 Système de notifications live démarré (2 min)
+2025-08-04T19:35:15.907Z - INFO - ✅ Bot entièrement initialisé!
+2025-08-04T19:36:13.820Z - INFO - ✅ Commande dash exécutée par siphixsecours_55253
+2025-08-04T19:37:15.914Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T19:37:16.436Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-04T19:39:15.916Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T19:39:16.457Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-04T19:41:15.919Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T19:41:16.400Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-04T19:43:15.931Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T19:43:16.455Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-04T19:45:15.945Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T19:45:16.439Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-04T19:46:04.444Z - INFO - 🛑 Signal SIGINT reçu
+2025-08-04T19:46:04.444Z - INFO - 🛑 Arrêt du bot...
+2025-08-04T19:46:04.445Z - INFO - ⏹️ Arrêt de la vérification des streams
+2025-08-04T19:46:04.445Z - INFO - ✅ Base de données fermée
+2025-08-04T19:46:04.567Z - INFO - ✅ Bot arrêté proprement
+2025-08-04T19:46:08.967Z - INFO - ✅ Commande ajouter-streamer chargée
+2025-08-04T19:46:08.973Z - INFO - ✅ Commande config-reglement-role chargée
+2025-08-04T19:46:08.975Z - INFO - ✅ Commande dash chargée
+2025-08-04T19:46:08.977Z - INFO - ✅ Commande liste-non-affiliates chargée
+2025-08-04T19:46:08.979Z - INFO - ✅ Commande live-status chargée
+2025-08-04T19:46:08.981Z - INFO - ✅ Commande affiliate chargée
+2025-08-04T19:46:08.984Z - INFO - ✅ Commande ping chargée
+2025-08-04T19:46:08.996Z - INFO - ✅ Commande reglement chargée
+2025-08-04T19:46:08.998Z - INFO - ✅ Commande reglement-dashboard chargée
+2025-08-04T19:46:09.001Z - INFO - ✅ Commande streamers chargée
+2025-08-04T19:46:09.002Z - INFO - ✅ Commande unaffiliate chargée
+2025-08-04T19:46:09.753Z - INFO - 🤖 Bot en ligne!
+2025-08-04T19:46:09.754Z - INFO - 🆔 phoenix#8533 connecté
+2025-08-04T19:46:09.755Z - INFO - ✅ Base de données ouverte
+2025-08-04T19:46:09.759Z - INFO - ✅ Base de données initialisée avec succès
+2025-08-04T19:46:10.713Z - INFO - 🔑 Token Twitch obtenu
+2025-08-04T19:46:10.714Z - INFO - ✅ Client Twitch initialisé
+2025-08-04T19:46:11.152Z - INFO - ⚡ 11 commandes slash synchronisées
+2025-08-04T19:46:11.156Z - INFO - 📊 1 streamers chargés
+2025-08-04T19:46:11.156Z - INFO - 🔔 Système de notifications live démarré (2 min)
+2025-08-04T19:46:11.158Z - INFO - ✅ Bot entièrement initialisé!
+2025-08-04T19:46:37.477Z - INFO - ✅ Commande dash exécutée par siphixsecours_55253
+2025-08-04T19:48:11.158Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T19:48:11.648Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-04T19:48:49.101Z - INFO - 🛑 Signal SIGINT reçu
+2025-08-04T19:48:49.101Z - INFO - 🛑 Arrêt du bot...
+2025-08-04T19:48:49.102Z - INFO - ⏹️ Arrêt de la vérification des streams
+2025-08-04T19:48:49.103Z - INFO - ✅ Base de données fermée
+2025-08-04T19:48:49.214Z - INFO - ✅ Bot arrêté proprement
+2025-08-04T19:48:53.637Z - INFO - ✅ Commande ajouter-streamer chargée
+2025-08-04T19:48:53.645Z - INFO - ✅ Commande config-reglement-role chargée
+2025-08-04T19:48:53.647Z - INFO - ✅ Commande dash chargée
+2025-08-04T19:48:53.650Z - INFO - ✅ Commande liste-non-affiliates chargée
+2025-08-04T19:48:53.652Z - INFO - ✅ Commande live-status chargée
+2025-08-04T19:48:53.655Z - INFO - ✅ Commande affiliate chargée
+2025-08-04T19:48:53.657Z - INFO - ✅ Commande ping chargée
+2025-08-04T19:48:53.671Z - INFO - ✅ Commande reglement chargée
+2025-08-04T19:48:53.674Z - INFO - ✅ Commande reglement-dashboard chargée
+2025-08-04T19:48:53.677Z - INFO - ✅ Commande streamers chargée
+2025-08-04T19:48:53.679Z - INFO - ✅ Commande unaffiliate chargée
+2025-08-04T19:48:54.401Z - INFO - 🤖 Bot en ligne!
+2025-08-04T19:48:54.402Z - INFO - 🆔 phoenix#8533 connecté
+2025-08-04T19:48:54.403Z - INFO - ✅ Base de données ouverte
+2025-08-04T19:48:54.407Z - INFO - ✅ Base de données initialisée avec succès
+2025-08-04T19:48:55.336Z - INFO - 🔑 Token Twitch obtenu
+2025-08-04T19:48:55.336Z - INFO - ✅ Client Twitch initialisé
+2025-08-04T19:48:55.659Z - INFO - ⚡ 11 commandes slash synchronisées
+2025-08-04T19:48:55.663Z - INFO - 📊 1 streamers chargés
+2025-08-04T19:48:55.663Z - INFO - 🔔 Système de notifications live démarré (2 min)
+2025-08-04T19:48:55.664Z - INFO - ✅ Bot entièrement initialisé!
+2025-08-04T19:49:31.710Z - INFO - ✅ Commande dash exécutée par siphixsecours_55253
+2025-08-04T19:50:55.670Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T19:50:56.148Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-04T19:52:25.311Z - INFO - ✅ Streamer Rockets_TW ajouté
+2025-08-04T19:52:25.643Z - INFO - ✅ Commande ajouter-streamer exécutée par siphixsecours_55253
+2025-08-04T19:52:55.681Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T19:52:56.440Z - INFO - ✅ Notification live envoyée pour Rockets_TW
+2025-08-04T19:52:56.440Z - INFO - 🔴 Rockets_TW détecté en live
+2025-08-04T19:52:56.986Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-04T19:54:55.692Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T19:54:56.651Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-04T19:56:55.696Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T19:56:56.624Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-04T20:20:12.649Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T20:20:13.610Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-04T20:22:12.658Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T20:22:13.575Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-04T20:24:12.664Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T20:24:13.577Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-04T20:26:12.676Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T20:26:13.593Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-04T20:28:12.677Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T20:28:13.591Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-04T20:30:12.691Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T20:30:13.617Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-04T20:32:12.695Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T20:32:13.606Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-04T20:34:12.696Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T20:34:13.605Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-04T20:36:12.706Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T20:36:13.899Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-04T20:38:12.715Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T20:38:13.624Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-04T20:40:12.729Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T20:40:13.641Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-04T20:42:12.738Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T20:42:13.652Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-04T20:44:12.748Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T20:44:13.648Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-04T20:46:12.756Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T20:46:13.660Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-04T20:48:12.762Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T20:48:13.673Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-04T20:50:12.768Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T20:50:13.683Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-04T20:52:12.771Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T20:52:13.682Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-04T20:54:12.774Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T20:54:13.688Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-04T20:56:12.787Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T20:56:13.950Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-04T20:58:12.791Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T20:58:13.694Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-04T21:00:12.795Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T21:00:13.721Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-04T21:02:12.806Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T21:02:13.985Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-04T21:04:12.821Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T21:04:13.747Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-04T21:06:12.828Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T21:06:13.737Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-04T21:08:12.840Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T21:08:13.769Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-04T21:10:12.851Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T21:10:13.754Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-04T21:12:12.859Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T21:12:14.031Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-04T21:14:12.869Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T21:14:13.776Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-04T21:16:12.878Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T21:16:13.855Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-04T21:18:12.891Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T21:18:13.806Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-04T21:20:12.898Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T21:20:13.844Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-04T21:22:12.904Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T21:22:13.887Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-04T21:24:12.916Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T21:24:13.987Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-04T21:26:12.920Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T21:26:13.876Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-04T21:28:12.927Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T21:28:13.919Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-04T21:30:12.929Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T21:30:13.919Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-04T21:32:12.935Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T21:32:13.863Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-04T21:34:12.940Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T21:34:13.586Z - INFO - ✅ Message live supprimé pour Rockets_TW
+2025-08-04T21:34:13.586Z - INFO - ⚫ Rockets_TW n'est plus en live
+2025-08-04T21:34:14.145Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-04T21:36:12.955Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T21:36:14.147Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-04T21:38:12.955Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T21:38:13.913Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-04T21:40:12.967Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T21:40:13.907Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-04T21:42:12.970Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T21:42:13.908Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-04T21:44:12.981Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T21:44:13.952Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-04T21:46:12.991Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T21:46:13.907Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-04T21:48:13.001Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T21:48:13.958Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-04T21:50:13.009Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T21:50:13.940Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-04T21:52:13.021Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T21:52:13.963Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-04T21:54:13.032Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T21:54:13.960Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-04T21:56:13.037Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T21:56:13.969Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-04T21:58:13.043Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T21:58:21.018Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-04T22:00:13.053Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T22:00:14.240Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-04T22:02:13.061Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T22:02:14.003Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-04T22:04:13.061Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T22:04:13.977Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-04T22:06:13.064Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T22:06:13.991Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-04T22:08:13.064Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T22:08:13.993Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-04T22:10:13.071Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T22:10:14.018Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-04T22:12:13.078Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T22:12:14.035Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-04T22:14:13.079Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T22:14:14.019Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-04T22:16:13.084Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T22:16:14.138Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-04T22:18:13.098Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T22:18:14.039Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-04T22:20:13.105Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T22:20:14.123Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-04T22:22:13.119Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T22:22:14.039Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-04T22:24:13.123Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T22:24:14.021Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-04T22:26:13.136Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T22:26:14.051Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-04T22:28:13.143Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T22:28:14.054Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-04T22:30:13.155Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T22:30:14.057Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-04T22:32:13.166Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T22:32:14.057Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-04T22:34:13.176Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T22:34:14.101Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-04T22:36:13.176Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T22:36:14.116Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-04T22:38:13.177Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T22:38:14.092Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-04T22:40:13.190Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T22:40:14.098Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-04T22:42:13.198Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T22:42:14.109Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-04T22:44:13.202Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T22:44:14.107Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-04T22:46:13.208Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-04T22:46:14.641Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-04T22:48:08.665Z - INFO - 🛑 Signal SIGINT reçu
+2025-08-04T22:48:08.666Z - INFO - 🛑 Arrêt du bot...
+2025-08-04T22:48:08.666Z - INFO - ⏹️ Arrêt de la vérification des streams
+2025-08-04T22:48:08.667Z - INFO - ✅ Base de données fermée
+2025-08-04T22:48:08.779Z - INFO - ✅ Bot arrêté proprement
+2025-08-06T17:46:04.678Z - INFO - ✅ Commande ajouter-streamer chargée
+2025-08-06T17:46:04.685Z - INFO - ✅ Commande config-reglement-role chargée
+2025-08-06T17:46:04.687Z - INFO - ✅ Commande dash chargée
+2025-08-06T17:46:04.690Z - INFO - ✅ Commande liste-non-affiliates chargée
+2025-08-06T17:46:04.692Z - INFO - ✅ Commande live-status chargée
+2025-08-06T17:46:04.696Z - INFO - ✅ Commande affiliate chargée
+2025-08-06T17:46:04.698Z - INFO - ✅ Commande ping chargée
+2025-08-06T17:46:04.711Z - INFO - ✅ Commande reglement chargée
+2025-08-06T17:46:04.714Z - INFO - ✅ Commande reglement-dashboard chargée
+2025-08-06T17:46:04.718Z - INFO - ✅ Commande streamers chargée
+2025-08-06T17:46:04.721Z - INFO - ✅ Commande unaffiliate chargée
+2025-08-06T17:46:05.453Z - INFO - 🤖 Bot en ligne!
+2025-08-06T17:46:05.454Z - INFO - 🆔 phoenix#8533 connecté
+2025-08-06T17:46:05.464Z - INFO - ✅ Base de données ouverte
+2025-08-06T17:46:05.472Z - INFO - ✅ Base de données initialisée avec succès
+2025-08-06T17:46:06.362Z - INFO - 🔑 Token Twitch obtenu
+2025-08-06T17:46:06.362Z - INFO - ✅ Client Twitch initialisé
+2025-08-06T17:46:06.759Z - INFO - ⚡ 11 commandes slash synchronisées
+2025-08-06T17:46:06.763Z - INFO - 📊 2 streamers chargés
+2025-08-06T17:46:06.764Z - INFO - 🔔 Système de notifications live démarré (2 min)
+2025-08-06T17:46:06.765Z - INFO - ✅ Bot entièrement initialisé!
+2025-08-06T17:48:06.778Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-06T17:48:07.722Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-06T17:50:06.780Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-06T17:50:07.957Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-06T17:52:06.796Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-06T17:52:07.732Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-06T17:54:06.807Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-06T17:54:07.714Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-06T17:56:06.816Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-06T17:56:07.731Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-06T17:58:06.828Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-06T17:58:07.747Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-06T18:00:06.833Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-06T18:00:07.741Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-06T18:02:06.842Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-06T18:02:07.741Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-06T18:04:06.854Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-06T18:04:07.766Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-06T18:05:24.626Z - INFO - ✅ Commande dash exécutée par siphixsecours_55253
+2025-08-06T18:06:06.862Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-06T18:06:08.041Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-06T18:08:06.871Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-06T18:08:07.774Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-06T18:10:06.874Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-06T18:10:07.773Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-06T18:10:48.719Z - INFO - 🛑 Signal SIGINT reçu
+2025-08-06T18:10:48.720Z - INFO - 🛑 Arrêt du bot...
+2025-08-06T18:10:48.720Z - INFO - ⏹️ Arrêt de la vérification des streams
+2025-08-06T18:10:48.721Z - INFO - ✅ Base de données fermée
+2025-08-06T18:10:48.865Z - INFO - ✅ Bot arrêté proprement
+2025-08-06T19:32:13.608Z - INFO - ✅ Commande ajouter-streamer chargée
+2025-08-06T19:32:13.614Z - INFO - ✅ Commande config-reglement-role chargée
+2025-08-06T19:32:13.617Z - INFO - ✅ Commande dash chargée
+2025-08-06T19:32:13.619Z - INFO - ✅ Commande liste-non-affiliates chargée
+2025-08-06T19:32:13.620Z - INFO - ✅ Commande live-status chargée
+2025-08-06T19:32:13.623Z - INFO - ✅ Commande affiliate chargée
+2025-08-06T19:32:13.625Z - INFO - ✅ Commande ping chargée
+2025-08-06T19:32:13.636Z - INFO - ✅ Commande reglement chargée
+2025-08-06T19:32:13.639Z - INFO - ✅ Commande reglement-dashboard chargée
+2025-08-06T19:32:13.642Z - INFO - ✅ Commande streamers chargée
+2025-08-06T19:32:13.644Z - INFO - ✅ Commande unaffiliate chargée
+2025-08-06T19:32:13.648Z - INFO - 🌐 Dashboard accessible sur http://localhost:3000/dashboard
+2025-08-06T19:32:14.394Z - INFO - 🤖 Bot en ligne!
+2025-08-06T19:32:14.395Z - INFO - 🆔 phoenix#8533 connecté
+2025-08-06T19:32:14.402Z - INFO - ✅ Base de données ouverte
+2025-08-06T19:32:14.406Z - INFO - ✅ Base de données initialisée avec succès
+2025-08-06T19:32:15.353Z - INFO - 🔑 Token Twitch obtenu
+2025-08-06T19:32:15.353Z - INFO - ✅ Client Twitch initialisé
+2025-08-06T19:32:15.759Z - INFO - ⚡ 11 commandes slash synchronisées
+2025-08-06T19:32:15.763Z - INFO - 📊 2 streamers chargés
+2025-08-06T19:32:15.763Z - INFO - 🔔 Système de notifications live démarré (2 min)
+2025-08-06T19:32:15.764Z - INFO - ✅ Bot entièrement initialisé!
+2025-08-06T19:33:09.851Z - INFO - ✅ Commande dash exécutée par siphixsecours_55253
+2025-08-06T19:34:15.772Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-06T19:34:16.603Z - INFO - ✅ Notification live envoyée pour Rockets_TW
+2025-08-06T19:34:16.605Z - INFO - 🔴 Rockets_TW détecté en live
+2025-08-06T19:34:17.205Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-06T19:35:11.727Z - INFO - 🛑 Signal SIGINT reçu
+2025-08-06T19:35:11.728Z - INFO - 🛑 Arrêt du bot...
+2025-08-06T19:35:11.728Z - INFO - ⏹️ Arrêt de la vérification des streams
+2025-08-06T19:35:11.729Z - INFO - ✅ Base de données fermée
+2025-08-06T19:35:11.845Z - INFO - ✅ Bot arrêté proprement
+2025-08-06T19:35:19.639Z - INFO - ✅ Commande ajouter-streamer chargée
+2025-08-06T19:35:19.645Z - INFO - ✅ Commande config-reglement-role chargée
+2025-08-06T19:35:19.647Z - INFO - ✅ Commande dash chargée
+2025-08-06T19:35:19.649Z - INFO - ✅ Commande liste-non-affiliates chargée
+2025-08-06T19:35:19.651Z - INFO - ✅ Commande live-status chargée
+2025-08-06T19:35:19.654Z - INFO - ✅ Commande affiliate chargée
+2025-08-06T19:35:19.657Z - INFO - ✅ Commande ping chargée
+2025-08-06T19:35:19.668Z - INFO - ✅ Commande reglement chargée
+2025-08-06T19:35:19.671Z - INFO - ✅ Commande reglement-dashboard chargée
+2025-08-06T19:35:19.674Z - INFO - ✅ Commande streamers chargée
+2025-08-06T19:35:19.676Z - INFO - ✅ Commande unaffiliate chargée
+2025-08-06T19:35:19.680Z - INFO - 🌐 Dashboard accessible sur http://localhost:3000/dashboard
+2025-08-06T19:35:20.455Z - INFO - 🤖 Bot en ligne!
+2025-08-06T19:35:20.456Z - INFO - 🆔 phoenix#8533 connecté
+2025-08-06T19:35:20.457Z - INFO - ✅ Base de données ouverte
+2025-08-06T19:35:20.461Z - INFO - ✅ Base de données initialisée avec succès
+2025-08-06T19:35:21.380Z - INFO - 🔑 Token Twitch obtenu
+2025-08-06T19:35:21.381Z - INFO - ✅ Client Twitch initialisé
+2025-08-06T19:35:21.786Z - INFO - ⚡ 11 commandes slash synchronisées
+2025-08-06T19:35:21.790Z - INFO - 📊 2 streamers chargés
+2025-08-06T19:35:21.791Z - INFO - 🔔 Système de notifications live démarré (2 min)
+2025-08-06T19:35:21.792Z - INFO - ✅ Bot entièrement initialisé!
+2025-08-06T19:35:53.137Z - INFO - ✅ Commande dash exécutée par siphixsecours_55253
+2025-08-06T19:36:08.999Z - INFO - ✅ Commande dash exécutée par siphixsecours_55253
+2025-08-06T19:37:21.805Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-06T19:37:22.599Z - INFO - ✅ Notification live envoyée pour Rockets_TW
+2025-08-06T19:37:22.599Z - INFO - 🔴 Rockets_TW détecté en live
+2025-08-06T19:37:23.137Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-06T19:38:20.633Z - INFO - ✅ Commande dash exécutée par siphixsecours_55253
+2025-08-06T19:39:21.812Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-06T19:39:23.044Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-06T19:40:00.071Z - INFO - 🛑 Signal SIGINT reçu
+2025-08-06T19:40:00.072Z - INFO - 🛑 Arrêt du bot...
+2025-08-06T19:40:00.072Z - INFO - ⏹️ Arrêt de la vérification des streams
+2025-08-06T19:40:00.073Z - INFO - ✅ Base de données fermée
+2025-08-06T19:40:00.193Z - INFO - ✅ Bot arrêté proprement
+2025-08-06T19:44:00.939Z - INFO - ✅ Commande ajouter-streamer chargée
+2025-08-06T19:44:00.946Z - INFO - ✅ Commande config-reglement-role chargée
+2025-08-06T19:44:00.949Z - INFO - ✅ Commande dash chargée
+2025-08-06T19:44:00.951Z - INFO - ✅ Commande liste-non-affiliates chargée
+2025-08-06T19:44:00.953Z - INFO - ✅ Commande live-status chargée
+2025-08-06T19:44:00.957Z - INFO - ✅ Commande affiliate chargée
+2025-08-06T19:44:00.960Z - INFO - ✅ Commande ping chargée
+2025-08-06T19:44:00.974Z - INFO - ✅ Commande reglement chargée
+2025-08-06T19:44:00.977Z - INFO - ✅ Commande reglement-dashboard chargée
+2025-08-06T19:44:00.980Z - INFO - ✅ Commande streamers chargée
+2025-08-06T19:44:00.982Z - INFO - ✅ Commande unaffiliate chargée
+2025-08-06T19:44:00.986Z - INFO - 🌐 Dashboard accessible sur http://localhost:3000/dashboard
+2025-08-06T19:44:01.839Z - INFO - 🤖 Bot en ligne!
+2025-08-06T19:44:01.840Z - INFO - 🆔 phoenix#8533 connecté
+2025-08-06T19:44:01.841Z - INFO - ✅ Base de données ouverte
+2025-08-06T19:44:01.845Z - INFO - ✅ Base de données initialisée avec succès
+2025-08-06T19:44:02.785Z - INFO - 🔑 Token Twitch obtenu
+2025-08-06T19:44:02.786Z - INFO - ✅ Client Twitch initialisé
+2025-08-06T19:44:03.236Z - INFO - ⚡ 11 commandes slash synchronisées
+2025-08-06T19:44:03.240Z - INFO - 📊 2 streamers chargés
+2025-08-06T19:44:03.240Z - INFO - 🔔 Système de notifications live démarré (2 min)
+2025-08-06T19:44:03.242Z - INFO - ✅ Bot entièrement initialisé!
+2025-08-06T19:45:38.701Z - INFO - 🛑 Signal SIGINT reçu
+2025-08-06T19:45:38.702Z - INFO - 🛑 Arrêt du bot...
+2025-08-06T19:45:38.703Z - INFO - ⏹️ Arrêt de la vérification des streams
+2025-08-06T19:45:38.704Z - INFO - ✅ Base de données fermée
+2025-08-06T19:45:38.824Z - INFO - ✅ Bot arrêté proprement
+2025-08-06T19:45:55.249Z - INFO - ✅ Commande ajouter-streamer chargée
+2025-08-06T19:45:55.255Z - INFO - ✅ Commande config-reglement-role chargée
+2025-08-06T19:45:55.258Z - INFO - ✅ Commande dash chargée
+2025-08-06T19:45:55.260Z - INFO - ✅ Commande liste-non-affiliates chargée
+2025-08-06T19:45:55.261Z - INFO - ✅ Commande live-status chargée
+2025-08-06T19:45:55.264Z - INFO - ✅ Commande affiliate chargée
+2025-08-06T19:45:55.265Z - INFO - ✅ Commande ping chargée
+2025-08-06T19:45:55.277Z - INFO - ✅ Commande reglement chargée
+2025-08-06T19:45:55.279Z - INFO - ✅ Commande reglement-dashboard chargée
+2025-08-06T19:45:55.282Z - INFO - ✅ Commande streamers chargée
+2025-08-06T19:45:55.284Z - INFO - ✅ Commande unaffiliate chargée
+2025-08-06T19:45:57.428Z - INFO - 🤖 Bot en ligne!
+2025-08-06T19:45:57.429Z - INFO - 🆔 phoenix#8533 connecté
+2025-08-06T19:45:57.430Z - INFO - ✅ Base de données ouverte
+2025-08-06T19:45:57.434Z - INFO - ✅ Base de données initialisée avec succès
+2025-08-06T19:45:58.401Z - INFO - 🔑 Token Twitch obtenu
+2025-08-06T19:45:58.402Z - INFO - ✅ Client Twitch initialisé
+2025-08-06T19:45:58.862Z - INFO - ⚡ 11 commandes slash synchronisées
+2025-08-06T19:45:58.866Z - INFO - 📊 2 streamers chargés
+2025-08-06T19:45:58.866Z - INFO - 🔔 Système de notifications live démarré (2 min)
+2025-08-06T19:45:58.867Z - INFO - ✅ Bot entièrement initialisé!
+2025-08-06T19:45:59.440Z - INFO - 🌐 Dashboard Phoenix démarré sur http://localhost:3000
+2025-08-06T19:45:59.441Z - INFO - 🌐 Dashboard accessible sur http://localhost:3000/dashboard
+2025-08-06T19:46:24.359Z - INFO - ✅ Commande dash exécutée par siphixsecours_55253
+2025-08-06T19:47:58.870Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-06T19:48:01.084Z - INFO - ✅ Notification live envoyée pour Rockets_TW
+2025-08-06T19:48:01.084Z - INFO - 🔴 Rockets_TW détecté en live
+2025-08-06T19:48:01.615Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-06T19:48:18.983Z - INFO - 🛑 Signal SIGINT reçu
+2025-08-06T19:48:18.983Z - INFO - 🛑 Arrêt du bot...
+2025-08-06T19:48:18.984Z - INFO - ⏹️ Arrêt de la vérification des streams
+2025-08-06T19:48:18.984Z - INFO - ✅ Base de données fermée
+2025-08-06T19:48:19.093Z - INFO - ✅ Bot arrêté proprement
+2025-08-06T19:48:25.556Z - INFO - ✅ Commande ajouter-streamer chargée
+2025-08-06T19:48:25.562Z - INFO - ✅ Commande config-reglement-role chargée
+2025-08-06T19:48:25.565Z - INFO - ✅ Commande dash chargée
+2025-08-06T19:48:25.567Z - INFO - ✅ Commande liste-non-affiliates chargée
+2025-08-06T19:48:25.568Z - INFO - ✅ Commande live-status chargée
+2025-08-06T19:48:25.571Z - INFO - ✅ Commande affiliate chargée
+2025-08-06T19:48:25.573Z - INFO - ✅ Commande ping chargée
+2025-08-06T19:48:25.584Z - INFO - ✅ Commande reglement chargée
+2025-08-06T19:48:25.587Z - INFO - ✅ Commande reglement-dashboard chargée
+2025-08-06T19:48:25.590Z - INFO - ✅ Commande streamers chargée
+2025-08-06T19:48:25.592Z - INFO - ✅ Commande unaffiliate chargée
+2025-08-06T19:48:26.467Z - INFO - 🤖 Bot en ligne!
+2025-08-06T19:48:26.468Z - INFO - 🆔 phoenix#8533 connecté
+2025-08-06T19:48:26.469Z - INFO - ✅ Base de données ouverte
+2025-08-06T19:48:26.473Z - INFO - ✅ Base de données initialisée avec succès
+2025-08-06T19:48:27.423Z - INFO - 🔑 Token Twitch obtenu
+2025-08-06T19:48:27.424Z - INFO - ✅ Client Twitch initialisé
+2025-08-06T19:48:27.798Z - INFO - ⚡ 11 commandes slash synchronisées
+2025-08-06T19:48:27.802Z - INFO - 📊 2 streamers chargés
+2025-08-06T19:48:27.802Z - INFO - 🔔 Système de notifications live démarré (2 min)
+2025-08-06T19:48:27.804Z - INFO - ✅ Bot entièrement initialisé!
+2025-08-06T19:48:28.487Z - INFO - 🌐 Dashboard Phoenix démarré sur http://localhost:3000
+2025-08-06T19:48:28.487Z - INFO - 🌐 Dashboard accessible sur http://localhost:3000/dashboard
+2025-08-06T19:48:41.721Z - INFO - ✅ Commande dash exécutée par siphixsecours_55253
+2025-08-06T19:50:27.818Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-06T19:50:28.890Z - INFO - ✅ Notification live envoyée pour Rockets_TW
+2025-08-06T19:50:28.891Z - INFO - 🔴 Rockets_TW détecté en live
+2025-08-06T19:50:29.424Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-06T19:50:37.222Z - INFO - 🛑 Signal SIGINT reçu
+2025-08-06T19:50:37.223Z - INFO - 🛑 Arrêt du bot...
+2025-08-06T19:50:37.223Z - INFO - ⏹️ Arrêt de la vérification des streams
+2025-08-06T19:50:37.224Z - INFO - ✅ Base de données fermée
+2025-08-06T19:50:37.370Z - INFO - ✅ Bot arrêté proprement
+2025-08-06T19:51:23.783Z - INFO - ✅ Commande ajouter-streamer chargée
+2025-08-06T19:51:23.789Z - INFO - ✅ Commande config-reglement-role chargée
+2025-08-06T19:51:23.791Z - INFO - ✅ Commande dash chargée
+2025-08-06T19:51:23.793Z - INFO - ✅ Commande liste-non-affiliates chargée
+2025-08-06T19:51:23.795Z - INFO - ✅ Commande live-status chargée
+2025-08-06T19:51:23.797Z - INFO - ✅ Commande affiliate chargée
+2025-08-06T19:51:23.799Z - INFO - ✅ Commande ping chargée
+2025-08-06T19:51:23.810Z - INFO - ✅ Commande reglement chargée
+2025-08-06T19:51:23.813Z - INFO - ✅ Commande reglement-dashboard chargée
+2025-08-06T19:51:23.816Z - INFO - ✅ Commande streamers chargée
+2025-08-06T19:51:23.818Z - INFO - ✅ Commande unaffiliate chargée
+2025-08-06T19:51:24.539Z - INFO - 🤖 Bot en ligne!
+2025-08-06T19:51:24.540Z - INFO - 🆔 phoenix#8533 connecté
+2025-08-06T19:51:24.541Z - INFO - ✅ Base de données ouverte
+2025-08-06T19:51:24.545Z - INFO - ✅ Base de données initialisée avec succès
+2025-08-06T19:51:25.461Z - INFO - 🔑 Token Twitch obtenu
+2025-08-06T19:51:25.461Z - INFO - ✅ Client Twitch initialisé
+2025-08-06T19:51:25.745Z - INFO - ⚡ 11 commandes slash synchronisées
+2025-08-06T19:51:25.749Z - INFO - 📊 2 streamers chargés
+2025-08-06T19:51:25.749Z - INFO - 🔔 Système de notifications live démarré (2 min)
+2025-08-06T19:51:25.751Z - INFO - ✅ Bot entièrement initialisé!
+2025-08-06T19:51:26.560Z - INFO - 🌐 Dashboard Phoenix démarré sur http://localhost:3000
+2025-08-06T19:51:26.561Z - INFO - 🌐 Dashboard accessible sur http://localhost:3000/dashboard
+2025-08-06T19:51:54.291Z - INFO - ✅ Commande dash exécutée par siphixsecours_55253
+2025-08-06T19:53:25.758Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-06T19:53:26.434Z - INFO - ✅ Notification live envoyée pour Rockets_TW
+2025-08-06T19:53:26.434Z - INFO - 🔴 Rockets_TW détecté en live
+2025-08-06T19:53:26.993Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-06T19:55:25.771Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-06T19:55:26.787Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-06T19:57:25.781Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-06T19:57:26.734Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-06T19:59:25.788Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-06T19:59:26.737Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-06T20:01:25.793Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-06T20:01:26.750Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-06T20:03:25.797Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-06T20:03:26.749Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-06T20:05:25.810Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-06T20:05:26.799Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-06T20:07:25.819Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-06T20:07:26.779Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-06T20:09:25.833Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-06T20:09:26.789Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-06T20:10:56.676Z - INFO - ✅ Commande dash exécutée par siphixsecours_55253
+2025-08-06T20:11:25.844Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-06T20:11:26.856Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-06T20:13:25.855Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-06T20:13:27.465Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-06T20:13:47.860Z - INFO - 🛑 Signal SIGINT reçu
+2025-08-06T20:13:47.861Z - INFO - 🛑 Arrêt du bot...
+2025-08-06T20:13:47.861Z - INFO - ⏹️ Arrêt de la vérification des streams
+2025-08-06T20:13:47.862Z - INFO - ✅ Base de données fermée
+2025-08-06T20:13:47.973Z - INFO - ✅ Bot arrêté proprement
+2025-08-06T20:14:13.427Z - INFO - ✅ Commande ajouter-streamer chargée
+2025-08-06T20:14:13.433Z - INFO - ✅ Commande config-reglement-role chargée
+2025-08-06T20:14:13.436Z - INFO - ✅ Commande dash chargée
+2025-08-06T20:14:13.438Z - INFO - ✅ Commande liste-non-affiliates chargée
+2025-08-06T20:14:13.440Z - INFO - ✅ Commande live-status chargée
+2025-08-06T20:14:13.442Z - INFO - ✅ Commande affiliate chargée
+2025-08-06T20:14:13.444Z - INFO - ✅ Commande ping chargée
+2025-08-06T20:14:13.456Z - INFO - ✅ Commande reglement chargée
+2025-08-06T20:14:13.459Z - INFO - ✅ Commande reglement-dashboard chargée
+2025-08-06T20:14:13.462Z - INFO - ✅ Commande streamers chargée
+2025-08-06T20:14:13.464Z - INFO - ✅ Commande unaffiliate chargée
+2025-08-06T20:14:14.242Z - INFO - 🤖 Bot en ligne!
+2025-08-06T20:14:14.242Z - INFO - 🆔 phoenix#8533 connecté
+2025-08-06T20:14:14.246Z - INFO - ✅ Base de données ouverte
+2025-08-06T20:14:14.250Z - INFO - ✅ Base de données initialisée avec succès
+2025-08-06T20:14:15.194Z - INFO - 🔑 Token Twitch obtenu
+2025-08-06T20:14:15.195Z - INFO - ✅ Client Twitch initialisé
+2025-08-06T20:14:15.584Z - INFO - ⚡ 11 commandes slash synchronisées
+2025-08-06T20:14:15.588Z - INFO - 📊 2 streamers chargés
+2025-08-06T20:14:15.589Z - INFO - 🔔 Système de notifications live démarré (2 min)
+2025-08-06T20:14:15.590Z - INFO - ✅ Bot entièrement initialisé!
+2025-08-06T20:14:16.257Z - INFO - 🌐 Dashboard Phoenix démarré sur http://localhost:3000
+2025-08-06T20:14:16.258Z - INFO - 🌐 Dashboard accessible sur http://localhost:3000/dashboard
+2025-08-06T20:14:31.479Z - INFO - ✅ Commande dash exécutée par siphixsecours_55253
+2025-08-06T20:16:15.590Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-06T20:16:16.410Z - INFO - ✅ Notification live envoyée pour Rockets_TW
+2025-08-06T20:16:16.410Z - INFO - 🔴 Rockets_TW détecté en live
+2025-08-06T20:16:16.958Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-06T20:18:15.605Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-06T20:18:16.555Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-06T20:20:15.619Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-06T20:20:16.587Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-06T20:22:15.627Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-06T20:22:16.628Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-06T20:23:25.013Z - INFO - 🛑 Signal SIGINT reçu
+2025-08-06T20:23:25.014Z - INFO - 🛑 Arrêt du bot...
+2025-08-06T20:23:25.014Z - INFO - ⏹️ Arrêt de la vérification des streams
+2025-08-06T20:23:25.015Z - INFO - ✅ Base de données fermée
+2025-08-06T20:23:25.127Z - INFO - ✅ Bot arrêté proprement
+2025-08-06T20:24:46.847Z - INFO - ✅ Commande ajouter-streamer chargée
+2025-08-06T20:24:46.853Z - INFO - ✅ Commande config-reglement-role chargée
+2025-08-06T20:24:46.855Z - INFO - ✅ Commande dash chargée
+2025-08-06T20:24:46.857Z - INFO - ✅ Commande liste-non-affiliates chargée
+2025-08-06T20:24:46.859Z - INFO - ✅ Commande live-status chargée
+2025-08-06T20:24:46.862Z - INFO - ✅ Commande affiliate chargée
+2025-08-06T20:24:46.863Z - INFO - ✅ Commande ping chargée
+2025-08-06T20:24:46.877Z - INFO - ✅ Commande reglement chargée
+2025-08-06T20:24:46.879Z - INFO - ✅ Commande reglement-dashboard chargée
+2025-08-06T20:24:46.882Z - INFO - ✅ Commande streamers chargée
+2025-08-06T20:24:46.884Z - INFO - ✅ Commande unaffiliate chargée
+2025-08-06T20:24:47.641Z - INFO - 🤖 Bot en ligne!
+2025-08-06T20:24:47.641Z - INFO - 🆔 phoenix#8533 connecté
+2025-08-06T20:24:47.642Z - INFO - ✅ Base de données ouverte
+2025-08-06T20:24:47.649Z - INFO - ✅ Base de données initialisée avec succès
+2025-08-06T20:24:48.588Z - INFO - 🔑 Token Twitch obtenu
+2025-08-06T20:24:48.588Z - INFO - ✅ Client Twitch initialisé
+2025-08-06T20:24:48.971Z - INFO - ⚡ 11 commandes slash synchronisées
+2025-08-06T20:24:48.975Z - INFO - 📊 2 streamers chargés
+2025-08-06T20:24:48.976Z - INFO - 🔔 Système de notifications live démarré (2 min)
+2025-08-06T20:24:48.977Z - INFO - ✅ Bot entièrement initialisé!
+2025-08-06T20:24:49.656Z - INFO - 🌐 Dashboard Phoenix démarré sur http://localhost:3000
+2025-08-06T20:24:49.656Z - INFO - 🌐 Dashboard accessible sur http://localhost:3000/dashboard
+2025-08-06T20:25:02.342Z - INFO - ✅ Commande dash exécutée par siphixsecours_55253
+2025-08-06T20:25:53.529Z - INFO - 🛑 Signal SIGINT reçu
+2025-08-06T20:25:53.529Z - INFO - 🛑 Arrêt du bot...
+2025-08-06T20:25:53.530Z - INFO - ⏹️ Arrêt de la vérification des streams
+2025-08-06T20:25:53.531Z - INFO - ✅ Base de données fermée
+2025-08-06T20:25:53.665Z - INFO - ✅ Bot arrêté proprement
+2025-08-06T23:16:41.493Z - INFO - ✅ Commande ajouter-streamer chargée
+2025-08-06T23:16:41.499Z - INFO - ✅ Commande config-reglement-role chargée
+2025-08-06T23:16:41.502Z - INFO - ✅ Commande dash chargée
+2025-08-06T23:16:41.504Z - INFO - ✅ Commande liste-non-affiliates chargée
+2025-08-06T23:16:41.505Z - INFO - ✅ Commande live-status chargée
+2025-08-06T23:16:41.508Z - INFO - ✅ Commande affiliate chargée
+2025-08-06T23:16:41.509Z - INFO - ✅ Commande ping chargée
+2025-08-06T23:16:41.522Z - INFO - ✅ Commande reglement chargée
+2025-08-06T23:16:41.525Z - INFO - ✅ Commande reglement-dashboard chargée
+2025-08-06T23:16:41.528Z - INFO - ✅ Commande streamers chargée
+2025-08-06T23:16:41.530Z - INFO - ✅ Commande unaffiliate chargée
+2025-08-06T23:16:42.290Z - INFO - 🤖 Bot en ligne!
+2025-08-06T23:16:42.290Z - INFO - 🆔 phoenix#8533 connecté
+2025-08-06T23:16:42.291Z - INFO - ✅ Base de données ouverte
+2025-08-06T23:16:42.295Z - INFO - ✅ Base de données initialisée avec succès
+2025-08-06T23:16:43.189Z - INFO - 🔑 Token Twitch obtenu
+2025-08-06T23:16:43.190Z - INFO - ✅ Client Twitch initialisé
+2025-08-06T23:16:43.587Z - INFO - ⚡ 11 commandes slash synchronisées
+2025-08-06T23:16:43.591Z - INFO - 📊 2 streamers chargés
+2025-08-06T23:16:43.591Z - INFO - 🔔 Système de notifications live démarré (2 min)
+2025-08-06T23:16:43.593Z - INFO - ✅ Bot entièrement initialisé!
+2025-08-06T23:16:44.305Z - INFO - 🌐 Dashboard Phoenix démarré sur http://localhost:3000
+2025-08-06T23:16:44.306Z - INFO - 🌐 Dashboard accessible sur http://localhost:3000/dashboard
+2025-08-06T23:17:19.015Z - INFO - ✅ Commande dash exécutée par siphixsecours_55253
+2025-08-06T23:18:43.610Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-06T23:18:44.575Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-06T23:20:43.620Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-06T23:20:44.563Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-06T23:22:43.623Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-06T23:22:44.562Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-06T23:24:43.623Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-06T23:24:44.591Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-06T23:26:43.628Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-06T23:26:44.615Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-06T23:28:43.635Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-06T23:28:44.586Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-06T23:30:43.643Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-06T23:30:44.578Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-06T23:32:43.645Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-06T23:32:44.675Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-06T23:33:52.277Z - INFO - 🛑 Signal SIGINT reçu
+2025-08-06T23:33:52.278Z - INFO - 🛑 Arrêt du bot...
+2025-08-06T23:33:52.278Z - INFO - ⏹️ Arrêt de la vérification des streams
+2025-08-06T23:33:52.279Z - INFO - ✅ Base de données fermée
+2025-08-06T23:33:52.426Z - INFO - ✅ Bot arrêté proprement
+2025-08-06T23:45:46.142Z - INFO - ✅ Commande ajouter-streamer chargée
+2025-08-06T23:45:46.148Z - INFO - ✅ Commande config-reglement-role chargée
+2025-08-06T23:45:46.151Z - INFO - ✅ Commande dash chargée
+2025-08-06T23:45:46.153Z - INFO - ✅ Commande liste-non-affiliates chargée
+2025-08-06T23:45:46.155Z - INFO - ✅ Commande live-status chargée
+2025-08-06T23:45:46.159Z - INFO - ✅ Commande affiliate chargée
+2025-08-06T23:45:46.162Z - INFO - ✅ Commande ping chargée
+2025-08-06T23:45:46.176Z - INFO - ✅ Commande reglement chargée
+2025-08-06T23:45:46.179Z - INFO - ✅ Commande reglement-dashboard chargée
+2025-08-06T23:45:46.183Z - INFO - ✅ Commande streamers chargée
+2025-08-06T23:45:46.185Z - INFO - ✅ Commande unaffiliate chargée
+2025-08-06T23:45:47.042Z - INFO - 🤖 Bot en ligne!
+2025-08-06T23:45:47.043Z - INFO - 🆔 phoenix#8533 connecté
+2025-08-06T23:45:47.044Z - INFO - ✅ Base de données ouverte
+2025-08-06T23:45:47.048Z - INFO - ✅ Base de données initialisée avec succès
+2025-08-06T23:45:47.968Z - INFO - 🔑 Token Twitch obtenu
+2025-08-06T23:45:47.968Z - INFO - ✅ Client Twitch initialisé
+2025-08-06T23:45:48.266Z - INFO - ⚡ 11 commandes slash synchronisées
+2025-08-06T23:45:48.270Z - INFO - 📊 2 streamers chargés
+2025-08-06T23:45:48.271Z - INFO - 🔔 Système de notifications live démarré (2 min)
+2025-08-06T23:45:48.272Z - INFO - ✅ Bot entièrement initialisé!
+2025-08-06T23:45:49.059Z - INFO - 🌐 Dashboard Phoenix démarré sur http://localhost:3000
+2025-08-06T23:45:49.060Z - INFO - 🌐 Dashboard accessible sur http://localhost:3000/dashboard
+2025-08-06T23:46:06.615Z - INFO - ✅ Commande dash exécutée par siphixsecours_55253
+2025-08-06T23:47:48.276Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-06T23:47:49.274Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-06T23:49:48.290Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-06T23:49:49.241Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-06T23:51:48.299Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-06T23:51:49.251Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-06T23:53:48.304Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-06T23:53:49.256Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-06T23:55:48.310Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-06T23:55:49.342Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-06T23:57:48.325Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-06T23:57:49.512Z - INFO - ✅ Notification live envoyée pour nomie_el_homie
+2025-08-06T23:57:49.513Z - INFO - 🔴 nomie_el_homie détecté en live
+2025-08-06T23:57:49.615Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-06T23:59:48.330Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-06T23:59:49.268Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T00:01:48.334Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T00:01:49.270Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T00:03:48.345Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T00:03:49.311Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T00:05:48.350Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T00:05:49.301Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T00:07:48.352Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T00:07:49.307Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T00:09:48.365Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T00:09:49.303Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T00:11:48.378Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T00:11:49.327Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T00:13:48.379Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T00:13:49.319Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T00:15:48.391Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T00:15:49.344Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T00:17:48.398Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T00:17:50.230Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T00:19:48.413Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T00:19:49.381Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T00:21:48.414Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T00:21:49.365Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T00:23:48.420Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T00:23:49.727Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T00:25:48.426Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T00:25:49.364Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T00:27:48.429Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T00:27:49.373Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T00:29:48.441Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T00:29:49.408Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T00:31:48.448Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T00:31:49.385Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T00:33:48.454Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T00:33:49.394Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T00:35:48.463Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T00:35:49.431Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T00:37:48.467Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T00:37:49.430Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T01:19:53.464Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T01:19:54.606Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T13:12:38.490Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T13:12:39.512Z - INFO - ✅ Notification live envoyée pour Rockets_TW
+2025-08-07T13:12:39.529Z - INFO - 🔴 Rockets_TW détecté en live
+2025-08-07T13:12:40.503Z - INFO - ✅ Message live supprimé pour nomie_el_homie
+2025-08-07T13:12:40.504Z - INFO - ⚫ nomie_el_homie n'est plus en live
+2025-08-07T13:12:40.604Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T13:13:04.108Z - INFO - 🛑 Signal SIGINT reçu
+2025-08-07T13:13:04.109Z - INFO - 🛑 Arrêt du bot...
+2025-08-07T13:13:04.109Z - INFO - ⏹️ Arrêt de la vérification des streams
+2025-08-07T13:13:04.112Z - INFO - ✅ Base de données fermée
+2025-08-07T13:13:04.232Z - INFO - ✅ Bot arrêté proprement
+2025-08-07T15:53:30.372Z - INFO - ✅ Commande ajouter-streamer chargée
+2025-08-07T15:53:30.380Z - INFO - ✅ Commande config-reglement-role chargée
+2025-08-07T15:53:30.383Z - INFO - ✅ Commande dash chargée
+2025-08-07T15:53:30.386Z - INFO - ✅ Commande liste-non-affiliates chargée
+2025-08-07T15:53:30.388Z - INFO - ✅ Commande live-status chargée
+2025-08-07T15:53:30.392Z - INFO - ✅ Commande affiliate chargée
+2025-08-07T15:53:30.394Z - INFO - ✅ Commande ping chargée
+2025-08-07T15:53:30.410Z - INFO - ✅ Commande reglement chargée
+2025-08-07T15:53:30.414Z - INFO - ✅ Commande reglement-dashboard chargée
+2025-08-07T15:53:30.418Z - INFO - ✅ Commande streamers chargée
+2025-08-07T15:53:30.422Z - INFO - ✅ Commande unaffiliate chargée
+2025-08-07T15:53:31.171Z - INFO - 🤖 Bot en ligne!
+2025-08-07T15:53:31.172Z - INFO - 🆔 phoenix#8533 connecté
+2025-08-07T15:53:31.173Z - INFO - ✅ Base de données ouverte
+2025-08-07T15:53:31.177Z - INFO - ✅ Base de données initialisée avec succès
+2025-08-07T15:53:32.096Z - INFO - 🔑 Token Twitch obtenu
+2025-08-07T15:53:32.096Z - INFO - ✅ Client Twitch initialisé
+2025-08-07T15:53:32.377Z - INFO - ⚡ 11 commandes slash synchronisées
+2025-08-07T15:53:32.382Z - INFO - 📊 2 streamers chargés
+2025-08-07T15:53:32.383Z - INFO - 🔔 Système de notifications live démarré (2 min)
+2025-08-07T15:53:32.384Z - INFO - ✅ Bot entièrement initialisé!
+2025-08-07T15:53:33.180Z - INFO - 🌐 Dashboard externe démarré sur http://localhost:3000
+2025-08-07T15:54:32.285Z - INFO - ✅ Commande dash exécutée par siphixsecours_55253
+2025-08-07T15:55:32.394Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T15:55:33.542Z - INFO - ✅ Notification live envoyée pour nomie_el_homie
+2025-08-07T15:55:33.542Z - INFO - 🔴 nomie_el_homie détecté en live
+2025-08-07T15:55:33.653Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T15:57:32.399Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T15:57:33.318Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T15:59:32.412Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T15:59:33.485Z - INFO - ✅ Message live supprimé pour nomie_el_homie
+2025-08-07T15:59:33.485Z - INFO - ⚫ nomie_el_homie n'est plus en live
+2025-08-07T15:59:33.588Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-07T16:01:32.413Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T16:01:33.351Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-07T16:03:32.415Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T16:03:33.368Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-07T16:05:32.426Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T16:05:33.410Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-07T16:07:32.434Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T16:07:33.394Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-07T16:09:32.435Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T16:09:33.351Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-07T16:11:32.436Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T16:11:33.361Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-07T16:13:32.443Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T16:13:33.350Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-07T16:15:32.449Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T16:15:33.407Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-07T16:17:32.460Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T16:17:33.618Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-07T16:18:57.957Z - INFO - ✅ Commande ajouter-streamer chargée
+2025-08-07T16:18:57.966Z - INFO - ✅ Commande config-reglement-role chargée
+2025-08-07T16:18:57.969Z - INFO - ✅ Commande dash chargée
+2025-08-07T16:18:57.971Z - INFO - ✅ Commande liste-non-affiliates chargée
+2025-08-07T16:18:57.972Z - INFO - ✅ Commande live-status chargée
+2025-08-07T16:18:57.975Z - INFO - ✅ Commande affiliate chargée
+2025-08-07T16:18:57.978Z - INFO - ✅ Commande ping chargée
+2025-08-07T16:18:57.990Z - INFO - ✅ Commande reglement chargée
+2025-08-07T16:18:57.994Z - INFO - ✅ Commande reglement-dashboard chargée
+2025-08-07T16:18:58.003Z - INFO - ✅ Commande streamers chargée
+2025-08-07T16:18:58.005Z - INFO - ✅ Commande unaffiliate chargée
+2025-08-07T16:18:58.817Z - INFO - 🤖 Bot en ligne!
+2025-08-07T16:18:58.817Z - INFO - 🆔 phoenix#8533 connecté
+2025-08-07T16:18:58.818Z - INFO - ✅ Base de données ouverte
+2025-08-07T16:18:58.822Z - INFO - ✅ Base de données initialisée avec succès
+2025-08-07T16:18:59.829Z - INFO - 🔑 Token Twitch obtenu
+2025-08-07T16:18:59.830Z - INFO - ✅ Client Twitch initialisé
+2025-08-07T16:19:00.215Z - INFO - ⚡ 11 commandes slash synchronisées
+2025-08-07T16:19:00.219Z - INFO - 📊 2 streamers chargés
+2025-08-07T16:19:00.220Z - INFO - 🔔 Système de notifications live démarré (2 min)
+2025-08-07T16:19:00.221Z - INFO - ✅ Bot entièrement initialisé!
+2025-08-07T16:19:00.832Z - INFO - 🌐 Dashboard externe démarré sur http://localhost:3000
+2025-08-07T16:19:58.768Z - INFO - ✅ Commande dash exécutée par siphixsecours_55253
+2025-08-07T16:21:00.230Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T16:21:03.448Z - INFO - ✅ Notification live envoyée pour the_devil_mom
+2025-08-07T16:21:03.448Z - INFO - 🔴 the_devil_mom détecté en live
+2025-08-07T16:21:03.559Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T16:22:22.996Z - INFO - ✅ Commande live-status exécutée par siphixsecours_55253
+2025-08-07T16:23:00.237Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T16:23:01.613Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T16:23:24.251Z - INFO - ✅ Commande liste-non-affiliates exécutée par siphixsecours_55253
+2025-08-07T16:23:59.519Z - INFO - ✅ Commande affiliate exécutée par siphixsecours_55253
+2025-08-07T16:25:00.239Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T16:25:01.595Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T16:25:19.252Z - INFO - ✅ Commande streamers exécutée par siphixsecours_55253
+2025-08-07T16:27:00.240Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T16:27:01.928Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T16:28:21.371Z - INFO - ✅ Commande ajouter-streamer chargée
+2025-08-07T16:28:21.380Z - INFO - ✅ Commande config-reglement-role chargée
+2025-08-07T16:28:21.385Z - INFO - ✅ Commande dash chargée
+2025-08-07T16:28:21.388Z - INFO - ✅ Commande liste-non-affiliates chargée
+2025-08-07T16:28:21.390Z - INFO - ✅ Commande live-status chargée
+2025-08-07T16:28:21.394Z - INFO - ✅ Commande affiliate chargée
+2025-08-07T16:28:21.396Z - INFO - ✅ Commande ping chargée
+2025-08-07T16:28:21.410Z - INFO - ✅ Commande reglement chargée
+2025-08-07T16:28:21.413Z - INFO - ✅ Commande reglement-dashboard chargée
+2025-08-07T16:28:21.417Z - INFO - ✅ Commande streamers chargée
+2025-08-07T16:28:21.419Z - INFO - ✅ Commande unaffiliate chargée
+2025-08-07T16:28:22.251Z - INFO - 🤖 Bot en ligne!
+2025-08-07T16:28:22.252Z - INFO - 🆔 phoenix#8533 connecté
+2025-08-07T16:28:22.253Z - INFO - ✅ Base de données ouverte
+2025-08-07T16:28:22.258Z - INFO - ✅ Base de données initialisée avec succès
+2025-08-07T16:28:23.245Z - INFO - 🔑 Token Twitch obtenu
+2025-08-07T16:28:23.245Z - INFO - ✅ Client Twitch initialisé
+2025-08-07T16:28:23.609Z - INFO - ⚡ 11 commandes slash synchronisées
+2025-08-07T16:28:23.613Z - INFO - 📊 3 streamers chargés
+2025-08-07T16:28:23.613Z - INFO - 🔔 Système de notifications live démarré (2 min)
+2025-08-07T16:28:23.614Z - INFO - ✅ Bot entièrement initialisé!
+2025-08-07T16:28:24.257Z - INFO - 🌐 Dashboard externe démarré sur http://localhost:3000
+2025-08-07T16:30:23.622Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T16:30:25.381Z - INFO - ✅ Notification live envoyée pour the_devil_mom
+2025-08-07T16:30:25.381Z - INFO - 🔴 the_devil_mom détecté en live
+2025-08-07T16:30:25.482Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T16:32:23.631Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T16:32:25.110Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T16:34:23.631Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T16:34:25.397Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T16:36:23.632Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T16:36:25.062Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T16:38:23.636Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T16:38:25.117Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T16:40:23.649Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T16:40:25.104Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T16:42:23.660Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T16:42:25.097Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T16:44:23.674Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T16:44:25.076Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T16:46:23.688Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T16:46:25.089Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T16:48:23.698Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T16:48:25.087Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T16:50:23.712Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T16:50:25.130Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T16:52:23.716Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T16:52:25.353Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T16:54:23.720Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T16:54:25.189Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T16:56:23.727Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T16:56:25.144Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T16:58:23.734Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T16:58:25.177Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T17:00:23.738Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T17:00:25.483Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T17:02:23.746Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T17:02:25.195Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T17:04:23.752Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T17:04:25.426Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T17:06:23.754Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T17:06:25.136Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T17:08:23.761Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T17:08:25.172Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T17:10:23.761Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T17:10:25.141Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T17:12:23.765Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T17:12:25.155Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T17:14:23.773Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T17:14:25.164Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T17:16:30.493Z - INFO - ✅ Commande ajouter-streamer chargée
+2025-08-07T17:16:30.500Z - INFO - ✅ Commande config-reglement-role chargée
+2025-08-07T17:16:30.503Z - INFO - ✅ Commande dash chargée
+2025-08-07T17:16:30.506Z - INFO - ✅ Commande liste-non-affiliates chargée
+2025-08-07T17:16:30.507Z - INFO - ✅ Commande live-status chargée
+2025-08-07T17:16:30.510Z - INFO - ✅ Commande affiliate chargée
+2025-08-07T17:16:30.512Z - INFO - ✅ Commande modifier-description chargée
+2025-08-07T17:16:30.514Z - INFO - ✅ Commande ping chargée
+2025-08-07T17:16:30.528Z - INFO - ✅ Commande reglement chargée
+2025-08-07T17:16:30.531Z - INFO - ✅ Commande reglement-dashboard chargée
+2025-08-07T17:16:30.534Z - INFO - ✅ Commande streamers chargée
+2025-08-07T17:16:30.535Z - INFO - ✅ Commande unaffiliate chargée
+2025-08-07T17:16:31.367Z - INFO - 🤖 Bot en ligne!
+2025-08-07T17:16:31.368Z - INFO - 🆔 phoenix#8533 connecté
+2025-08-07T17:16:31.370Z - INFO - ✅ Base de données ouverte
+2025-08-07T17:16:31.374Z - INFO - ✅ Base de données initialisée avec succès
+2025-08-07T17:16:32.329Z - INFO - 🔑 Token Twitch obtenu
+2025-08-07T17:16:32.329Z - INFO - ✅ Client Twitch initialisé
+2025-08-07T17:16:32.704Z - INFO - ⚡ 12 commandes slash synchronisées
+2025-08-07T17:16:32.708Z - INFO - 📊 3 streamers chargés
+2025-08-07T17:16:32.709Z - INFO - 🔔 Système de notifications live démarré (2 min)
+2025-08-07T17:16:32.710Z - INFO - ✅ Bot entièrement initialisé!
+2025-08-07T17:16:33.381Z - INFO - 🌐 Dashboard externe démarré sur http://localhost:3000
+2025-08-07T17:18:32.714Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T17:18:34.423Z - INFO - ✅ Notification live envoyée pour the_devil_mom
+2025-08-07T17:18:34.424Z - INFO - 🔴 the_devil_mom détecté en live
+2025-08-07T17:18:34.528Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T17:19:03.055Z - ERROR - ❌ Erreur autocomplétion modifier-description: Cannot read properties of undefined (reading 'toLowerCase')
+2025-08-07T17:19:09.531Z - ERROR - ❌ Erreur autocomplétion modifier-description: Cannot read properties of undefined (reading 'toLowerCase')
+2025-08-07T17:19:10.802Z - ERROR - ❌ Erreur autocomplétion modifier-description: Cannot read properties of undefined (reading 'toLowerCase')
+2025-08-07T17:19:11.659Z - ERROR - ❌ Erreur autocomplétion modifier-description: Cannot read properties of undefined (reading 'toLowerCase')
+2025-08-07T17:19:13.239Z - ERROR - ❌ Erreur autocomplétion modifier-description: Cannot read properties of undefined (reading 'toLowerCase')
+2025-08-07T17:19:14.260Z - ERROR - ❌ Erreur autocomplétion modifier-description: Cannot read properties of undefined (reading 'toLowerCase')
+2025-08-07T17:19:15.779Z - ERROR - ❌ Erreur autocomplétion modifier-description: Cannot read properties of undefined (reading 'toLowerCase')
+2025-08-07T17:19:16.146Z - ERROR - ❌ Erreur autocomplétion modifier-description: Cannot read properties of undefined (reading 'toLowerCase')
+2025-08-07T17:19:17.239Z - ERROR - ❌ Erreur autocomplétion modifier-description: Cannot read properties of undefined (reading 'toLowerCase')
+2025-08-07T17:19:20.342Z - ERROR - ❌ Erreur autocomplétion modifier-description: Cannot read properties of undefined (reading 'toLowerCase')
+2025-08-07T17:20:32.715Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T17:20:34.130Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T17:22:32.722Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T17:22:34.177Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T17:24:32.736Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T17:24:35.581Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T17:26:32.742Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T17:26:34.141Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T17:28:32.754Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T17:28:34.292Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T17:30:32.758Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T17:30:34.246Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T17:32:32.759Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T17:32:34.260Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T17:34:32.771Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T17:34:34.156Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T17:36:32.783Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T17:36:34.267Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T17:38:32.792Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T17:38:34.231Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T17:40:32.805Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T17:40:34.476Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T17:42:32.806Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T17:42:34.507Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T17:44:32.808Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T17:44:34.356Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T17:45:44.853Z - INFO - ✅ Commande modifier-description exécutée par siphixsecours_55253
+2025-08-07T17:46:01.943Z - INFO - ✅ Commande streamers exécutée par siphixsecours_55253
+2025-08-07T17:46:16.287Z - ERROR - ❌ Erreur autocomplétion modifier-description: Cannot read properties of undefined (reading 'toLowerCase')
+2025-08-07T17:46:19.192Z - ERROR - ❌ Erreur autocomplétion modifier-description: Cannot read properties of undefined (reading 'toLowerCase')
+2025-08-07T17:46:20.140Z - ERROR - ❌ Erreur autocomplétion modifier-description: Cannot read properties of undefined (reading 'toLowerCase')
+2025-08-07T17:46:23.503Z - ERROR - ❌ Erreur autocomplétion modifier-description: Cannot read properties of undefined (reading 'toLowerCase')
+2025-08-07T17:46:25.748Z - ERROR - ❌ Erreur autocomplétion modifier-description: Cannot read properties of undefined (reading 'toLowerCase')
+2025-08-07T17:46:27.342Z - ERROR - ❌ Erreur autocomplétion modifier-description: Cannot read properties of undefined (reading 'toLowerCase')
+2025-08-07T17:46:28.575Z - ERROR - ❌ Erreur autocomplétion modifier-description: Cannot read properties of undefined (reading 'toLowerCase')
+2025-08-07T17:46:29.827Z - ERROR - ❌ Erreur autocomplétion modifier-description: Cannot read properties of undefined (reading 'toLowerCase')
+2025-08-07T17:46:29.950Z - ERROR - ❌ Erreur autocomplétion modifier-description: Cannot read properties of undefined (reading 'toLowerCase')
+2025-08-07T17:46:32.822Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T17:46:33.575Z - INFO - ✅ Commande modifier-description exécutée par siphixsecours_55253
+2025-08-07T17:46:34.287Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T17:48:12.372Z - INFO - ✅ Commande ajouter-streamer chargée
+2025-08-07T17:48:12.379Z - INFO - ✅ Commande config-reglement-role chargée
+2025-08-07T17:48:12.381Z - INFO - ✅ Commande dash chargée
+2025-08-07T17:48:12.384Z - INFO - ✅ Commande liste-non-affiliates chargée
+2025-08-07T17:48:12.387Z - INFO - ✅ Commande live-status chargée
+2025-08-07T17:48:12.390Z - INFO - ✅ Commande affiliate chargée
+2025-08-07T17:48:12.392Z - INFO - ✅ Commande modifier-description chargée
+2025-08-07T17:48:12.394Z - INFO - ✅ Commande ping chargée
+2025-08-07T17:48:12.407Z - INFO - ✅ Commande reglement chargée
+2025-08-07T17:48:12.410Z - INFO - ✅ Commande reglement-dashboard chargée
+2025-08-07T17:48:12.412Z - INFO - ✅ Commande streamers chargée
+2025-08-07T17:48:12.414Z - INFO - ✅ Commande unaffiliate chargée
+2025-08-07T17:48:13.188Z - INFO - 🤖 Bot en ligne!
+2025-08-07T17:48:13.189Z - INFO - 🆔 phoenix#8533 connecté
+2025-08-07T17:48:13.191Z - INFO - ✅ Base de données ouverte
+2025-08-07T17:48:13.197Z - INFO - ✅ Base de données initialisée avec succès
+2025-08-07T17:48:14.186Z - INFO - 🔑 Token Twitch obtenu
+2025-08-07T17:48:14.186Z - INFO - ✅ Client Twitch initialisé
+2025-08-07T17:48:14.644Z - INFO - ⚡ 12 commandes slash synchronisées
+2025-08-07T17:48:14.648Z - INFO - 📊 3 streamers chargés
+2025-08-07T17:48:14.649Z - INFO - 🔔 Système de notifications live démarré (2 min)
+2025-08-07T17:48:14.650Z - INFO - ✅ Bot entièrement initialisé!
+2025-08-07T17:48:15.196Z - INFO - 🌐 Dashboard externe démarré sur http://localhost:3000
+2025-08-07T17:48:35.971Z - ERROR - ❌ Erreur autocomplétion modifier-description: Cannot read properties of undefined (reading 'toLowerCase')
+2025-08-07T17:48:40.040Z - ERROR - ❌ Erreur autocomplétion modifier-description: Cannot read properties of undefined (reading 'toLowerCase')
+2025-08-07T17:48:42.567Z - ERROR - ❌ Erreur autocomplétion modifier-description: Cannot read properties of undefined (reading 'toLowerCase')
+2025-08-07T17:48:43.359Z - ERROR - ❌ Erreur autocomplétion modifier-description: Cannot read properties of undefined (reading 'toLowerCase')
+2025-08-07T17:48:44.731Z - ERROR - ❌ Erreur autocomplétion modifier-description: Cannot read properties of undefined (reading 'toLowerCase')
+2025-08-07T17:48:45.860Z - ERROR - ❌ Erreur autocomplétion modifier-description: Cannot read properties of undefined (reading 'toLowerCase')
+2025-08-07T17:48:47.177Z - ERROR - ❌ Erreur autocomplétion modifier-description: Cannot read properties of undefined (reading 'toLowerCase')
+2025-08-07T17:48:47.480Z - ERROR - ❌ Erreur autocomplétion modifier-description: Cannot read properties of undefined (reading 'toLowerCase')
+2025-08-07T17:48:48.283Z - ERROR - ❌ Erreur autocomplétion modifier-description: Cannot read properties of undefined (reading 'toLowerCase')
+2025-08-07T17:48:49.379Z - ERROR - ❌ Erreur autocomplétion modifier-description: Cannot read properties of undefined (reading 'toLowerCase')
+2025-08-07T17:50:14.658Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T17:50:16.364Z - INFO - ✅ Notification live envoyée pour the_devil_mom
+2025-08-07T17:50:16.365Z - INFO - 🔴 the_devil_mom détecté en live
+2025-08-07T17:50:16.471Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T17:52:14.669Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T17:52:16.130Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T17:54:14.679Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T17:54:16.146Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T17:56:14.687Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T17:56:16.117Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T17:58:14.691Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T17:58:16.193Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T19:32:41.870Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T19:32:42.841Z - INFO - ✅ Notification live envoyée pour Rockets_TW
+2025-08-07T19:32:42.841Z - INFO - 🔴 Rockets_TW détecté en live
+2025-08-07T19:32:43.969Z - INFO - ✅ Message live supprimé pour the_devil_mom
+2025-08-07T19:32:43.970Z - INFO - ⚫ the_devil_mom n'est plus en live
+2025-08-07T19:32:44.075Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T19:34:36.731Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T19:34:38.095Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T19:36:36.736Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T19:36:38.098Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T19:38:36.745Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T19:38:38.404Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T19:40:36.752Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T19:40:38.108Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T19:42:36.763Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T19:42:38.116Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T19:44:36.768Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-07T19:44:39.505Z - INFO - ✅ Vérification terminée - 1 streamers en live
+2025-08-07T19:47:30.831Z - INFO - ✅ Commande ajouter-streamer chargée
+2025-08-07T19:47:30.838Z - INFO - ✅ Commande config-reglement-role chargée
+2025-08-07T19:47:30.840Z - INFO - ✅ Commande dash chargée
+2025-08-07T19:47:30.842Z - INFO - ✅ Commande liste-non-affiliates chargée
+2025-08-07T19:47:30.844Z - INFO - ✅ Commande live-status chargée
+2025-08-07T19:47:30.846Z - INFO - ✅ Commande affiliate chargée
+2025-08-07T19:47:30.848Z - INFO - ✅ Commande modifier-description chargée
+2025-08-07T19:47:30.850Z - INFO - ✅ Commande ping chargée
+2025-08-07T19:47:30.871Z - INFO - ✅ Commande reglement chargée
+2025-08-07T19:47:30.875Z - INFO - ✅ Commande reglement-dashboard chargée
+2025-08-07T19:47:30.880Z - INFO - ✅ Commande streamers chargée
+2025-08-07T19:47:30.882Z - INFO - ✅ Commande unaffiliate chargée
+2025-08-07T19:47:31.707Z - INFO - 🤖 Bot en ligne!
+2025-08-07T19:47:31.708Z - INFO - 🆔 phoenix#8533 connecté
+2025-08-07T19:47:31.709Z - INFO - ✅ Base de données ouverte
+2025-08-07T19:47:31.713Z - INFO - ✅ Base de données initialisée avec succès
+2025-08-07T19:47:32.630Z - INFO - 🔑 Token Twitch obtenu
+2025-08-07T19:47:32.630Z - INFO - ✅ Client Twitch initialisé
+2025-08-07T19:47:32.965Z - INFO - ⚡ 12 commandes slash synchronisées
+2025-08-07T19:47:32.970Z - INFO - 📊 3 streamers chargés
+2025-08-07T19:47:32.970Z - INFO - 🔔 Système de notifications live démarré (2 min)
+2025-08-07T19:47:32.971Z - INFO - ✅ Bot entièrement initialisé!
+2025-08-07T19:47:33.723Z - INFO - 🌐 Dashboard externe démarré sur http://localhost:3000
+2025-08-09T08:23:26.687Z - INFO - ✅ Commande ajouter-streamer chargée
+2025-08-09T08:23:26.693Z - INFO - ✅ Commande config-reglement-role chargée
+2025-08-09T08:23:26.696Z - INFO - ✅ Commande dash chargée
+2025-08-09T08:23:26.698Z - INFO - ✅ Commande liste-non-affiliates chargée
+2025-08-09T08:23:26.701Z - INFO - ✅ Commande live-status chargée
+2025-08-09T08:23:26.707Z - INFO - ✅ Commande affiliate chargée
+2025-08-09T08:23:26.710Z - INFO - ✅ Commande modifier-description chargée
+2025-08-09T08:23:26.712Z - INFO - ✅ Commande ping chargée
+2025-08-09T08:23:26.727Z - INFO - ✅ Commande reglement chargée
+2025-08-09T08:23:26.731Z - INFO - ✅ Commande reglement-dashboard chargée
+2025-08-09T08:23:26.734Z - INFO - ✅ Commande streamers chargée
+2025-08-09T08:23:26.737Z - INFO - ✅ Commande unaffiliate chargée
+2025-08-09T08:23:27.681Z - INFO - 🤖 Bot en ligne!
+2025-08-09T08:23:27.681Z - INFO - 🆔 phoenix#8533 connecté
+2025-08-09T08:23:27.687Z - INFO - ✅ Base de données ouverte
+2025-08-09T08:23:27.694Z - INFO - ✅ Base de données initialisée avec succès
+2025-08-09T08:23:28.634Z - INFO - 🔑 Token Twitch obtenu
+2025-08-09T08:23:28.634Z - INFO - ✅ Client Twitch initialisé
+2025-08-09T08:23:29.218Z - INFO - ⚡ 12 commandes slash synchronisées
+2025-08-09T08:23:29.223Z - INFO - 📊 3 streamers chargés
+2025-08-09T08:23:29.223Z - INFO - 🔔 Système de notifications live démarré (2 min)
+2025-08-09T08:23:29.225Z - INFO - ✅ Bot entièrement initialisé!
+2025-08-09T08:23:29.688Z - INFO - 🌐 Dashboard externe démarré sur http://localhost:3000
+2025-08-09T08:23:49.737Z - INFO - ✅ Commande live-status exécutée par siphixsecours_55253
+2025-08-09T08:24:02.664Z - INFO - ✅ Commande liste-non-affiliates exécutée par siphixsecours_55253
+2025-08-09T08:24:13.859Z - INFO - ✅ Commande streamers exécutée par siphixsecours_55253
+2025-08-09T08:24:20.752Z - ERROR - ❌ Erreur autocomplétion modifier-description: Cannot read properties of undefined (reading 'toLowerCase')
+2025-08-09T08:24:23.480Z - ERROR - ❌ Erreur autocomplétion modifier-description: Cannot read properties of undefined (reading 'toLowerCase')
+2025-08-09T08:24:25.824Z - ERROR - ❌ Erreur autocomplétion modifier-description: Cannot read properties of undefined (reading 'toLowerCase')
+2025-08-09T08:24:26.949Z - ERROR - ❌ Erreur autocomplétion modifier-description: Cannot read properties of undefined (reading 'toLowerCase')
+2025-08-09T08:24:28.661Z - ERROR - ❌ Erreur autocomplétion modifier-description: Cannot read properties of undefined (reading 'toLowerCase')
+2025-08-09T08:24:29.419Z - ERROR - ❌ Erreur autocomplétion modifier-description: Cannot read properties of undefined (reading 'toLowerCase')
+2025-08-09T08:24:30.977Z - ERROR - ❌ Erreur autocomplétion modifier-description: Cannot read properties of undefined (reading 'toLowerCase')
+2025-08-09T08:24:37.172Z - INFO - ✅ Commande modifier-description exécutée par siphixsecours_55253
+2025-08-09T08:25:29.241Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-09T08:25:30.622Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-09T08:36:22.811Z - INFO - ✅ Commande ajouter-streamer chargée
+2025-08-09T08:36:22.817Z - INFO - ✅ Commande config-reglement-role chargée
+2025-08-09T08:36:22.819Z - INFO - ✅ Commande dash chargée
+2025-08-09T08:36:22.822Z - INFO - ✅ Commande liste-non-affiliates chargée
+2025-08-09T08:36:22.823Z - INFO - ✅ Commande live-status chargée
+2025-08-09T08:36:22.826Z - INFO - ✅ Commande affiliate chargée
+2025-08-09T08:36:22.829Z - INFO - ✅ Commande modifier-description chargée
+2025-08-09T08:36:22.831Z - INFO - ✅ Commande ping chargée
+2025-08-09T08:36:22.844Z - INFO - ✅ Commande reglement chargée
+2025-08-09T08:36:22.846Z - INFO - ✅ Commande reglement-dashboard chargée
+2025-08-09T08:36:22.849Z - INFO - ✅ Commande streamers chargée
+2025-08-09T08:36:22.851Z - INFO - ✅ Commande unaffiliate chargée
+2025-08-09T08:36:23.608Z - INFO - 🤖 Bot en ligne!
+2025-08-09T08:36:23.609Z - INFO - 🆔 phoenix#8533 connecté
+2025-08-09T08:36:23.611Z - INFO - ✅ Base de données ouverte
+2025-08-09T08:36:23.615Z - INFO - ✅ Base de données initialisée avec succès
+2025-08-09T08:36:24.534Z - INFO - 🔑 Token Twitch obtenu
+2025-08-09T08:36:24.535Z - INFO - ✅ Client Twitch initialisé
+2025-08-09T08:36:24.802Z - INFO - ⚡ 12 commandes slash synchronisées
+2025-08-09T08:36:24.806Z - INFO - 📊 3 streamers chargés
+2025-08-09T08:36:24.807Z - INFO - 🔔 Système de notifications live démarré (2 min)
+2025-08-09T08:36:24.808Z - INFO - ✅ Bot entièrement initialisé!
+2025-08-09T08:36:25.629Z - INFO - 🌐 Dashboard externe démarré sur http://localhost:3000
+2025-08-09T08:38:04.644Z - INFO - ✅ Commande modifier-description exécutée par siphixsecours_55253
+2025-08-09T08:38:24.809Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-09T08:38:26.163Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-09T08:40:24.822Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-09T08:40:26.173Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-09T08:41:37.285Z - INFO - ✅ Commande ajouter-streamer chargée
+2025-08-09T08:41:37.291Z - INFO - ✅ Commande config-reglement-role chargée
+2025-08-09T08:41:37.293Z - INFO - ✅ Commande dash chargée
+2025-08-09T08:41:37.295Z - INFO - ✅ Commande liste-non-affiliates chargée
+2025-08-09T08:41:37.298Z - INFO - ✅ Commande live-status chargée
+2025-08-09T08:41:37.301Z - INFO - ✅ Commande affiliate chargée
+2025-08-09T08:41:37.303Z - INFO - ✅ Commande modifier-description chargée
+2025-08-09T08:41:37.305Z - INFO - ✅ Commande ping chargée
+2025-08-09T08:41:37.317Z - INFO - ✅ Commande reglement chargée
+2025-08-09T08:41:37.320Z - INFO - ✅ Commande reglement-dashboard chargée
+2025-08-09T08:41:37.322Z - INFO - ✅ Commande streamers chargée
+2025-08-09T08:41:37.324Z - INFO - ✅ Commande unaffiliate chargée
+2025-08-09T08:41:38.127Z - INFO - 🤖 Bot en ligne!
+2025-08-09T08:41:38.127Z - INFO - 🆔 phoenix#8533 connecté
+2025-08-09T08:41:38.129Z - INFO - ✅ Base de données ouverte
+2025-08-09T08:41:38.133Z - INFO - ✅ Base de données initialisée avec succès
+2025-08-09T08:41:39.037Z - INFO - 🔑 Token Twitch obtenu
+2025-08-09T08:41:39.037Z - INFO - ✅ Client Twitch initialisé
+2025-08-09T08:41:39.385Z - INFO - ⚡ 12 commandes slash synchronisées
+2025-08-09T08:41:39.389Z - INFO - 📊 3 streamers chargés
+2025-08-09T08:41:39.390Z - INFO - 🔔 Système de notifications live démarré (2 min)
+2025-08-09T08:41:39.391Z - INFO - ✅ Bot entièrement initialisé!
+2025-08-09T08:41:40.135Z - INFO - 🌐 Dashboard externe démarré sur http://localhost:3000
+2025-08-09T08:41:57.908Z - ERROR - ❌ Erreur autocomplétion modifier-description: Invalid Form Body
+data.choices[0].name[BASE_TYPE_REQUIRED]: This field is required
+data.choices[0].value[BASE_TYPE_REQUIRED]: This field is required
+data.choices[1].name[BASE_TYPE_REQUIRED]: This field is required
+data.choices[1].value[BASE_TYPE_REQUIRED]: This field is required
+data.choices[2].name[BASE_TYPE_REQUIRED]: This field is required
+data.choices[2].value[BASE_TYPE_REQUIRED]: This field is required
+2025-08-09T08:43:39.407Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-09T08:43:40.763Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-09T08:44:51.979Z - INFO - ✅ Commande ajouter-streamer chargée
+2025-08-09T08:44:51.985Z - INFO - ✅ Commande config-reglement-role chargée
+2025-08-09T08:44:51.988Z - INFO - ✅ Commande dash chargée
+2025-08-09T08:44:51.990Z - INFO - ✅ Commande liste-non-affiliates chargée
+2025-08-09T08:44:51.992Z - INFO - ✅ Commande live-status chargée
+2025-08-09T08:44:51.996Z - INFO - ✅ Commande affiliate chargée
+2025-08-09T08:44:52.000Z - INFO - ✅ Commande modifier-description chargée
+2025-08-09T08:44:52.002Z - INFO - ✅ Commande ping chargée
+2025-08-09T08:44:52.017Z - INFO - ✅ Commande reglement chargée
+2025-08-09T08:44:52.021Z - INFO - ✅ Commande reglement-dashboard chargée
+2025-08-09T08:44:52.025Z - INFO - ✅ Commande streamers chargée
+2025-08-09T08:44:52.028Z - INFO - ✅ Commande unaffiliate chargée
+2025-08-09T08:44:52.698Z - INFO - 🤖 Bot en ligne!
+2025-08-09T08:44:52.699Z - INFO - 🆔 phoenix#8533 connecté
+2025-08-09T08:44:52.701Z - INFO - ✅ Base de données ouverte
+2025-08-09T08:44:52.704Z - INFO - ✅ Base de données initialisée avec succès
+2025-08-09T08:44:53.620Z - INFO - 🔑 Token Twitch obtenu
+2025-08-09T08:44:53.620Z - INFO - ✅ Client Twitch initialisé
+2025-08-09T08:44:53.915Z - INFO - ⚡ 12 commandes slash synchronisées
+2025-08-09T08:44:53.919Z - INFO - 📊 3 streamers chargés
+2025-08-09T08:44:53.920Z - INFO - 🔔 Système de notifications live démarré (2 min)
+2025-08-09T08:44:53.921Z - INFO - ✅ Bot entièrement initialisé!
+2025-08-09T08:44:54.710Z - INFO - 🌐 Dashboard externe démarré sur http://localhost:3000
+2025-08-09T08:45:17.290Z - ERROR - ❌ Erreur autocomplétion modifier-description: Invalid Form Body
+data.choices[0].name[BASE_TYPE_REQUIRED]: This field is required
+data.choices[0].value[BASE_TYPE_REQUIRED]: This field is required
+data.choices[1].name[BASE_TYPE_REQUIRED]: This field is required
+data.choices[1].value[BASE_TYPE_REQUIRED]: This field is required
+data.choices[2].name[BASE_TYPE_REQUIRED]: This field is required
+data.choices[2].value[BASE_TYPE_REQUIRED]: This field is required
+2025-08-09T08:46:53.924Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-09T08:46:55.258Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-09T08:48:26.590Z - INFO - ✅ Commande ajouter-streamer chargée
+2025-08-09T08:48:26.597Z - INFO - ✅ Commande config-reglement-role chargée
+2025-08-09T08:48:26.600Z - INFO - ✅ Commande dash chargée
+2025-08-09T08:48:26.602Z - INFO - ✅ Commande liste-non-affiliates chargée
+2025-08-09T08:48:26.604Z - INFO - ✅ Commande live-status chargée
+2025-08-09T08:48:26.606Z - INFO - ✅ Commande affiliate chargée
+2025-08-09T08:48:26.608Z - INFO - ✅ Commande modifier-description chargée
+2025-08-09T08:48:26.610Z - INFO - ✅ Commande ping chargée
+2025-08-09T08:48:26.622Z - INFO - ✅ Commande reglement chargée
+2025-08-09T08:48:26.625Z - INFO - ✅ Commande reglement-dashboard chargée
+2025-08-09T08:48:26.627Z - INFO - ✅ Commande streamers chargée
+2025-08-09T08:48:26.629Z - INFO - ✅ Commande unaffiliate chargée
+2025-08-09T08:48:27.386Z - INFO - 🤖 Bot en ligne!
+2025-08-09T08:48:27.387Z - INFO - 🆔 phoenix#8533 connecté
+2025-08-09T08:48:27.389Z - INFO - ✅ Base de données ouverte
+2025-08-09T08:48:27.392Z - INFO - ✅ Base de données initialisée avec succès
+2025-08-09T08:48:28.289Z - INFO - 🔑 Token Twitch obtenu
+2025-08-09T08:48:28.290Z - INFO - ✅ Client Twitch initialisé
+2025-08-09T08:48:28.535Z - INFO - ⚡ 12 commandes slash synchronisées
+2025-08-09T08:48:28.540Z - INFO - 📊 3 streamers chargés
+2025-08-09T08:48:28.541Z - INFO - 🔔 Système de notifications live démarré (2 min)
+2025-08-09T08:48:28.542Z - INFO - ✅ Bot entièrement initialisé!
+2025-08-09T08:48:29.397Z - INFO - 🌐 Dashboard externe démarré sur http://localhost:3000
+2025-08-09T08:49:22.084Z - INFO - ✅ Commande modifier-description exécutée par siphixsecours_55253
+2025-08-09T08:50:28.558Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-09T08:50:29.915Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-09T08:52:07.883Z - INFO - ✅ Commande ajouter-streamer chargée
+2025-08-09T08:52:07.889Z - INFO - ✅ Commande config-reglement-role chargée
+2025-08-09T08:52:07.892Z - INFO - ✅ Commande dash chargée
+2025-08-09T08:52:07.894Z - INFO - ✅ Commande liste-non-affiliates chargée
+2025-08-09T08:52:07.896Z - INFO - ✅ Commande live-status chargée
+2025-08-09T08:52:07.898Z - INFO - ✅ Commande affiliate chargée
+2025-08-09T08:52:07.900Z - INFO - ✅ Commande modifier-description chargée
+2025-08-09T08:52:07.902Z - INFO - ✅ Commande ping chargée
+2025-08-09T08:52:07.913Z - INFO - ✅ Commande reglement chargée
+2025-08-09T08:52:07.916Z - INFO - ✅ Commande reglement-dashboard chargée
+2025-08-09T08:52:07.919Z - INFO - ✅ Commande streamers chargée
+2025-08-09T08:52:07.920Z - INFO - ✅ Commande unaffiliate chargée
+2025-08-09T08:52:08.626Z - INFO - 🤖 Bot en ligne!
+2025-08-09T08:52:08.627Z - INFO - 🆔 phoenix#8533 connecté
+2025-08-09T08:52:08.628Z - INFO - ✅ Base de données ouverte
+2025-08-09T08:52:08.632Z - INFO - ✅ Base de données initialisée avec succès
+2025-08-09T08:52:09.527Z - INFO - 🔑 Token Twitch obtenu
+2025-08-09T08:52:09.527Z - INFO - ✅ Client Twitch initialisé
+2025-08-09T08:52:09.906Z - INFO - ⚡ 12 commandes slash synchronisées
+2025-08-09T08:52:09.910Z - INFO - 📊 3 streamers chargés
+2025-08-09T08:52:09.911Z - INFO - 🔔 Système de notifications live démarré (2 min)
+2025-08-09T08:52:09.913Z - INFO - ✅ Bot entièrement initialisé!
+2025-08-09T08:52:10.638Z - INFO - 🌐 Dashboard externe démarré sur http://localhost:3000
+2025-08-09T08:52:53.596Z - INFO - ✅ Commande modifier-description exécutée par siphixsecours_55253
+2025-08-09T08:54:09.914Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-09T08:54:11.280Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-09T08:54:47.812Z - INFO - ✅ Commande ajouter-streamer chargée
+2025-08-09T08:54:47.817Z - INFO - ✅ Commande config-reglement-role chargée
+2025-08-09T08:54:47.820Z - INFO - ✅ Commande dash chargée
+2025-08-09T08:54:47.822Z - INFO - ✅ Commande liste-non-affiliates chargée
+2025-08-09T08:54:47.823Z - INFO - ✅ Commande live-status chargée
+2025-08-09T08:54:47.825Z - INFO - ✅ Commande affiliate chargée
+2025-08-09T08:54:47.828Z - INFO - ✅ Commande modifier-description chargée
+2025-08-09T08:54:47.829Z - INFO - ✅ Commande ping chargée
+2025-08-09T08:54:47.841Z - INFO - ✅ Commande reglement chargée
+2025-08-09T08:54:47.844Z - INFO - ✅ Commande reglement-dashboard chargée
+2025-08-09T08:54:47.846Z - INFO - ✅ Commande streamers chargée
+2025-08-09T08:54:47.847Z - INFO - ✅ Commande unaffiliate chargée
+2025-08-09T08:54:48.559Z - INFO - 🤖 Bot en ligne!
+2025-08-09T08:54:48.559Z - INFO - 🆔 phoenix#8533 connecté
+2025-08-09T08:54:48.561Z - INFO - ✅ Base de données ouverte
+2025-08-09T08:54:48.565Z - INFO - ✅ Base de données initialisée avec succès
+2025-08-09T08:54:49.468Z - INFO - 🔑 Token Twitch obtenu
+2025-08-09T08:54:49.469Z - INFO - ✅ Client Twitch initialisé
+2025-08-09T08:54:49.733Z - INFO - ⚡ 12 commandes slash synchronisées
+2025-08-09T08:54:49.739Z - INFO - 📊 3 streamers chargés
+2025-08-09T08:54:49.740Z - INFO - 🔔 Système de notifications live démarré (2 min)
+2025-08-09T08:54:49.745Z - INFO - ✅ Bot entièrement initialisé!
+2025-08-09T08:54:50.569Z - INFO - 🌐 Dashboard externe démarré sur http://localhost:3000
+2025-08-09T08:55:25.511Z - INFO - ✅ Commande modifier-description exécutée par siphixsecours_55253
+2025-08-09T08:56:49.752Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-09T08:56:51.094Z - INFO - ✅ Vérification terminée - 0 streamers en live
+2025-08-09T08:58:49.763Z - INFO - 🔍 Vérification des streamers en live...
+2025-08-09T08:58:51.128Z - INFO - ✅ Vérification terminée - 0 streamers en live
