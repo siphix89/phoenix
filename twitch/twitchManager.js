@@ -7,11 +7,11 @@ class TwitchManager {
     this.logger = logger;
     this.accessToken = null;
     this.tokenExpiresAt = null;
+    this.maxRetries = 3; // Nombre maximum de tentatives
   }
 
   async initClient() {
     try {
-      // Vérifier que les credentials sont présents
       if (!this.clientId || !this.clientSecret) {
         throw new Error('Client ID ou Client Secret Twitch manquant');
       }
@@ -34,7 +34,7 @@ class TwitchManager {
         headers: {
           'Content-Type': 'application/json'
         },
-        timeout: 10000 // 10 secondes de timeout
+        timeout: 10000
       });
 
       this.accessToken = response.data.access_token;
@@ -50,13 +50,12 @@ class TwitchManager {
   }
 
   async ensureValidToken() {
-    // Renouveler le token s'il expire dans moins d'1 minute
     if (!this.accessToken || Date.now() >= (this.tokenExpiresAt - 60000)) {
       await this.getAccessToken();
     }
   }
 
-  async checkStreamStatus(username) {
+  async checkStreamStatus(username, retryCount = 0) {
     try {
       if (!username || username.trim() === '') {
         this.logger.warn('⚠️ Nom d\'utilisateur vide fourni');
@@ -108,22 +107,30 @@ class TwitchManager {
 
       return { isLive, streamInfo };
     } catch (error) {
-      // Gestion spécifique des erreurs d'API
-      if (error.response?.status === 401) {
-        this.logger.warn('🔑 Token Twitch expiré, tentative de renouvellement...');
+      // Gestion spécifique des erreurs d'API avec retry
+      if (error.response?.status === 401 && retryCount < this.maxRetries) {
+        this.logger.warn(`🔑 Token Twitch expiré, tentative ${retryCount + 1}/${this.maxRetries}`);
         this.accessToken = null; // Forcer le renouvellement
-        return { isLive: false, streamInfo: null };
+        await this.ensureValidToken();
+        return this.checkStreamStatus(username, retryCount + 1);
       } else if (error.response?.status === 429) {
         this.logger.warn('⏳ Rate limit Twitch atteint');
+        // Attendre avant de retourner
+        await new Promise(resolve => setTimeout(resolve, 1000));
         return { isLive: false, streamInfo: null };
+      } else if (error.code === 'ECONNRESET' || error.code === 'ETIMEDOUT') {
+        if (retryCount < this.maxRetries) {
+          this.logger.warn(`🔄 Erreur réseau, retry ${retryCount + 1}/${this.maxRetries}`);
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          return this.checkStreamStatus(username, retryCount + 1);
+        }
       }
 
-      this.logger.error(`❌ Erreur vérification stream ${username}: ${error.message}`);
+      this.logger.error(`❌ Erreur vérification stream ${username} (tentative ${retryCount + 1}): ${error.message}`);
       return { isLive: false, streamInfo: null };
     }
   }
 
-  // Méthode pour obtenir des informations détaillées sur un utilisateur
   async getUserInfo(username) {
     try {
       await this.ensureValidToken();
