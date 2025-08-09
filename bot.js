@@ -4,7 +4,7 @@ const path = require('path');
 const fs = require('fs');
 
 // Imports des modules personnalisés
-const DatabaseManager = require('./database/databaseManager.js');
+const DatabaseManager = require('./database/databasemanager.js');
 const TwitchManager = require('./twitch/TwitchManager');
 const { BotConfig, logger, StreamerStatus } = require('./config');
 const { BotMetrics, RuleAcceptanceViewHandler } = require('./models');
@@ -566,4 +566,5 @@ if (require.main === module) {
 
 
 module.exports = StreamerBot;
+
 
