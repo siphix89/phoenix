@@ -12,7 +12,7 @@ const { BotMetrics, RuleAcceptanceViewHandler } = require('./models');
 // REMPLACEZ CETTE LIGNE:
 // const { sendLiveNotification, removeLiveNotification, updateLiveNotification } = require('./notifications');
 // PAR CELLE-CI:
-const NotificationManager = require('./utils/NotificationManager'); // Adaptez le chemin selon votre structure
+const NotificationManager = require('./notifications/NotificationManager'); // Adaptez le chemin selon votre structure
 
 // Import du dashboard externe
 const dashboardServer = require('./dashboard-server.js');
@@ -675,3 +675,4 @@ if (require.main === module) {
 }
 
 module.exports = StreamerBot;
+
