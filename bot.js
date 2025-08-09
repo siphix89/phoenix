@@ -218,23 +218,84 @@ class StreamerBot extends Client {
 
   async onInteractionCreate(interaction) {
     try {
-      // Gérer les boutons de règlement (système existant)
-      if (this.ruleHandler && interaction.isButton()) {
-        await this.ruleHandler.handleInteraction(interaction);
+      // DÉBOGAGE : Log de toutes les interactions
+      console.log('🔍 INTERACTION REÇUE:', {
+        type: interaction.type,
+        customId: interaction.customId,
+        user: interaction.user.tag,
+        isButton: interaction.isButton(),
+        timestamp: new Date().toISOString()
+      });
+
+      // Gérer les boutons du règlement-dashboard EN PREMIER
+      if (interaction.isButton() && interaction.customId.startsWith('accept_rules_')) {
+        console.log('🎯 BOUTON RÈGLEMENT DÉTECTÉ:', interaction.customId);
+        
+        // RÉPONSE IMMÉDIATE pour éviter le timeout
+        if (!interaction.replied && !interaction.deferred) {
+          console.log('⚡ Envoi deferReply...');
+          await interaction.deferReply({ ephemeral: true });
+          console.log('✅ DeferReply envoyé');
+        }
+
+        // Traitement direct du bouton de règlement
+        const roleId = interaction.customId.replace('accept_rules_', '');
+        const role = interaction.guild.roles.cache.get(roleId);
+        
+        if (!role) {
+          await interaction.editReply({
+            content: '❌ Rôle introuvable. Contactez un administrateur.'
+          });
+          return;
+        }
+
+        // Vérifier si l'utilisateur a déjà le rôle
+        if (interaction.member.roles.cache.has(roleId)) {
+          await interaction.editReply({
+            content: `✅ Vous avez déjà le rôle **${role.name}** !`
+          });
+          return;
+        }
+
+        try {
+          await interaction.member.roles.add(role);
+          
+          const embed = new EmbedBuilder()
+            .setTitle('✅ Règlement accepté')
+            .setDescription(`Félicitations ! Vous avez reçu le rôle **${role.name}** 🎉`)
+            .setColor('Green')
+            .addFields({
+              name: '🎯 Bienvenue !',
+              value: 'Vous avez maintenant accès à tous les channels du serveur. Amusez-vous bien !',
+              inline: false
+            });
+
+          await interaction.editReply({ embeds: [embed] });
+          logger.info(`✅ ${interaction.user.username} a accepté le règlement et reçu le rôle ${role.name}`);
+          console.log(`✅ Rôle ${role.name} attribué à ${interaction.user.tag}`);
+
+        } catch (error) {
+          console.error('❌ Erreur attribution rôle:', error.message);
+          logger.error(`❌ Erreur attribution rôle règlement: ${error}`);
+          await interaction.editReply({
+            content: '❌ Erreur lors de l\'attribution du rôle. Contactez un administrateur.'
+          });
+        }
         return;
       }
 
-      // Gérer les boutons du règlement-dashboard
-      if (interaction.isButton() && interaction.customId.startsWith('accept_rules_')) {
-        const reglementCommand = this.commands.get('reglement-dashboard');
-        if (reglementCommand && reglementCommand.handleButtonInteraction) {
-          const handled = await reglementCommand.handleButtonInteraction(interaction, this);
-          if (handled) return;
-        }
+      // Gérer les boutons de règlement (système existant - APRÈS le nouveau système)
+      if (this.ruleHandler && interaction.isButton()) {
+        console.log('🎯 Tentative ruleHandler...');
+        const handled = await this.ruleHandler.handleInteraction(interaction);
+        console.log('✅ RuleHandler traité:', handled);
+        if (handled) return;
       }
 
       // Gérer les boutons du dashboard Phoenix
       if (interaction.isButton() && ['refresh_dashboard', 'bot_settings', 'view_streamers'].includes(interaction.customId)) {
+        console.log('🎯 Bouton dashboard Phoenix:', interaction.customId);
+        
         if (!interaction.member.permissions.has('Administrator')) {
           return interaction.reply({
             content: '❌ Permissions insuffisantes',
@@ -361,6 +422,8 @@ class StreamerBot extends Client {
 
       // Gérer les commandes slash
       if (interaction.isChatInputCommand()) {
+        console.log('🎯 Commande slash:', interaction.commandName);
+        
         const command = this.commands.get(interaction.commandName);
 
         if (!command) {
@@ -401,9 +464,26 @@ class StreamerBot extends Client {
           }
         }
       }
+
+      console.log('🏁 Fin traitement interaction');
+      
     } catch (error) {
+      console.error('❌ ERREUR GLOBALE INTERACTION:', error);
       logger.error(`❌ Erreur lors du traitement de l'interaction: ${error.message}`);
       this.metrics.recordError();
+      
+      // Gestion d'urgence pour éviter les timeouts
+      if (!interaction.replied && !interaction.deferred) {
+        try {
+          await interaction.reply({
+            content: '❌ Une erreur inattendue est survenue.',
+            flags: 64
+          });
+        } catch (replyError) {
+          console.error('❌ Impossible de répondre à l\'interaction:', replyError.message);
+          logger.error(`❌ Impossible de répondre à l'interaction: ${replyError.message}`);
+        }
+      }
     }
   }
 
@@ -564,8 +644,4 @@ if (require.main === module) {
   main();
 }
 
-
 module.exports = StreamerBot;
-
-
-
