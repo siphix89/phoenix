@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phoenix Bot Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .success {
+            background: rgba(34, 197, 94, 0.2);
+            border: 2px solid #22c55e;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+            text-align: center;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .left-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1.5rem;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #22c55e;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .status {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1.5rem;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .commands-panel {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            height: fit-content;
+        }
+
+        .commands-panel h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .command-category {
+            margin-bottom: 2rem;
+        }
+
+        .category-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            padding: 0.5rem 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            border-left: 4px solid #22c55e;
+        }
+
+        .command-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .command-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1rem;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .command-item:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateX(5px);
+        }
+
+        .command-name {
+            font-weight: bold;
+            color: #22c55e;
+            margin-bottom: 0.25rem;
+        }
+
+        .command-desc {
+            font-size: 0.85rem;
+            opacity: 0.8;
+            line-height: 1.3;
+        }
+
+        .btn {
+            background: #22c55e;
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            margin: 0.5rem;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn:hover {
+            background: #16a34a;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .btn:disabled {
+            background: #6b7280;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: #3b82f6;
+        }
+
+        .btn-secondary:hover {
+            background: #2563eb;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .btn-execute {
+            background: #8b5cf6;
+        }
+
+        .btn-execute:hover {
+            background: #7c3aed;
+        }
+
+        .controls {
+            text-align: center;
+            margin: 2rem 0;
+        }
+
+        .activity-panel {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 1.5rem;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .activity-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            border-left: 4px solid #3b82f6;
+        }
+
+        .activity-time {
+            font-size: 0.8rem;
+            opacity: 0.7;
+            margin-bottom: 0.5rem;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 2rem;
+            border-radius: 20px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .modal h3 {
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .close-btn {
+            float: right;
+            font-size: 1.5rem;
+            cursor: pointer;
+            background: none;
+            border: none;
+            color: white;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 1rem;
+        }
+
+        .form-group input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .streamers-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .streamer-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .streamer-info {
+            flex: 1;
+        }
+
+        .streamer-name {
+            font-weight: bold;
+            margin-bottom: 0.25rem;
+        }
+
+        .streamer-url {
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+
+        .streamer-status {
+            margin-left: 1rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .status-live {
+            background: #22c55e;
+            color: white;
+        }
+
+        .status-offline {
+            background: #6b7280;
+            color: white;
+        }
+
+        .status-affiliate {
+            background: #8b5cf6;
+            color: white;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 10px;
+            margin: 1rem 0;
+        }
+
+        .alert-success {
+            background: rgba(34, 197, 94, 0.2);
+            border: 1px solid #22c55e;
+            color: #22c55e;
+        }
+
+        .alert-error {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid #ef4444;
+            color: #ef4444;
+        }
+
+        @media (max-width: 1200px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .commands-panel {
+                order: -1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .controls {
+                display: flex;
+                flex-direction: column;
+                gap: 1rem;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔥 Phoenix Bot Dashboard</h1>
+            
+            <div class="success">
+                <h2>✅ Dashboard Fonctionnel !</h2>
+                <p>Dashboard interactif avec commandes Phoenix Bot fonctionnelles.</p>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="left-panel">
+                <div class="stats" id="stats">
+                    <div class="stat-card">
+                        <div class="stat-value" id="servers">-</div>
+                        <div class="stat-label">🖥️ Serveurs</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="users">-</div>
+                        <div class="stat-label">👥 Utilisateurs</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="streamers">-</div>
+                        <div class="stat-label">🎮 Streamers</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="uptime">-</div>
+                        <div class="stat-label">⚡ Uptime</div>
+                    </div>
+                </div>
+
+                <div class="status" id="status">
+                    <h3>📊 Statut du Bot</h3>
+                    <p>Chargement...</p>
+                </div>
+
+                <div class="activity-panel">
+                    <h3>📊 Activité Récente</h3>
+                    <div id="activity-list">
+                        <div class="activity-item">
+                            <div class="activity-time">Chargement...</div>
+                            <div>Dashboard en cours d'initialisation...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="commands-panel">
+                <h3>⚡ Commandes Phoenix Bot</h3>
+                
+                <div class="command-category">
+                    <div class="category-title">🎮 Gestion Streamers</div>
+                    <div class="command-list">
+                        <div class="command-item" onclick="executeCommand('streamers')">
+                            <div class="command-name">📋 Voir Streamers</div>
+                            <div class="command-desc">Affiche tous les streamers configurés</div>
+                        </div>
+                        <div class="command-item" onclick="executeCommand('add-streamer')">
+                            <div class="command-name">➕ Ajouter Streamer</div>
+                            <div class="command-desc">Ajoute un nouveau streamer Twitch</div>
+                        </div>
+                        <div class="command-item" onclick="executeCommand('check-streams')">
+                            <div class="command-name">🔍 Vérifier Streams</div>
+                            <div class="command-desc">Force la vérification des streams</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="command-category">
+                    <div class="category-title">⚙️ Administration</div>
+                    <div class="command-list">
+                        <div class="command-item" onclick="executeCommand('ping')">
+                            <div class="command-name">📡 Test Ping</div>
+                            <div class="command-desc">Teste la latence du bot</div>
+                        </div>
+                        <div class="command-item" onclick="executeCommand('test-twitch')">
+                            <div class="command-name">🔗 Test Twitch</div>
+                            <div class="command-desc">Vérifie la connexion API Twitch</div>
+                        </div>
+                        <div class="command-item" onclick="executeCommand('server-info')">
+                            <div class="command-name">📊 Infos Serveur</div>
+                            <div class="command-desc">Détails du serveur Discord</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="command-category">
+                    <div class="category-title">🔧 Outils</div>
+                    <div class="command-list">
+                        <div class="command-item" onclick="executeCommand('detailed-stats')">
+                            <div class="command-name">📈 Stats Détaillées</div>
+                            <div class="command-desc">Statistiques complètes du bot</div>
+                        </div>
+                        <div class="command-item" onclick="executeCommand('logs')">
+                            <div class="command-name">📋 Logs Récents</div>
+                            <div class="command-desc">Historique des événements</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn" onclick="loadStats()">🔄 Actualiser Dashboard</button>
+            <button class="btn btn-secondary" onclick="executeCommand('refresh-all')">🚀 Actualisation Complète</button>
+            <button class="btn btn-danger" onclick="generateNewToken()">🔑 Nouveau Token</div>
+        </div>
+    </div>
+
+    <!-- Modal pour les résultats de commandes -->
+    <div class="modal" id="resultModal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeModal()">&times;</button>
+            <h3 id="modalTitle">Résultat</h3>
+            <div id="modalContent">
+                <!-- Le contenu sera généré par JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal pour ajouter un streamer -->
+    <div class="modal" id="addStreamerModal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeModal()">&times;</button>
+            <h3>➕ Ajouter un Streamer</h3>
+            <form id="addStreamerForm">
+                <div class="form-group">
+                    <label for="streamerName">Nom du streamer :</label>
+                    <input type="text" id="streamerName" placeholder="Ex: MonStreamer" required>
+                </div>
+                <div class="form-group">
+                    <label for="streamerUrl">URL Twitch :</label>
+                    <input type="url" id="streamerUrl" placeholder="https://www.twitch.tv/monstreamer" required>
+                </div>
+                <div class="controls">
+                    <button type="submit" class="btn">➕ Ajouter</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Annuler</button>
+                </div>
+            </form>
+            <div id="addStreamerResult"></div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration globale
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token');
+        
+        if (!token) {
+            alert('Token d\'authentification manquant');
+        }
+
+        // Fonction utilitaire pour les requêtes API
+        async function apiRequest(endpoint, method = 'GET', data = null) {
+            const config = {
+                method,
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            };
+
+            if (data) {
+                config.body = JSON.stringify({ ...data, token });
+            }
+
+            const url = method === 'GET' ? `${endpoint}?token=${token}` : endpoint;
+            
+            try {
+                const response = await fetch(url, config);
+                return await response.json();
+            } catch (error) {
+                console.error('Erreur API:', error);
+                throw error;
+            }
+        }
+
+        // Chargement des statistiques
+        async function loadStats() {
+            try {
+                const data = await apiRequest('/api/stats');
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                
+                // Mettre à jour les statistiques
+                document.getElementById('servers').textContent = data.servers || '0';
+                document.getElementById('users').textContent = (data.users || 0).toLocaleString();
+                document.getElementById('streamers').textContent = data.streamers || '0';
+                
+                // Calculer l'uptime
+                const uptimeMs = data.uptime || 0;
+                const uptimeHours = Math.floor(uptimeMs / 3600000);
+                const uptimeMinutes = Math.floor((uptimeMs % 3600000) / 60000);
+                document.getElementById('uptime').textContent = `${uptimeHours}h ${uptimeMinutes}m`;
+                
+                // Mettre à jour le statut
+                document.getElementById('status').innerHTML = `
+                    <h3>📊 Statut du Bot - ${new Date().toLocaleTimeString()}</h3>
+                    <p>✅ Bot en ligne • 📡 Ping: ${data.ping}ms • 🔒 Connexion sécurisée • 🎮 ${data.streamers} streamers surveillés</p>
+                `;
+                
+                addActivity(`Statistiques actualisées - ${data.servers} serveurs, ${data.users} utilisateurs`);
+                
+            } catch (error) {
+                console.error('Erreur chargement stats:', error);
+                showAlert('Erreur de connexion: ' + error.message, 'error');
+            }
+        }
+
+        // Exécution des commandes
+        async function executeCommand(command) {
+            addActivity(`Exécution de la commande: ${command}`);
+            
+            try {
+                let result;
+                
+                switch (command) {
+                    case 'streamers':
+                        result = await apiRequest('/api/streamers');
+                        showStreamersResult(result);
+                        break;
+                        
+                    case 'add-streamer':
+                        document.getElementById('addStreamerModal').style.display = 'flex';
+                        return;
+                        
+                    case 'check-streams':
+                        showLoading('Vérification des streams en cours...');
+                        result = await apiRequest('/api/check-streams', 'POST');
+                        hideLoading();
+                        showResult('🔍 Vérification des Streams', result);
+                        break;
+                        
+                    case 'ping':
+                        result = await apiRequest('/api/ping');
+                        showResult('📡 Test Ping', result);
+                        break;
+                        
+                    case 'test-twitch':
+                        showLoading('Test de l\'API Twitch...');
+                        result = await apiRequest('/api/test-twitch', 'POST');
+                        hideLoading();
+                        showResult('🔗 Test Twitch API', result);
+                        break;
+                        
+                    case 'server-info':
+                        result = await apiRequest('/api/server-info');
+                        showServerInfo(result);
+                        break;
+                        
+                    case 'detailed-stats':
+                        result = await apiRequest('/api/detailed-stats');
+                        showDetailedStats(result);
+                        break;
+                        
+                    case 'logs':
+                        result = await apiRequest('/api/logs');
+                        showLogs(result);
+                        break;
+                        
+                    case 'refresh-all':
+                        await refreshAll();
+                        return;
+                        
+                    default:
+                        showAlert('Commande non reconnue', 'error');
+                        return;
+                }
+                
+                if (result && !result.success) {
+                    showAlert('Erreur: ' + result.error, 'error');
+                }
+                
+            } catch (error) {
+                hideLoading();
+                console.error('Erreur commande:', error);
+                showAlert('Erreur lors de l\'exécution: ' + error.message, 'error');
+            }
+        }
+
+        // Affichage des résultats des streamers
+        function showStreamersResult(result) {
+            if (!result.success) {
+                showAlert('Erreur: ' + result.error, 'error');
+                return;
+            }
+
+            const streamers = result.streamers || [];
+            let content = `<h4>📋 Liste des Streamers (${streamers.length})</h4>`;
+            
+            if (streamers.length === 0) {
+                content += '<p>Aucun streamer configuré.</p>';
+            } else {
+                content += '<div class="streamers-list">';
+                streamers.forEach(streamer => {
+                    const statusClass = streamer.isLive ? 'status-live' : 'status-offline';
+                    const statusText = streamer.isLive ? '🔴 LIVE' : '⚫ Offline';
+                    const affiliateText = streamer.isAffiliate ? '<span class="status-affiliate">⭐ Affilié</span>' : '';
+                    
+                    content += `
+                        <div class="streamer-item">
+                            <div class="streamer-info">
+                                <div class="streamer-name">${streamer.name}</div>
+                                <div class="streamer-url">${streamer.url}</div>
+                            </div>
+                            <div>
+                                <span class="streamer-status ${statusClass}">${statusText}</span>
+                                ${affiliateText}
+                                <button class="btn btn-danger" style="margin-left: 0.5rem; padding: 0.25rem 0.75rem; font-size: 0.8rem;" onclick="removeStreamer('${streamer.name}')">🗑️</button>
+                            </div>
+                        </div>
+                    `;
+                });
+                content += '</div>';
+            }
+
+            showModal('📋 Gestion des Streamers', content);
+        }
+
+        // Affichage des informations serveur
+        function showServerInfo(result) {
+            if (!result.success) {
+                showAlert('Erreur: ' + result.error, 'error');
+                return;
+            }
+
+            const server = result.server;
+            const bot = result.bot;
+            
+            const content = `
+                <h4>🏠 Serveur Discord</h4>
+                <div class="server-info">
+                    <div class="info-item">
+                        <strong>📛 Nom:</strong><br>${server.name}
+                    </div>
+                    <div class="info-item">
+                        <strong>👥 Membres:</strong><br>${server.memberCount.toLocaleString()}
+                    </div>
+                    <div class="info-item">
+                        <strong>💬 Channels:</strong><br>${server.channels}
+                    </div>
+                    <div class="info-item">
+                        <strong>🎭 Rôles:</strong><br>${server.roles}
+                    </div>
+                    <div class="info-item">
+                        <strong>🚀 Boost Level:</strong><br>Niveau ${server.boostLevel}
+                    </div>
+                    <div class="info-item">
+                        <strong>💎 Boosts:</strong><br>${server.boostCount}
+                    </div>
+                </div>
+                
+                <h4>🤖 Bot Phoenix</h4>
+                <div class="server-info">
+                    <div class="info-item">
+                        <strong>👤 Nom:</strong><br>${bot.username}#${bot.discriminator}
+                    </div>
+                    <div class="info-item">
+                        <strong>🆔 ID:</strong><br>${bot.id}
+                    </div>
+                    <div class="info-item">
+                        <strong>🖥️ Serveurs:</strong><br>${bot.guilds}
+                    </div>
+                    <div class="info-item">
+                        <strong>👤 Utilisateurs:</strong><br>${bot.users.toLocaleString()}
+                    </div>
+                </div>
+            `;
+
+            showModal('📊 Informations Serveur', content);
+        }
+
+        // Affichage des statistiques détaillées
+        function showDetailedStats(result) {
+            if (!result.success) {
+                showAlert('Erreur: ' + result.error, 'error');
+                return;
+            }
+
+            const stats = result.stats;
+            
+            const content = `
+                <h4>🤖 Bot Statistics</h4>
+                <div class="server-info">
+                    <div class="info-item">
+                        <strong>⏱️ Uptime:</strong><br>${Math.floor(stats.bot.uptime / 3600000)}h ${Math.floor((stats.bot.uptime % 3600000) / 60000)}m
+                    </div>
+                    <div class="info-item">
+                        <strong>📡 Ping:</strong><br>${stats.bot.ping}ms
+                    </div>
+                    <div class="info-item">
+                        <strong>💾 Mémoire:</strong><br>${stats.bot.memory} MB
+                    </div>
+                    <div class="info-item">
+                        <strong>🖥️ Serveurs:</strong><br>${stats.bot.guilds}
+                    </div>
+                </div>
+                
+                <h4>🎮 Streamers</h4>
+                <div class="server-info">
+                    <div class="info-item">
+                        <strong>📊 Total:</strong><br>${stats.streamers.total}
+                    </div>
+                    <div class="info-item">
+                        <strong>🔴 En Live:</strong><br>${stats.streamers.live}
+                    </div>
+                    <div class="info-item">
+                        <strong>⭐ Affiliés:</strong><br>${stats.streamers.affiliates}
+                    </div>
+                    <div class="info-item">
+                        <strong>📈 Non-Affiliés:</strong><br>${stats.streamers.nonAffiliates}
+                    </div>
+                </div>
+                
+                <h4>🖥️ Système</h4>
+                <div class="server-info">
+                    <div class="info-item">
+                        <strong>🐧 Plateforme:</strong><br>${stats.system.platform}
+                    </div>
+                    <div class="info-item">
+                        <strong>🔗 Node.js:</strong><br>${stats.system.nodeVersion}
+                    </div>
+                    <div class="info-item">
+                        <strong>⏱️ Uptime Système:</strong><br>${Math.floor(stats.system.uptime / 3600)}h ${Math.floor((stats.system.uptime % 3600) / 60)}m
+                    </div>
+                </div>
+            `;
+
+            showModal('📈 Statistiques Détaillées', content);
+        }
+
+        // Affichage des logs
+        function showLogs(result) {
+            if (!result.success) {
+                showAlert('Erreur: ' + result.error, 'error');
+                return;
+            }
+
+            const logs = result.logs || [];
+            let content = `<h4>📋 Logs Récents (${logs.length})</h4>`;
+            
+            if (logs.length === 0) {
+                content += '<p>Aucun log disponible.</p>';
+            } else {
+                content += '<div style="max-height: 400px; overflow-y: auto;">';
+                logs.forEach(log => {
+                    const levelColor = {
+                        'info': '#3b82f6',
+                        'success': '#22c55e',
+                        'warning': '#f59e0b',
+                        'error': '#ef4444'
+                    }[log.level] || '#6b7280';
+                    
+                    content += `
+                        <div style="background: rgba(255, 255, 255, 0.05); padding: 0.75rem; border-radius: 8px; margin-bottom: 0.5rem; border-left: 4px solid ${levelColor};">
+                            <div style="font-size: 0.8rem; opacity: 0.7;">${new Date(log.timestamp).toLocaleString()}</div>
+                            <div><strong>[${log.level.toUpperCase()}]</strong> ${log.message}</div>
+                        </div>
+                    `;
+                });
+                content += '</div>';
+            }
+
+            showModal('📋 Logs Système', content);
+        }
+
+        // Suppression d'un streamer
+        async function removeStreamer(name) {
+            if (!confirm(`Êtes-vous sûr de vouloir supprimer le streamer "${name}" ?`)) {
+                return;
+            }
+
+            try {
+                const result = await apiRequest(`/api/streamers/${encodeURIComponent(name)}`, 'DELETE');
+                
+                if (result.success) {
+                    showAlert(`Streamer "${name}" supprimé avec succès`, 'success');
+                    addActivity(`Streamer "${name}" supprimé`);
+                    // Recharger la liste
+                    setTimeout(() => executeCommand('streamers'), 1000);
+                } else {
+                    showAlert('Erreur: ' + result.error, 'error');
+                }
+            } catch (error) {
+                showAlert('Erreur lors de la suppression: ' + error.message, 'error');
+            }
+        }
+
+        // Actualisation complète
+        async function refreshAll() {
+            showLoading('Actualisation complète en cours...');
+            
+            try {
+                await loadStats();
+                await new Promise(resolve => setTimeout(resolve, 500)); // Petit délai
+                const checkResult = await apiRequest('/api/check-streams', 'POST');
+                
+                hideLoading();
+                addActivity('Actualisation complète terminée');
+                showAlert('✅ Dashboard et streams actualisés', 'success');
+                
+            } catch (error) {
+                hideLoading();
+                showAlert('Erreur lors de l\'actualisation: ' + error.message, 'error');
+            }
+        }
+
+        // Gestion du formulaire d'ajout de streamer
+        document.getElementById('addStreamerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const name = document.getElementById('streamerName').value.trim();
+            const url = document.getElementById('streamerUrl').value.trim();
+            
+            if (!name || !url) {
+                showAlert('Veuillez remplir tous les champs', 'error');
+                return;
+            }
+
+            try {
+                const result = await apiRequest('/api/streamers/add', 'POST', { name, url });
+                
+                const resultDiv = document.getElementById('addStreamerResult');
+                
+                if (result.success) {
+                    resultDiv.innerHTML = `<div class="alert alert-success">${result.message}</div>`;
+                    addActivity(`Nouveau streamer ajouté: ${name}`);
+                    
+                    // Réinitialiser le formulaire
+                    document.getElementById('addStreamerForm').reset();
+                    
+                    // Fermer le modal après 2 secondes
+                    setTimeout(() => {
+                        closeModal();
+                        loadStats(); // Recharger les stats
+                    }, 2000);
+                } else {
+                    resultDiv.innerHTML = `<div class="alert alert-error">${result.error}</div>`;
+                }
+                
+            } catch (error) {
+                document.getElementById('addStreamerResult').innerHTML = 
+                    `<div class="alert alert-error">Erreur: ${error.message}</div>`;
+            }
+        });
+
+        // Fonctions utilitaires
+        function showModal(title, content) {
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalContent').innerHTML = content;
+            document.getElementById('resultModal').style.display = 'flex';
+        }
+
+        function showResult(title, result) {
+            const content = `
+                <div class="alert ${result.success ? 'alert-success' : 'alert-error'}">
+                    ${result.message || result.error || 'Opération terminée'}
+                </div>
+                ${result.data ? `<pre style="background: rgba(0,0,0,0.3); padding: 1rem; border-radius: 8px; overflow-x: auto;">${JSON.stringify(result.data, null, 2)}</pre>` : ''}
+            `;
+            showModal(title, content);
+        }
+
+        function closeModal() {
+            document.getElementById('resultModal').style.display = 'none';
+            document.getElementById('addStreamerModal').style.display = 'none';
+            
+            // Nettoyer les résultats
+            document.getElementById('addStreamerResult').innerHTML = '';
+        }
+
+        function showAlert(message, type = 'success') {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.textContent = message;
+            
+            document.body.insertBefore(alertDiv, document.body.firstChild);
+            
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 5000);
+        }
+
+        function showLoading(message = 'Chargement...') {
+            const content = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>${message}</p>
+                </div>
+            `;
+            showModal('⏳ Traitement', content);
+        }
+
+        function hideLoading() {
+            closeModal();
+        }
+
+        function addActivity(action) {
+            const activityList = document.getElementById('activity-list');
+            const newActivity = document.createElement('div');
+            newActivity.className = 'activity-item';
+            newActivity.innerHTML = `
+                <div class="activity-time">Il y a quelques secondes</div>
+                <div>✅ ${action}</div>
+            `;
+            
+            activityList.insertBefore(newActivity, activityList.firstChild);
+            
+            // Garder seulement les 5 dernières activités
+            while (activityList.children.length > 5) {
+                activityList.removeChild(activityList.lastChild);
+            }
+        }
+
+        function generateNewToken() {
+            alert('🔑 Pour générer un nouveau token, utilisez la commande /dash type:web sur Discord.\n\n⚠️ Le token actuel sera invalidé.');
+            addActivity('Demande de génération d\'un nouveau token');
+        }
+
+        // Fermer les modals en cliquant à l'extérieur
+        window.onclick = function(event) {
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                if (event.target === modal) {
+                    closeModal();
+                }
+            });
+        }
+
+        // Initialisation
+        window.addEventListener('load', () => {
+            loadStats();
+            addActivity('Dashboard Phoenix chargé avec commandes fonctionnelles');
+            
+            // Actualiser automatiquement toutes les 30 secondes
+            setInterval(loadStats, 30000);
+        });
+    </script>
+</body>
+</html>
