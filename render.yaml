@@ -1,0 +1,49 @@
+# Exported from Render on 2025-08-09T09:46:05Z
+services:
+- type: web
+  name: phoenix
+  runtime: Node.js
+  repo: https://github.com/siphix89/phoenix
+  plan: free
+  envVars:
+  - key: RULES_ROLE_NAMe
+    sync: false
+  - key: RULES_ROLE_ID
+    sync: false
+  - key: NODE_ENV
+    sync: false
+  - key: LOG_LEVEL
+    sync: false
+  - key: WEB_SERVER_HOST
+    sync: false
+  - key: WEB_SERVER_PORT
+    sync: false
+  - key: WEB_SERVER_ENABLED
+    sync: false
+  - key: NOTIFICATION_INTERVAL
+    sync: false
+  - key: AUTO_NOTIFICATIONS
+    sync: false
+  - key: TWITCH_CLIENT_SECRET
+    sync: false
+  - key: TWITCH_CLIENT_ID
+    sync: false
+  - key: CHANNEL_LOGS
+    sync: false
+  - key: CHANNEL_WELCOME
+    sync: false
+  - key: CHANNEL_LIVE_NON_AFFILIE
+    sync: false
+  - key: CHANNEL_LIVE_AFFILIE
+    sync: false
+  - key: CLIENT_ID
+    sync: false
+  - key: BOT_PREFIX
+    sync: false
+  - key: DISCORD_TOKEN
+    sync: false
+  region: frankfurt
+  buildCommand: npm install
+  startCommand: npm start
+  autoDeployTrigger: commit
+version: "1"
