@@ -547,11 +547,11 @@ class StreamerBot extends Client {
           const { isLive, streamInfo } = await this.twitch.checkStreamStatus(twitchName);
 
           if (isLive && !this.liveStreamers.has(streamer.name)) {
-            await sendLiveNotification(this, streamer, streamInfo);
+            await notificationManager.sendLiveNotification(this, streamer, streamInfo);
             this.liveStreamers.set(streamer.name, true);
             logger.info(`🔴 ${streamer.name} détecté en live`);
           } else if (!isLive && this.liveStreamers.has(streamer.name)) {
-            await removeLiveNotification(this, streamer.name);
+            await notificationManager.removeLiveNotification(this, streamer.name);
             this.liveStreamers.delete(streamer.name);
             logger.info(`⚫ ${streamer.name} n'est plus en live`);
           }
@@ -645,3 +645,4 @@ if (require.main === module) {
 }
 
 module.exports = StreamerBot;
+
