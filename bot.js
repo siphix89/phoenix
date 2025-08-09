@@ -8,7 +8,11 @@ const DatabaseManager = require('./database/databasemanager.js');
 const TwitchManager = require('./twitch/twitchManager');
 const { BotConfig, logger, StreamerStatus } = require('./config');
 const { BotMetrics, RuleAcceptanceViewHandler } = require('./models');
-const { sendLiveNotification, removeLiveNotification, updateLiveNotification } = require('./notifications');
+
+// REMPLACEZ CETTE LIGNE:
+// const { sendLiveNotification, removeLiveNotification, updateLiveNotification } = require('./notifications');
+// PAR CELLE-CI:
+const NotificationManager = require('./utils/NotificationManager'); // Adaptez le chemin selon votre structure
 
 // Import du dashboard externe
 const dashboardServer = require('./dashboard-server.js');
@@ -35,6 +39,9 @@ class StreamerBot extends Client {
     this.ruleHandler = null;
     this.checkInterval = null;
     this.commands = new Collection();
+    
+    // AJOUTEZ CETTE LIGNE:
+    this.notificationManager = null; // Sera initialisé dans onReady
 
     this.setupEventHandlers();
     this.loadCommands();
@@ -104,6 +111,11 @@ class StreamerBot extends Client {
       } else {
         logger.warn('⚠️ Credentials Twitch manquants, notifications désactivées');
       }
+
+      // AJOUTEZ CETTE SECTION:
+      // Initialiser le NotificationManager
+      this.notificationManager = new NotificationManager(this);
+      logger.info('✅ NotificationManager initialisé');
 
       // Enregistrer les commandes slash
       try {
@@ -520,9 +532,16 @@ class StreamerBot extends Client {
     logger.info(`🔔 Système de notifications live démarré (${this.config.notificationIntervalMinutes} min)`);
   }
 
+  // REMPLACEZ ENTIÈREMENT CETTE MÉTHODE:
   async checkStreamersLive() {
     if (!this.isReady()) {
       logger.warn('⚠️ Bot non prêt, vérification ignorée');
+      return;
+    }
+
+    // Vérifier que le NotificationManager est initialisé
+    if (!this.notificationManager) {
+      logger.error('❌ NotificationManager non initialisé');
       return;
     }
 
@@ -545,19 +564,30 @@ class StreamerBot extends Client {
           }
 
           const { isLive, streamInfo } = await this.twitch.checkStreamStatus(twitchName);
+          const wasLive = this.liveStreamers.has(streamer.name);
 
-          if (isLive && !this.liveStreamers.has(streamer.name)) {
-            await notificationManager.sendLiveNotification(this, streamer, streamInfo);
-            this.liveStreamers.set(streamer.name, true);
+          if (isLive && !wasLive) {
+            // Streamer vient de passer en live
             logger.info(`🔴 ${streamer.name} détecté en live`);
-          } else if (!isLive && this.liveStreamers.has(streamer.name)) {
-            await notificationManager.removeLiveNotification(this, streamer.name);
-            this.liveStreamers.delete(streamer.name);
+            const success = await this.notificationManager.sendLiveNotification(streamer, streamInfo);
+            
+            if (success) {
+              this.liveStreamers.set(streamer.name, true);
+            }
+            
+          } else if (isLive && wasLive) {
+            // Streamer toujours en live, mettre à jour
+            await this.notificationManager.updateLiveNotification(streamer, streamInfo);
+            
+          } else if (!isLive && wasLive) {
+            // Streamer n'est plus en live
             logger.info(`⚫ ${streamer.name} n'est plus en live`);
+            await this.notificationManager.removeLiveNotification(streamer.name);
+            this.liveStreamers.delete(streamer.name);
           }
 
           // Petit délai entre les requêtes pour éviter le rate limit
-          await new Promise(resolve => setTimeout(resolve, 100));
+          await new Promise(resolve => setTimeout(resolve, 1000));
         } catch (error) {
           logger.error(`❌ Erreur vérification ${streamer.name}: ${error.message}`);
           this.metrics.recordError();
@@ -645,4 +675,3 @@ if (require.main === module) {
 }
 
 module.exports = StreamerBot;
-
