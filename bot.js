@@ -13,6 +13,9 @@ const { sendLiveNotification, removeLiveNotification, updateLiveNotification } =
 // Import du dashboard externe
 const dashboardServer = require('./dashboard-server.js');
 
+// Import du serveur keep-alive
+const { keepAlive } = require('./keepalive.js');
+
 class StreamerBot extends Client {
   constructor(config) {
     super({
@@ -35,6 +38,7 @@ class StreamerBot extends Client {
     this.ruleHandler = null;
     this.checkInterval = null;
     this.commands = new Collection();
+    this.keepAliveServer = null; // Ajout pour stocker la référence du serveur
 
     this.setupEventHandlers();
     this.loadCommands();
@@ -90,6 +94,10 @@ class StreamerBot extends Client {
     logger.info(`🆔 ${this.user.tag} connecté`);
 
     try {
+      // Démarrer le serveur keep-alive
+      this.keepAliveServer = keepAlive();
+      logger.info('🔄 Serveur keep-alive démarré');
+
       // Initialiser la base de données
       await this.db.connect();
       await this.db.initDatabase();
@@ -500,6 +508,13 @@ class StreamerBot extends Client {
         logger.info('⏹️ Arrêt de la vérification des streams');
       }
 
+      // Arrêter le serveur keep-alive
+      if (this.keepAliveServer) {
+        this.keepAliveServer.close(() => {
+          logger.info('🔄 Serveur keep-alive arrêté');
+        });
+      }
+
       await this.db.close();
       await this.destroy();
       
@@ -565,4 +580,3 @@ if (require.main === module) {
 }
 
 module.exports = StreamerBot;
-modul
