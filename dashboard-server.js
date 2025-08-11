@@ -493,8 +493,15 @@ function startDashboard(bot) {
     botInstance = bot;
     
     app.listen(PORT, () => {
-        console.log(`🔥 Dashboard Phoenix disponible sur: http://localhost:${PORT}/dashboard`);
+        // Déterminer l'URL publique
+        const baseUrl = process.env.RENDER_EXTERNAL_URL || 
+                       process.env.PUBLIC_URL || 
+                       `https://${process.env.RENDER_SERVICE_NAME || 'localhost'}.onrender.com` ||
+                       `http://localhost:${PORT}`;
+        
+        console.log(`🔥 Dashboard Phoenix disponible sur: ${baseUrl}/dashboard`);
         addLog('success', `Dashboard serveur démarré sur le port ${PORT}`);
+        addLog('info', `URL publique: ${baseUrl}/dashboard`);
         addActivity('Dashboard Phoenix démarré');
     });
     
@@ -504,6 +511,14 @@ function startDashboard(bot) {
             addActivity(`Nouveau membre: ${member.user.tag} sur ${member.guild.name}`);
         });
     }
+}
+
+// Fonction pour obtenir l'URL de base
+function getBaseUrl() {
+    return process.env.RENDER_EXTERNAL_URL || 
+           process.env.PUBLIC_URL || 
+           `https://phoenix-1-iy68.onrender.com` ||
+           `http://localhost:${PORT}`;
 }
 
 // Gestion de l'arrêt propre
@@ -519,6 +534,7 @@ module.exports = {
     generateAuthToken,
     addActivity,
     addLog,
+    getBaseUrl,
     app
 };
 
