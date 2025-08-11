@@ -185,6 +185,21 @@ class StreamerBot extends Client {
 
   async onGuildMemberAdd(member) {
     try {
+      // Attribution automatique du rôle
+      if (this.config.autoRoleId && this.config.autoRoleId !== 0) {
+        try {
+          const role = member.guild.roles.cache.get(this.config.autoRoleId.toString());
+          if (role) {
+            await member.roles.add(role);
+            logger.info(`✅ Rôle "${role.name}" attribué à ${member.user.tag}`);
+          } else {
+            logger.error(`❌ Rôle avec l'ID ${this.config.autoRoleId} non trouvé!`);
+          }
+        } catch (roleError) {
+          logger.error(`❌ Erreur attribution rôle pour ${member.user.tag}: ${roleError.message}`);
+        }
+      }
+
       if (!this.config.welcomeChannel) {
         logger.warn(`⚠️ Channel de bienvenue non configuré pour: ${member.user.tag}`);
         return;
@@ -198,9 +213,18 @@ class StreamerBot extends Client {
 
       const streamersCount = (await this.db.getAllStreamers()).length;
 
+      // Récupérer le nom du rôle attribué pour l'afficher dans l'embed
+      let roleText = '';
+      if (this.config.autoRoleId && this.config.autoRoleId !== 0) {
+        const role = member.guild.roles.cache.get(this.config.autoRoleId.toString());
+        if (role) {
+          roleText = `\n🎭 Rôle **${role.name}** attribué automatiquement`;
+        }
+      }
+
       const embed = new EmbedBuilder()
         .setTitle('🎉 Bienvenue sur le serveur !')
-        .setDescription(`Salut ${member.toString()} ! Nous sommes ravis de t'accueillir parmi nous ! 🚀`)
+        .setDescription(`Salut ${member.toString()} ! Nous sommes ravis de t'accueillir parmi nous ! 🚀${roleText}`)
         .setColor(Colors.Green)
         .setThumbnail(member.displayAvatarURL())
         .addFields(
