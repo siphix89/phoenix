@@ -3,18 +3,47 @@ const { Client, GatewayIntentBits, Partials, EmbedBuilder, Colors, ActivityType,
 const path = require('path');
 const fs = require('fs');
 
-// Imports des modules personnalisés
+// Imports des modules personnalisés avec gestion d'erreurs
 const DatabaseManager = require('./database/databasemanager.js');
-const TwitchManager = require('./twitch/twitchManager');
+
+// Import conditionnel du TwitchManager
+let TwitchManager;
+try {
+  TwitchManager = require('./twitch/TwitchManager');
+} catch (error) {
+  console.log('⚠️ TwitchManager non trouvé, fonctionnalités Twitch désactivées');
+  TwitchManager = null;
+}
+
 const { BotConfig, logger, StreamerStatus } = require('./config');
 const { BotMetrics, RuleAcceptanceViewHandler } = require('./models');
-const { sendLiveNotification, removeLiveNotification, updateLiveNotification } = require('./notifications');
+
+// Import conditionnel des notifications
+let sendLiveNotification, removeLiveNotification, updateLiveNotification;
+try {
+  const notifications = require('./notifications');
+  if (typeof notifications.sendLiveNotification === 'function') {
+    sendLiveNotification = notifications.sendLiveNotification;
+    removeLiveNotification = notifications.removeLiveNotification;
+    updateLiveNotification = notifications.updateLiveNotification;
+  } else {
+    // Si c'est un export par défaut
+    sendLiveNotification = notifications.default?.sendLiveNotification || notifications;
+    removeLiveNotification = notifications.default?.removeLiveNotification;
+    updateLiveNotification = notifications.default?.updateLiveNotification;
+  }
+} catch (error) {
+  console.log('⚠️ Module notifications non trouvé, notifications désactivées');
+  sendLiveNotification = () => console.log('📱 Notification live désactivée');
+  removeLiveNotification = () => console.log('📱 Suppression notification désactivée');
+  updateLiveNotification = () => console.log('📱 Mise à jour notification désactivée');
+}
 
 // Import du dashboard externe
 const dashboardServer = require('./dashboard-server.js');
 
-// Import du serveur keep-alive
-const { keepAlive } = require('./keepalive.js');
+// Keep-alive désactivé temporairement
+// const { keepAlive } = require('./keepalive.js');
 
 class StreamerBot extends Client {
   constructor(config) {
@@ -31,14 +60,14 @@ class StreamerBot extends Client {
 
     this.config = config;
     this.db = new DatabaseManager('streamers.db', logger);
-    this.twitch = new TwitchManager(config, logger);
+    this.twitch = TwitchManager ? new TwitchManager(config, logger) : null;
     this.liveStreamers = new Map();
     this.liveMessages = new Map();
     this.metrics = new BotMetrics();
     this.ruleHandler = null;
     this.checkInterval = null;
     this.commands = new Collection();
-    this.keepAliveServer = null; // Ajout pour stocker la référence du serveur
+    this.keepAliveServer = null; // Désactivé temporairement
 
     this.setupEventHandlers();
     this.loadCommands();
@@ -94,23 +123,28 @@ class StreamerBot extends Client {
     logger.info(`🆔 ${this.user.tag} connecté`);
 
     try {
-      // Démarrer le serveur keep-alive
-      this.keepAliveServer = keepAlive();
-      logger.info('🔄 Serveur keep-alive démarré');
+      // Keep-alive désactivé temporairement
+      /*
+      // Démarrer le serveur keep-alive si disponible
+      if (keepAlive) {
+        this.keepAliveServer = keepAlive();
+        logger.info('🔄 Serveur keep-alive démarré');
+      }
+      */
 
       // Initialiser la base de données
       await this.db.connect();
       await this.db.initDatabase();
 
-      // Initialiser Twitch
-      if (this.config.twitchClientId && this.config.twitchClientSecret) {
+      // Initialiser Twitch si disponible
+      if (this.twitch && this.config.twitchClientId && this.config.twitchClientSecret) {
         try {
           await this.twitch.initClient();
         } catch (error) {
           logger.error('❌ Impossible d\'initialiser Twitch, notifications désactivées');
         }
       } else {
-        logger.warn('⚠️ Credentials Twitch manquants, notifications désactivées');
+        logger.warn('⚠️ Credentials Twitch manquants ou TwitchManager indisponible, notifications désactivées');
       }
 
       // Enregistrer les commandes slash
@@ -135,7 +169,7 @@ class StreamerBot extends Client {
       logger.info(`📊 ${streamersCount} streamers chargés`);
 
       // Démarrer la vérification périodique des streams
-      if (this.config.autoNotifications && this.config.twitchClientId && this.config.twitchClientSecret) {
+      if (this.config.autoNotifications && this.twitch && this.config.twitchClientId && this.config.twitchClientSecret) {
         this.startStreamChecking();
       }
 
@@ -226,6 +260,12 @@ class StreamerBot extends Client {
 
   async onInteractionCreate(interaction) {
     try {
+      // Vérifier si l'interaction est encore valide
+      if (interaction.replied || interaction.deferred) {
+        logger.warn('⚠️ Interaction déjà traitée, ignorée');
+        return;
+      }
+
       // Gérer les boutons de règlement (système existant)
       if (this.ruleHandler && interaction.isButton()) {
         await this.ruleHandler.handleInteraction(interaction);
@@ -379,6 +419,11 @@ class StreamerBot extends Client {
         this.metrics.recordCommand(interaction.commandName, interaction.user.id);
 
         try {
+          // Déférer la réponse pour les commandes longues
+          if (!interaction.replied && !interaction.deferred) {
+            await interaction.deferReply();
+          }
+
           await command.execute(interaction, this);
           logger.info(`✅ Commande ${interaction.commandName} exécutée par ${interaction.user.tag}`);
         } catch (error) {
@@ -387,13 +432,17 @@ class StreamerBot extends Client {
 
           const errorMessage = {
             content: '❌ Une erreur est survenue lors de l\'exécution de la commande.',
-            flags: 64
+            ephemeral: true
           };
 
-          if (interaction.replied || interaction.deferred) {
-            await interaction.followUp(errorMessage);
-          } else {
-            await interaction.reply(errorMessage);
+          try {
+            if (interaction.deferred) {
+              await interaction.editReply(errorMessage);
+            } else if (!interaction.replied) {
+              await interaction.reply(errorMessage);
+            }
+          } catch (replyError) {
+            logger.error(`❌ Impossible de répondre à l'interaction: ${replyError.message}`);
           }
         }
       }
@@ -449,8 +498,8 @@ class StreamerBot extends Client {
   }
 
   async checkStreamersLive() {
-    if (!this.isReady()) {
-      logger.warn('⚠️ Bot non prêt, vérification ignorée');
+    if (!this.isReady() || !this.twitch) {
+      logger.warn('⚠️ Bot non prêt ou Twitch indisponible, vérification ignorée');
       return;
     }
 
@@ -475,11 +524,15 @@ class StreamerBot extends Client {
           const { isLive, streamInfo } = await this.twitch.checkStreamStatus(twitchName);
 
           if (isLive && !this.liveStreamers.has(streamer.name)) {
-            await sendLiveNotification(this, streamer, streamInfo);
+            if (sendLiveNotification) {
+              await sendLiveNotification(this, streamer, streamInfo);
+            }
             this.liveStreamers.set(streamer.name, true);
             logger.info(`🔴 ${streamer.name} détecté en live`);
           } else if (!isLive && this.liveStreamers.has(streamer.name)) {
-            await removeLiveNotification(this, streamer.name);
+            if (removeLiveNotification) {
+              await removeLiveNotification(this, streamer.name);
+            }
             this.liveStreamers.delete(streamer.name);
             logger.info(`⚫ ${streamer.name} n'est plus en live`);
           }
@@ -508,12 +561,15 @@ class StreamerBot extends Client {
         logger.info('⏹️ Arrêt de la vérification des streams');
       }
 
+      // Keep-alive désactivé temporairement
+      /*
       // Arrêter le serveur keep-alive
       if (this.keepAliveServer) {
         this.keepAliveServer.close(() => {
           logger.info('🔄 Serveur keep-alive arrêté');
         });
       }
+      */
 
       await this.db.close();
       await this.destroy();
@@ -547,8 +603,12 @@ async function main() {
     // Démarrer le dashboard externe après que le bot soit prêt
     bot.on('ready', () => {
       setTimeout(() => {
-        dashboardServer.startDashboard(bot);
-        logger.info('🌐 Dashboard externe démarré sur http://localhost:3000');
+        try {
+          dashboardServer.startDashboard(bot);
+          logger.info('🌐 Dashboard externe démarré sur http://localhost:3000');
+        } catch (error) {
+          logger.warn('⚠️ Impossible de démarrer le dashboard externe:', error.message);
+        }
       }, 2000);
     });
 
@@ -580,4 +640,3 @@ if (require.main === module) {
 }
 
 module.exports = StreamerBot;
-
