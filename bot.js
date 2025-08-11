@@ -56,6 +56,7 @@ class StreamerBot extends Client {
     this.checkInterval = null;
     this.commands = new Collection();
     this.keepAliveServer = null; // Désactivé temporairement
+    this.notificationManager = null; // Référence directe
 
     this.setupEventHandlers();
     this.loadCommands();
@@ -111,34 +112,42 @@ class StreamerBot extends Client {
     logger.info(`🆔 ${this.user.tag} connecté`);
 
     try {
-      // Keep-alive désactivé temporairement
-      /*
-      // Démarrer le serveur keep-alive si disponible
-      if (keepAlive) {
-        this.keepAliveServer = keepAlive();
-        logger.info('🔄 Serveur keep-alive démarré');
-      }
-      */
-
       // Initialiser la base de données
       await this.db.connect();
       await this.db.initDatabase();
 
-      // Initialiser Twitch si disponible
+      // Initialiser Twitch et les notifications
       if (this.twitch && this.config.twitchClientId && this.config.twitchClientSecret) {
         try {
+          logger.info('🔧 Initialisation de Twitch...');
           await this.twitch.initClient();
+          logger.info('✅ Client Twitch initialisé');
           
-          // Initialiser le gestionnaire de notifications si disponible
+          // Initialiser le gestionnaire de notifications
           if (NotificationManager) {
-            notificationManager = new NotificationManager(this);
+            this.notificationManager = new NotificationManager(this);
+            notificationManager = this.notificationManager; // Compatibilité
             logger.info('✅ NotificationManager initialisé');
+            
+            // Démarrer les notifications automatiquement si configuré
+            if (this.config.autoNotifications) {
+              logger.info('🚀 Démarrage automatique des notifications...');
+              this.startStreamChecking();
+            } else {
+              logger.info('ℹ️ Notifications configurées mais auto-démarrage désactivé');
+            }
+          } else {
+            logger.warn('⚠️ NotificationManager non disponible');
           }
         } catch (error) {
-          logger.error('❌ Impossible d\'initialiser Twitch, notifications désactivées');
+          logger.error(`❌ Erreur Twitch: ${error.message}`);
+          // Ne pas bloquer complètement, on réessaiera plus tard
         }
       } else {
-        logger.warn('⚠️ Credentials Twitch manquants ou TwitchManager indisponible, notifications désactivées');
+        logger.warn('⚠️ Configuration Twitch incomplète:');
+        logger.warn(`   - TwitchManager: ${this.twitch ? 'Disponible' : 'Manquant'}`);
+        logger.warn(`   - Client ID: ${this.config.twitchClientId ? 'Configuré' : 'Manquant'}`);
+        logger.warn(`   - Client Secret: ${this.config.twitchClientSecret ? 'Configuré' : 'Manquant'}`);
       }
 
       // Enregistrer les commandes slash
@@ -162,11 +171,6 @@ class StreamerBot extends Client {
       const streamersCount = (await this.db.getAllStreamers()).length;
       logger.info(`📊 ${streamersCount} streamers chargés`);
 
-      // Démarrer la vérification périodique des streams
-      if (this.config.autoNotifications && this.twitch && this.config.twitchClientId && this.config.twitchClientSecret) {
-        this.startStreamChecking();
-      }
-
       // Mettre à jour le statut du bot
       await this.user.setPresence({
         activities: [{ 
@@ -176,10 +180,54 @@ class StreamerBot extends Client {
         status: 'online',
       });
 
+      // Afficher l'état des notifications
+      logger.info('📋 État des notifications:');
+      logger.info(`   - Auto notifications: ${this.config.autoNotifications ? 'Activées' : 'Désactivées'}`);
+      logger.info(`   - Interval: ${this.config.notificationIntervalMinutes || 5} minutes`);
+      logger.info(`   - Check interval actif: ${this.checkInterval ? 'Oui' : 'Non'}`);
+      logger.info(`   - NotificationManager: ${this.notificationManager ? 'Initialisé' : 'Non disponible'}`);
+
       logger.info('✅ Bot entièrement initialisé!');
     } catch (error) {
       logger.error(`❌ Erreur lors de l'initialisation: ${error.message}`);
       this.metrics.recordError();
+    }
+  }
+
+  // Méthode pour démarrer manuellement les notifications
+  async startNotifications() {
+    try {
+      logger.info('🔧 Tentative de démarrage manuel des notifications...');
+      
+      if (!this.twitch) {
+        throw new Error('TwitchManager non disponible');
+      }
+      
+      if (!this.config.twitchClientId || !this.config.twitchClientSecret) {
+        throw new Error('Credentials Twitch manquants');
+      }
+      
+      // Initialiser Twitch si pas déjà fait
+      if (!this.twitch.accessToken) {
+        logger.info('🔑 Initialisation du client Twitch...');
+        await this.twitch.initClient();
+      }
+      
+      // Initialiser NotificationManager si pas déjà fait
+      if (!this.notificationManager && NotificationManager) {
+        this.notificationManager = new NotificationManager(this);
+        notificationManager = this.notificationManager;
+        logger.info('✅ NotificationManager initialisé manuellement');
+      }
+      
+      // Démarrer la vérification
+      this.startStreamChecking();
+      
+      logger.info('✅ Notifications démarrées manuellement avec succès');
+      return true;
+    } catch (error) {
+      logger.error(`❌ Impossible de démarrer les notifications: ${error.message}`);
+      return false;
     }
   }
 
@@ -497,17 +545,43 @@ class StreamerBot extends Client {
     if (this.checkInterval) {
       clearInterval(this.checkInterval);
     }
+    
+    // Vérifications préalables
+    if (!this.isReady()) {
+      logger.warn('⚠️ Bot non prêt, notifications reportées');
+      setTimeout(() => this.startStreamChecking(), 5000);
+      return;
+    }
+    
+    if (!this.twitch || !this.config.twitchClientId || !this.config.twitchClientSecret) {
+      logger.error('❌ Configuration Twitch incomplète, notifications désactivées');
+      return;
+    }
+    
+    if (!this.notificationManager) {
+      logger.error('❌ NotificationManager non initialisé');
+      return;
+    }
 
     // Démarrer la vérification périodique
-    const intervalMs = this.config.notificationIntervalMinutes * 60 * 1000;
+    const intervalMs = (this.config.notificationIntervalMinutes || 5) * 60 * 1000;
+    
+    logger.info(`🔔 Démarrage du système de notifications (intervalle: ${this.config.notificationIntervalMinutes || 5} min)`);
+    
+    // Première vérification immédiate
+    this.checkStreamersLive().catch(error => {
+      logger.error(`❌ Erreur première vérification: ${error.message}`);
+    });
+    
+    // Puis vérifications périodiques
     this.checkInterval = setInterval(() => {
       this.checkStreamersLive().catch(error => {
-        logger.error(`❌ Erreur lors de la vérification des streams: ${error.message}`);
+        logger.error(`❌ Erreur vérification périodique: ${error.message}`);
         this.metrics.recordError();
       });
     }, intervalMs);
 
-    logger.info(`🔔 Système de notifications live démarré (${this.config.notificationIntervalMinutes} min)`);
+    logger.info(`🔔 Système de notifications démarré avec succès`);
   }
 
   async checkStreamersLive() {
@@ -537,9 +611,10 @@ class StreamerBot extends Client {
           const { isLive, streamInfo } = await this.twitch.checkStreamStatus(twitchName);
 
           if (isLive && !this.liveStreamers.has(streamer.name)) {
-            if (notificationManager) {
+            if (this.notificationManager) {
               try {
-                await notificationManager.sendLiveNotification(streamer, streamInfo);
+                await this.notificationManager.sendLiveNotification(streamer, streamInfo);
+                logger.info(`🔴 ${streamer.name} détecté en live - notification envoyée`);
               } catch (notifError) {
                 logger.warn(`⚠️ Notification live échouée pour ${streamer.name}: ${notifError.message}`);
               }
@@ -547,11 +622,11 @@ class StreamerBot extends Client {
               logger.info(`🔴 ${streamer.name} est en live (notifications désactivées)`);
             }
             this.liveStreamers.set(streamer.name, true);
-            logger.info(`🔴 ${streamer.name} détecté en live`);
           } else if (!isLive && this.liveStreamers.has(streamer.name)) {
-            if (notificationManager) {
+            if (this.notificationManager) {
               try {
-                await notificationManager.removeLiveNotification(streamer.name);
+                await this.notificationManager.removeLiveNotification(streamer.name);
+                logger.info(`⚫ ${streamer.name} n'est plus en live - notification supprimée`);
               } catch (notifError) {
                 logger.warn(`⚠️ Suppression notification échouée pour ${streamer.name}: ${notifError.message}`);
               }
@@ -559,7 +634,6 @@ class StreamerBot extends Client {
               logger.info(`⚫ ${streamer.name} n'est plus en live (notifications désactivées)`);
             }
             this.liveStreamers.delete(streamer.name);
-            logger.info(`⚫ ${streamer.name} n'est plus en live`);
           }
 
           // Petit délai entre les requêtes pour éviter le rate limit
@@ -585,16 +659,6 @@ class StreamerBot extends Client {
         clearInterval(this.checkInterval);
         logger.info('⏹️ Arrêt de la vérification des streams');
       }
-
-      // Keep-alive désactivé temporairement
-      /*
-      // Arrêter le serveur keep-alive
-      if (this.keepAliveServer) {
-        this.keepAliveServer.close(() => {
-          logger.info('🔄 Serveur keep-alive arrêté');
-        });
-      }
-      */
 
       await this.db.close();
       await this.destroy();
