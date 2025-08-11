@@ -19,24 +19,12 @@ const { BotConfig, logger, StreamerStatus } = require('./config');
 const { BotMetrics, RuleAcceptanceViewHandler } = require('./models');
 
 // Import conditionnel des notifications
-let sendLiveNotification, removeLiveNotification, updateLiveNotification;
+let NotificationManager;
+let notificationManager = null;
 try {
-  const notifications = require('./notifications');
-  if (typeof notifications.sendLiveNotification === 'function') {
-    sendLiveNotification = notifications.sendLiveNotification;
-    removeLiveNotification = notifications.removeLiveNotification;
-    updateLiveNotification = notifications.updateLiveNotification;
-  } else {
-    // Si c'est un export par défaut
-    sendLiveNotification = notifications.default?.sendLiveNotification || notifications;
-    removeLiveNotification = notifications.default?.removeLiveNotification;
-    updateLiveNotification = notifications.default?.updateLiveNotification;
-  }
+  NotificationManager = require('./notifications');
 } catch (error) {
   console.log('⚠️ Module notifications non trouvé, notifications désactivées');
-  sendLiveNotification = () => console.log('📱 Notification live désactivée');
-  removeLiveNotification = () => console.log('📱 Suppression notification désactivée');
-  updateLiveNotification = () => console.log('📱 Mise à jour notification désactivée');
 }
 
 // Import du dashboard externe
@@ -140,6 +128,12 @@ class StreamerBot extends Client {
       if (this.twitch && this.config.twitchClientId && this.config.twitchClientSecret) {
         try {
           await this.twitch.initClient();
+          
+          // Initialiser le gestionnaire de notifications si disponible
+          if (NotificationManager) {
+            notificationManager = new NotificationManager(this);
+            logger.info('✅ NotificationManager initialisé');
+          }
         } catch (error) {
           logger.error('❌ Impossible d\'initialiser Twitch, notifications désactivées');
         }
@@ -524,14 +518,26 @@ class StreamerBot extends Client {
           const { isLive, streamInfo } = await this.twitch.checkStreamStatus(twitchName);
 
           if (isLive && !this.liveStreamers.has(streamer.name)) {
-            if (sendLiveNotification) {
-              await sendLiveNotification(this, streamer, streamInfo);
+            if (notificationManager) {
+              try {
+                await notificationManager.sendLiveNotification(streamer, streamInfo);
+              } catch (notifError) {
+                logger.warn(`⚠️ Notification live échouée pour ${streamer.name}: ${notifError.message}`);
+              }
+            } else {
+              logger.info(`🔴 ${streamer.name} est en live (notifications désactivées)`);
             }
             this.liveStreamers.set(streamer.name, true);
             logger.info(`🔴 ${streamer.name} détecté en live`);
           } else if (!isLive && this.liveStreamers.has(streamer.name)) {
-            if (removeLiveNotification) {
-              await removeLiveNotification(this, streamer.name);
+            if (notificationManager) {
+              try {
+                await notificationManager.removeLiveNotification(streamer.name);
+              } catch (notifError) {
+                logger.warn(`⚠️ Suppression notification échouée pour ${streamer.name}: ${notifError.message}`);
+              }
+            } else {
+              logger.info(`⚫ ${streamer.name} n'est plus en live (notifications désactivées)`);
             }
             this.liveStreamers.delete(streamer.name);
             logger.info(`⚫ ${streamer.name} n'est plus en live`);
