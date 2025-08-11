@@ -1,43 +1,39 @@
-// ===== bot.js - Phoenix Bot Rewrite =====
-const { 
-  Client, 
-  GatewayIntentBits, 
-  Partials, 
-  EmbedBuilder, 
-  Colors, 
-  ActivityType, 
-  Collection,
-  PermissionFlagsBits,
-  ActionRowBuilder,
-  ButtonBuilder,
-  ButtonStyle
-} = require('discord.js');
+// ===== bot.js =====
+const { Client, GatewayIntentBits, Partials, EmbedBuilder, Colors, ActivityType, Collection, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const path = require('path');
 const fs = require('fs');
 
-// Imports des modules avec gestion d'erreurs améliorée
+// Imports des modules personnalisés avec gestion d'erreurs
 const DatabaseManager = require('./database/databasemanager.js');
-const { BotConfig, logger } = require('./config');
 
-// Imports conditionnels
-let TwitchManager = null;
-let NotificationManager = null;
-
+// Import conditionnel du TwitchManager
+let TwitchManager;
 try {
   TwitchManager = require('./twitch/twitchManager');
-  logger.info('✅ TwitchManager chargé');
 } catch (error) {
-  logger.warn('⚠️ TwitchManager non disponible - fonctionnalités Twitch désactivées');
+  console.log('⚠️ twitchManager non trouvé, fonctionnalités Twitch désactivées');
+  TwitchManager = null;
 }
 
+const { BotConfig, logger, StreamerStatus } = require('./config');
+const { BotMetrics, RuleAcceptanceViewHandler } = require('./models');
+
+// Import conditionnel des notifications
+let NotificationManager;
+let notificationManager = null;
 try {
   NotificationManager = require('./notifications');
-  logger.info('✅ NotificationManager chargé');
 } catch (error) {
-  logger.warn('⚠️ NotificationManager non disponible - notifications désactivées');
+  console.log('⚠️ Module notifications non trouvé, notifications désactivées');
 }
 
-class PhoenixBot extends Client {
+// Import du dashboard externe
+const dashboardServer = require('./dashboard-server.js');
+
+// Keep-alive désactivé temporairement
+// const { keepAlive } = require('./keepalive.js');
+
+class StreamerBot extends Client {
   constructor(config) {
     super({
       intents: [
@@ -47,649 +43,562 @@ class PhoenixBot extends Client {
         GatewayIntentBits.GuildMembers,
         GatewayIntentBits.GuildMessageReactions,
       ],
-      partials: [
-        Partials.Message, 
-        Partials.Channel, 
-        Partials.Reaction
-      ],
+      partials: [Partials.Message, Partials.Channel, Partials.Reaction],
     });
 
-    // Configuration
     this.config = config;
-    this.botReady = false;
-    
-    // Gestionnaires
-    this.database = new DatabaseManager('streamers.db', logger);
-    this.twitch = null;
-    this.notifications = null;
-    
-    // Collections
-    this.commands = new Collection();
+    this.db = new DatabaseManager('streamers.db', logger);
+    this.twitch = TwitchManager ? new TwitchManager(config, logger) : null;
     this.liveStreamers = new Map();
     this.liveMessages = new Map();
-    
-    // Intervalles
-    this.streamCheckInterval = null;
-    
-    // Métriques
-    this.metrics = {
-      commandsExecuted: 0,
-      errorsCount: 0,
-      startTime: Date.now()
-    };
+    this.metrics = new BotMetrics();
+    this.ruleHandler = null;
+    this.checkInterval = null;
+    this.commands = new Collection();
+    this.keepAliveServer = null; // Désactivé temporairement
+    this.notificationManager = null; // Référence directe
 
     this.setupEventHandlers();
-  }
-
-  // ===============================
-  // SETUP ET INITIALISATION
-  // ===============================
-
-  setupEventHandlers() {
-    // Événements principaux
-    this.once('ready', this.handleReady.bind(this));
-    this.on('guildMemberAdd', this.handleMemberJoin.bind(this));
-    this.on('messageCreate', this.handleMessage.bind(this));
-    this.on('interactionCreate', this.handleInteraction.bind(this));
-    
-    // Gestion des erreurs
-    this.on('error', this.handleError.bind(this));
-    this.on('warn', this.handleWarning.bind(this));
-    
-    // Gestion de la déconnexion
-    this.on('disconnect', () => {
-      logger.warn('⚠️ Bot déconnecté');
-      this.botReady = false;
-    });
-
-    this.on('reconnecting', () => {
-      logger.info('🔄 Reconnexion en cours...');
-    });
-  }
-
-  async handleReady() {
-    logger.info(`🤖 ${this.user.tag} est maintenant en ligne!`);
-    
-    try {
-      // 1. Initialiser la base de données
-      await this.initializeDatabase();
-      
-      // 2. Charger les commandes
-      await this.loadCommands();
-      
-      // 3. Initialiser Twitch si disponible
-      await this.initializeTwitch();
-      
-      // 4. Initialiser les notifications si disponible
-      await this.initializeNotifications();
-      
-      // 5. Enregistrer les commandes slash
-      await this.registerSlashCommands();
-      
-      // 6. Configurer le statut
-      await this.updateBotStatus();
-      
-      // 7. Démarrer la surveillance des streams si configuré
-      if (this.config.autoNotifications) {
-        await this.startStreamMonitoring();
-      }
-      
-      this.botReady = true;
-      logger.info('✅ Bot entièrement initialisé et prêt!');
-      
-    } catch (error) {
-      logger.error(`❌ Erreur lors de l'initialisation: ${error.message}`);
-      this.metrics.errorsCount++;
-    }
-  }
-
-  async initializeDatabase() {
-    try {
-      await this.database.connect();
-      await this.database.initDatabase();
-      logger.info('✅ Base de données initialisée');
-    } catch (error) {
-      logger.error(`❌ Erreur base de données: ${error.message}`);
-      throw error;
-    }
+    this.loadCommands();
   }
 
   async loadCommands() {
     const commandsPath = path.join(__dirname, 'commands');
-    
     if (!fs.existsSync(commandsPath)) {
       logger.warn('📁 Dossier commands non trouvé');
       return;
     }
 
     const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
-    let loadedCount = 0;
 
     for (const file of commandFiles) {
       try {
         const filePath = path.join(commandsPath, file);
+        // Supprimer du cache pour permettre le rechargement
         delete require.cache[require.resolve(filePath)];
         const command = require(filePath);
         
-        if (command.data && command.execute) {
+        if ('data' in command && 'execute' in command) {
           this.commands.set(command.data.name, command);
-          loadedCount++;
-          logger.info(`✅ Commande "${command.data.name}" chargée`);
+          logger.info(`✅ Commande ${command.data.name} chargée`);
         } else {
-          logger.warn(`⚠️ Commande "${file}" incomplète (manque data ou execute)`);
+          logger.warn(`⚠️ Commande ${file} incomplète (data/execute manquant)`);
         }
       } catch (error) {
-        logger.error(`❌ Erreur chargement commande "${file}": ${error.message}`);
+        logger.error(`❌ Erreur chargement commande ${file}: ${error.message}`);
       }
     }
-
-    logger.info(`📦 ${loadedCount} commandes chargées`);
   }
 
-  async initializeTwitch() {
-    if (!TwitchManager) {
-      logger.info('ℹ️ TwitchManager non disponible');
-      return;
-    }
+  setupEventHandlers() {
+    this.once('ready', this.onReady.bind(this));
+    this.on('guildMemberAdd', this.onGuildMemberAdd.bind(this));
+    this.on('messageCreate', this.onMessageCreate.bind(this));
+    this.on('interactionCreate', this.onInteractionCreate.bind(this));
+    
+    // Gestion des erreurs
+    this.on('error', (error) => {
+      logger.error(`❌ Erreur client Discord: ${error.message}`);
+      this.metrics.recordError();
+    });
 
-    if (!this.config.twitchClientId || !this.config.twitchClientSecret) {
-      logger.warn('⚠️ Credentials Twitch manquants');
-      return;
-    }
-
-    try {
-      this.twitch = new TwitchManager(this.config, logger);
-      await this.twitch.initClient();
-      logger.info('✅ Client Twitch initialisé');
-    } catch (error) {
-      logger.error(`❌ Erreur initialisation Twitch: ${error.message}`);
-      this.twitch = null;
-    }
+    this.on('warn', (warning) => {
+      logger.warn(`⚠️ Avertissement Discord: ${warning}`);
+    });
   }
 
-  async initializeNotifications() {
-    if (!NotificationManager || !this.twitch) {
-      logger.info('ℹ️ NotificationManager ou Twitch non disponible');
-      return;
-    }
+  async onReady() {
+    logger.info('🤖 Bot en ligne!');
+    logger.info(`🆔 ${this.user.tag} connecté`);
 
     try {
-      this.notifications = new NotificationManager(this);
-      logger.info('✅ NotificationManager initialisé');
-    } catch (error) {
-      logger.error(`❌ Erreur initialisation notifications: ${error.message}`);
-      this.notifications = null;
-    }
-  }
+      // Initialiser la base de données
+      await this.db.connect();
+      await this.db.initDatabase();
 
-  async registerSlashCommands() {
-    try {
-      const commandsData = Array.from(this.commands.values()).map(cmd => cmd.data.toJSON());
-      await this.application.commands.set(commandsData);
-      logger.info(`⚡ ${commandsData.length} commandes slash synchronisées`);
-    } catch (error) {
-      logger.error(`❌ Erreur synchronisation commandes: ${error.message}`);
-    }
-  }
+      // Initialiser Twitch et les notifications
+      if (this.twitch && this.config.twitchClientId && this.config.twitchClientSecret) {
+        try {
+          logger.info('🔧 Initialisation de Twitch...');
+          await this.twitch.initClient();
+          logger.info('✅ Client Twitch initialisé');
+          
+          // Initialiser le gestionnaire de notifications
+          if (NotificationManager) {
+            this.notificationManager = new NotificationManager(this);
+            notificationManager = this.notificationManager; // Compatibilité
+            logger.info('✅ NotificationManager initialisé');
+            
+            // Démarrer les notifications automatiquement si configuré
+            if (this.config.autoNotifications) {
+              logger.info('🚀 Démarrage automatique des notifications...');
+              this.startStreamChecking();
+            } else {
+              logger.info('ℹ️ Notifications configurées mais auto-démarrage désactivé');
+            }
+          } else {
+            logger.warn('⚠️ NotificationManager non disponible');
+          }
+        } catch (error) {
+          logger.error(`❌ Erreur Twitch: ${error.message}`);
+          // Ne pas bloquer complètement, on réessaiera plus tard
+        }
+      } else {
+        logger.warn('⚠️ Configuration Twitch incomplète:');
+        logger.warn(`   - TwitchManager: ${this.twitch ? 'Disponible' : 'Manquant'}`);
+        logger.warn(`   - Client ID: ${this.config.twitchClientId ? 'Configuré' : 'Manquant'}`);
+        logger.warn(`   - Client Secret: ${this.config.twitchClientSecret ? 'Configuré' : 'Manquant'}`);
+      }
 
-  async updateBotStatus() {
-    try {
-      const streamersCount = (await this.database.getAllStreamers()).length;
-      const liveCount = this.liveStreamers.size;
-      
+      // Enregistrer les commandes slash
+      try {
+        const commandsData = Array.from(this.commands.values()).map(command => command.data.toJSON());
+        await this.application.commands.set(commandsData);
+        logger.info(`⚡ ${commandsData.length} commandes slash synchronisées`);
+      } catch (error) {
+        logger.error(`❌ Erreur synchronisation commandes: ${error.message}`);
+      }
+
+      // Configurer le gestionnaire de rôles
+      if (this.config.rulesRoleId && this.config.rulesRoleId !== 0) {
+        this.ruleHandler = new RuleAcceptanceViewHandler(
+          this.config.rulesRoleId,
+          this.config.rulesRoleName,
+          logger
+        );
+      }
+
+      const streamersCount = (await this.db.getAllStreamers()).length;
+      logger.info(`📊 ${streamersCount} streamers chargés`);
+
+      // Mettre à jour le statut du bot
       await this.user.setPresence({
         activities: [{ 
-          name: `${streamersCount} streamers | ${liveCount} live`, 
+          name: `${streamersCount} streamers`, 
           type: ActivityType.Watching 
         }],
         status: 'online',
       });
-      
-      logger.info(`📊 Statut mis à jour: ${streamersCount} streamers, ${liveCount} live`);
+
+      // Afficher l'état des notifications
+      logger.info('📋 État des notifications:');
+      logger.info(`   - Auto notifications: ${this.config.autoNotifications ? 'Activées' : 'Désactivées'}`);
+      logger.info(`   - Interval: ${this.config.notificationIntervalMinutes || 5} minutes`);
+      logger.info(`   - Check interval actif: ${this.checkInterval ? 'Oui' : 'Non'}`);
+      logger.info(`   - NotificationManager: ${this.notificationManager ? 'Initialisé' : 'Non disponible'}`);
+
+      logger.info('✅ Bot entièrement initialisé!');
     } catch (error) {
-      logger.error(`❌ Erreur mise à jour statut: ${error.message}`);
+      logger.error(`❌ Erreur lors de l'initialisation: ${error.message}`);
+      this.metrics.recordError();
     }
   }
 
-  // ===============================
-  // GESTION DES ÉVÉNEMENTS
-  // ===============================
+  // Méthode pour démarrer manuellement les notifications
+  async startNotifications() {
+    try {
+      logger.info('🔧 Tentative de démarrage manuel des notifications...');
+      
+      if (!this.twitch) {
+        throw new Error('TwitchManager non disponible');
+      }
+      
+      if (!this.config.twitchClientId || !this.config.twitchClientSecret) {
+        throw new Error('Credentials Twitch manquants');
+      }
+      
+      // Initialiser Twitch si pas déjà fait
+      if (!this.twitch.accessToken) {
+        logger.info('🔑 Initialisation du client Twitch...');
+        await this.twitch.initClient();
+      }
+      
+      // Initialiser NotificationManager si pas déjà fait
+      if (!this.notificationManager && NotificationManager) {
+        this.notificationManager = new NotificationManager(this);
+        notificationManager = this.notificationManager;
+        logger.info('✅ NotificationManager initialisé manuellement');
+      }
+      
+      // Démarrer la vérification
+      this.startStreamChecking();
+      
+      logger.info('✅ Notifications démarrées manuellement avec succès');
+      return true;
+    } catch (error) {
+      logger.error(`❌ Impossible de démarrer les notifications: ${error.message}`);
+      return false;
+    }
+  }
 
-  async handleMemberJoin(member) {
-    logger.info(`👋 Nouveau membre: ${member.user.tag} (${member.id})`);
-    
+  async onGuildMemberAdd(member) {
     try {
       // Attribution automatique du rôle
-      await this.assignAutoRole(member);
-      
-      // Message de bienvenue
-      await this.sendWelcomeMessage(member);
-      
-    } catch (error) {
-      logger.error(`❌ Erreur gestion nouveau membre ${member.user.tag}: ${error.message}`);
-      this.metrics.errorsCount++;
-    }
-  }
-
-  async assignAutoRole(member) {
-    // Vérifier la configuration
-    if (!this.config.autoRoleId || this.config.autoRoleId === '0') {
-      logger.info('ℹ️ Auto-rôle non configuré');
-      return;
-    }
-
-    try {
-      const roleId = this.config.autoRoleId.toString();
-      logger.info(`🔍 Recherche du rôle ID: ${roleId}`);
-      
-      // Trouver le rôle
-      const role = member.guild.roles.cache.get(roleId);
-      if (!role) {
-        logger.error(`❌ Rôle ${roleId} non trouvé dans le serveur`);
-        this.logAvailableRoles(member.guild);
-        return;
-      }
-
-      // Vérifier les permissions du bot
-      const botMember = member.guild.members.cache.get(this.user.id);
-      if (!botMember) {
-        logger.error(`❌ Impossible de trouver le bot dans le serveur`);
-        return;
-      }
-
-      if (!botMember.permissions.has(PermissionFlagsBits.ManageRoles)) {
-        logger.error(`❌ Le bot n'a pas la permission "Gérer les rôles"`);
-        return;
-      }
-
-      // Vérifier la hiérarchie des rôles
-      if (role.position >= botMember.roles.highest.position) {
-        logger.error(`❌ Le rôle "${role.name}" (pos: ${role.position}) est trop haut`);
-        logger.error(`   Le bot est à la position: ${botMember.roles.highest.position}`);
-        return;
-      }
-
-      // Attribuer le rôle
-      logger.info(`🎭 Attribution du rôle "${role.name}" à ${member.user.tag}...`);
-      await member.roles.add(role, 'Attribution automatique à l\'arrivée');
-      
-      logger.info(`✅ Rôle "${role.name}" attribué avec succès à ${member.user.tag}`);
-
-    } catch (error) {
-      logger.error(`❌ Erreur attribution auto-rôle: ${error.message}`);
-      if (error.code) {
-        logger.error(`   Code d'erreur Discord: ${error.code}`);
-      }
-      this.metrics.errorsCount++;
-    }
-  }
-
-  logAvailableRoles(guild) {
-    logger.info(`📋 Rôles disponibles dans "${guild.name}":`);
-    guild.roles.cache
-      .sort((a, b) => b.position - a.position)
-      .forEach(role => {
-        if (role.name !== '@everyone') {
-          logger.info(`   - ${role.name} (ID: ${role.id}, Position: ${role.position})`);
+      if (this.config.autoRoleId && this.config.autoRoleId !== 0) {
+        try {
+          const role = member.guild.roles.cache.get(this.config.autoRoleId.toString());
+          if (role) {
+            await member.roles.add(role);
+            logger.info(`✅ Rôle "${role.name}" attribué à ${member.user.tag}`);
+          } else {
+            logger.error(`❌ Rôle avec l'ID ${this.config.autoRoleId} non trouvé!`);
+          }
+        } catch (roleError) {
+          logger.error(`❌ Erreur attribution rôle pour ${member.user.tag}: ${roleError.message}`);
         }
-      });
-  }
+      }
 
-  async sendWelcomeMessage(member) {
-    if (!this.config.welcomeChannel) {
-      logger.info('ℹ️ Canal de bienvenue non configuré');
-      return;
-    }
+      if (!this.config.welcomeChannel) {
+        logger.warn(`⚠️ Channel de bienvenue non configuré pour: ${member.user.tag}`);
+        return;
+      }
 
-    try {
       const welcomeChannel = this.channels.cache.get(this.config.welcomeChannel.toString());
       if (!welcomeChannel) {
-        logger.error(`❌ Canal de bienvenue ${this.config.welcomeChannel} non trouvé`);
+        logger.error(`❌ Channel de bienvenue ${this.config.welcomeChannel} non trouvé!`);
         return;
       }
 
-      const streamersCount = (await this.database.getAllStreamers()).length;
-      const roleText = this.getAutoRoleText(member.guild);
+      const streamersCount = (await this.db.getAllStreamers()).length;
+
+      // Récupérer le nom du rôle attribué pour l'afficher dans l'embed
+      let roleText = '';
+      if (this.config.autoRoleId && this.config.autoRoleId !== 0) {
+        const role = member.guild.roles.cache.get(this.config.autoRoleId.toString());
+        if (role) {
+          roleText = `\n🎭 Rôle **${role.name}** attribué automatiquement`;
+        }
+      }
 
       const embed = new EmbedBuilder()
         .setTitle('🎉 Bienvenue sur le serveur !')
         .setDescription(`Salut ${member.toString()} ! Nous sommes ravis de t'accueillir parmi nous ! 🚀${roleText}`)
         .setColor(Colors.Green)
-        .setThumbnail(member.displayAvatarURL({ dynamic: true, size: 256 }))
+        .setThumbnail(member.displayAvatarURL())
         .addFields(
           {
-            name: '📋 Prochaines étapes',
-            value: '• Lis le règlement\n• Présente-toi si tu le souhaites\n• Explore les différents canaux',
+            name: '📋 Première étape',
+            value: '• Lis le règlement\n• Présente-toi si tu le souhaites\n• Explore les différents channels',
             inline: false,
           },
           {
-            name: '📊 Statistiques du serveur',
+            name: '📊 Serveur',
             value: `👥 **${member.guild.memberCount}** membres\n🎮 **${streamersCount}** streamers`,
             inline: true,
           }
         )
         .setFooter({
-          text: `Membre #${member.guild.memberCount}`,
-          iconURL: member.guild.iconURL({ dynamic: true }) || undefined,
+          text: `Membre #${member.guild.memberCount} • Bienvenue !`,
+          iconURL: member.guild.iconURL() || undefined,
         })
         .setTimestamp();
 
       await welcomeChannel.send({ 
-        content: `🎊 Tout le monde, accueillons ${member.toString()} !`, 
+        content: `🎊 Tout le monde, accueillez ${member.toString()} !`, 
         embeds: [embed] 
       });
 
       logger.info(`✅ Message de bienvenue envoyé pour ${member.user.tag}`);
-
     } catch (error) {
-      logger.error(`❌ Erreur envoi message de bienvenue: ${error.message}`);
-      this.metrics.errorsCount++;
+      logger.error(`❌ Erreur dans le message de bienvenue pour ${member.user.tag}: ${error.message}`);
+      this.metrics.recordError();
     }
   }
 
-  getAutoRoleText(guild) {
-    if (!this.config.autoRoleId || this.config.autoRoleId === '0') {
-      return '';
-    }
-
-    const role = guild.roles.cache.get(this.config.autoRoleId.toString());
-    return role ? `\n🎭 Rôle **${role.name}** attribué automatiquement` : '';
-  }
-
-  async handleMessage(message) {
+  async onMessageCreate(message) {
     if (message.author.bot) return;
 
     try {
-      const content = message.content.toLowerCase().trim();
-      
-      // Réponses automatiques simples
-      const responses = {
-        'stream': '🎮 Découvre nos streamers avec `/streamers list` !',
-        'live': '🔴 Vois qui est en live avec `/live` !',
-        'help': '❓ Utilise `/help` pour voir toutes les commandes !',
-        'ping': '🏓 Pong!'
-      };
+      const contentLower = message.content.toLowerCase();
 
-      if (responses[content]) {
+      // Réponses automatiques
+      if (['stream', 'live'].includes(contentLower)) {
         const embed = new EmbedBuilder()
-          .setDescription(`👋 Salut ${message.author.toString()} ! ${responses[content]}`)
+          .setDescription(`👋 Salut ${message.author.toString()} ! Découvre nos streamers !`)
           .setColor(Colors.Blue);
-          
-        await message.reply({ 
-          embeds: [embed], 
-          allowedMentions: { repliedUser: false } 
-        });
+        await message.reply({ embeds: [embed], allowedMentions: { repliedUser: false } });
       }
-
     } catch (error) {
       logger.error(`❌ Erreur traitement message: ${error.message}`);
-      this.metrics.errorsCount++;
+      this.metrics.recordError();
     }
   }
 
-  async handleInteraction(interaction) {
+  async onInteractionCreate(interaction) {
     try {
       // Vérifier si l'interaction est encore valide
       if (interaction.replied || interaction.deferred) {
-        logger.warn('⚠️ Interaction déjà traitée');
+        logger.warn('⚠️ Interaction déjà traitée, ignorée');
         return;
+      }
+
+      // Gérer les boutons de règlement (système existant)
+      if (this.ruleHandler && interaction.isButton()) {
+        await this.ruleHandler.handleInteraction(interaction);
+        return;
+      }
+
+      // Gérer les boutons du règlement-dashboard
+      if (interaction.isButton() && interaction.customId.startsWith('accept_rules_')) {
+        const reglementCommand = this.commands.get('reglement-dashboard');
+        if (reglementCommand && reglementCommand.handleButtonInteraction) {
+          const handled = await reglementCommand.handleButtonInteraction(interaction, this);
+          if (handled) return;
+        }
+      }
+
+      // Gérer les boutons du dashboard Phoenix
+      if (interaction.isButton() && ['refresh_dashboard', 'bot_settings', 'view_streamers'].includes(interaction.customId)) {
+        if (!interaction.member.permissions.has('Administrator')) {
+          return interaction.reply({
+            content: '❌ Permissions insuffisantes',
+            flags: 64
+          });
+        }
+
+        // Bouton Actualiser
+        if (interaction.customId === 'refresh_dashboard') {
+          const guild = interaction.guild;
+          const streamersCount = this.liveStreamers?.size || 0;
+          const totalStreamers = (await this.db.getAllStreamers()).length;
+          
+          const botStats = {
+            servers: this.guilds.cache.size,
+            users: this.users.cache.size,
+            uptime: Math.floor(this.uptime / 1000),
+            streamers: totalStreamers,
+            liveStreamers: streamersCount,
+            ping: this.ws.ping
+          };
+
+          const embed = new EmbedBuilder()
+            .setTitle('🔥 Phoenix Bot Dashboard (Actualisé)')
+            .setDescription(`Tableau de bord de **${this.user.username}**`)
+            .addFields(
+              { name: '🖥️ Serveurs', value: `${botStats.servers}`, inline: true },
+              { name: '👥 Utilisateurs', value: `${botStats.users.toLocaleString()}`, inline: true },
+              { name: '🎮 Streamers totaux', value: `${botStats.streamers}`, inline: true },
+              { name: '🔴 En live', value: `${botStats.liveStreamers}`, inline: true },
+              { name: '⏱️ Uptime', value: `${Math.floor(botStats.uptime / 3600)}h ${Math.floor((botStats.uptime % 3600) / 60)}m`, inline: true },
+              { name: '📡 Ping', value: `${botStats.ping}ms`, inline: true }
+            )
+            .setColor('#00FF00')
+            .setThumbnail(this.user.displayAvatarURL())
+            .setTimestamp();
+
+          const buttons = new ActionRowBuilder()
+            .addComponents(
+              new ButtonBuilder()
+                .setLabel('🔄 Actualiser')
+                .setStyle(ButtonStyle.Primary)
+                .setCustomId('refresh_dashboard'),
+              new ButtonBuilder()
+                .setLabel('⚙️ Informations système')
+                .setStyle(ButtonStyle.Secondary)
+                .setCustomId('bot_settings'),
+              new ButtonBuilder()
+                .setLabel('📊 Voir streamers')
+                .setStyle(ButtonStyle.Success)
+                .setCustomId('view_streamers')
+            );
+
+          await interaction.update({ 
+            embeds: [embed], 
+            components: [buttons]
+          });
+          return;
+        }
+
+        // Bouton Informations système
+        if (interaction.customId === 'bot_settings') {
+          const settingsEmbed = new EmbedBuilder()
+            .setTitle('⚙️ Informations Système - Phoenix Bot')
+            .setDescription('Configuration et état actuel du système')
+            .addFields(
+              { name: '🔧 Version', value: 'Phoenix Bot v2.0.0', inline: true },
+              { name: '📅 Démarré', value: `<t:${Math.floor((Date.now() - this.uptime) / 1000)}:R>`, inline: true },
+              { name: '💾 Mémoire utilisée', value: `${Math.round(process.memoryUsage().heapUsed / 1024 / 1024)} MB`, inline: true },
+              { name: '🐧 Plateforme', value: process.platform, inline: true },
+              { name: '📡 Latence WebSocket', value: `${this.ws.ping}ms`, inline: true },
+              { name: '🔗 Node.js', value: process.version, inline: true }
+            )
+            .setColor('#FFD700')
+            .setTimestamp();
+
+          await interaction.reply({ 
+            embeds: [settingsEmbed], 
+            flags: 64
+          });
+          return;
+        }
+
+        // Bouton Voir streamers
+        if (interaction.customId === 'view_streamers') {
+          const streamers = await this.db.getAllStreamers();
+          
+          if (streamers.length === 0) {
+            const noStreamersEmbed = new EmbedBuilder()
+              .setTitle('📊 Liste des Streamers')
+              .setDescription('Aucun streamer enregistré pour le moment.')
+              .setColor('#ff6b6b');
+              
+            await interaction.reply({ 
+              embeds: [noStreamersEmbed], 
+              flags: 64
+            });
+            return;
+          }
+
+          const liveStreamers = Array.from(this.liveStreamers.keys());
+          const streamersText = streamers.slice(0, 10).map(streamer => {
+            const isLive = liveStreamers.includes(streamer.name);
+            const status = isLive ? '🔴 **LIVE**' : '⚫ Hors ligne';
+            return `• **${streamer.name}** - ${status}`;
+          }).join('\n');
+
+          const streamersEmbed = new EmbedBuilder()
+            .setTitle('📊 Liste des Streamers')
+            .setDescription(streamersText)
+            .addFields(
+              { name: '📈 Statistiques', value: `**${streamers.length}** streamers • **${liveStreamers.length}** en live`, inline: false }
+            )
+            .setColor('#4ecdc4')
+            .setTimestamp();
+
+          await interaction.reply({ 
+            embeds: [streamersEmbed], 
+            flags: 64
+          });
+          return;
+        }
       }
 
       // Gérer les commandes slash
       if (interaction.isChatInputCommand()) {
-        await this.handleSlashCommand(interaction);
+        const command = this.commands.get(interaction.commandName);
+
+        if (!command) {
+          logger.error(`❌ Commande inconnue: ${interaction.commandName}`);
+          return;
+        }
+
+        this.metrics.recordCommand(interaction.commandName, interaction.user.id);
+
+        try {
+          await command.execute(interaction, this);
+          logger.info(`✅ Commande ${interaction.commandName} exécutée par ${interaction.user.tag}`);
+        } catch (error) {
+          logger.error(`❌ Erreur exécution commande ${interaction.commandName}: ${error.message}`);
+          this.metrics.recordError();
+
+          const errorMessage = {
+            content: '❌ Une erreur est survenue lors de l\'exécution de la commande.',
+            ephemeral: true
+          };
+
+          try {
+            if (interaction.deferred) {
+              await interaction.editReply(errorMessage);
+            } else if (!interaction.replied) {
+              await interaction.reply(errorMessage);
+            }
+          } catch (replyError) {
+            logger.error(`❌ Impossible de répondre à l'interaction: ${replyError.message}`);
+          }
+        }
       }
-      
+
       // Gérer l'autocomplétion
-      else if (interaction.isAutocomplete()) {
-        await this.handleAutocomplete(interaction);
-      }
-      
-      // Gérer les boutons
-      else if (interaction.isButton()) {
-        await this.handleButton(interaction);
-      }
-
-    } catch (error) {
-      logger.error(`❌ Erreur traitement interaction: ${error.message}`);
-      this.metrics.errorsCount++;
-      
-      // Tenter de répondre avec un message d'erreur
-      try {
-        const errorEmbed = new EmbedBuilder()
-          .setDescription('❌ Une erreur est survenue lors du traitement de votre demande.')
-          .setColor(Colors.Red);
-
-        if (interaction.deferred) {
-          await interaction.editReply({ embeds: [errorEmbed] });
-        } else if (!interaction.replied) {
-          await interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+      if (interaction.isAutocomplete()) {
+        const command = this.commands.get(interaction.commandName);
+        if (command && command.autocomplete) {
+          try {
+            await command.autocomplete(interaction, this);
+          } catch (error) {
+            logger.error(`❌ Erreur autocomplétion ${interaction.commandName}: ${error.message}`);
+          }
         }
-      } catch (replyError) {
-        logger.error(`❌ Impossible de répondre à l'interaction: ${replyError.message}`);
       }
+    } catch (error) {
+      logger.error(`❌ Erreur lors du traitement de l'interaction: ${error.message}`);
+      this.metrics.recordError();
     }
   }
 
-  async handleSlashCommand(interaction) {
-    const command = this.commands.get(interaction.commandName);
+  validateTwitchUrl(url) {
+    if (!url || typeof url !== 'string') return false;
+    const pattern = /^https:\/\/www\.twitch\.tv\/[a-zA-Z0-9_]{4,25}$/;
+    return pattern.test(url.trim());
+  }
+
+  isAdmin(member) {
+    if (!member || !member.permissions) return false;
+    return member.permissions.has('Administrator');
+  }
+
+  isModerator(member) {
+    if (!member || !member.permissions) return false;
+    return member.permissions.has('ManageMessages') || this.isAdmin(member);
+  }
+
+  startStreamChecking() {
+    if (this.checkInterval) {
+      clearInterval(this.checkInterval);
+    }
     
-    if (!command) {
-      logger.error(`❌ Commande inconnue: ${interaction.commandName}`);
+    // Vérifications préalables
+    if (!this.isReady()) {
+      logger.warn('⚠️ Bot non prêt, notifications reportées');
+      setTimeout(() => this.startStreamChecking(), 5000);
+      return;
+    }
+    
+    if (!this.twitch || !this.config.twitchClientId || !this.config.twitchClientSecret) {
+      logger.error('❌ Configuration Twitch incomplète, notifications désactivées');
+      return;
+    }
+    
+    if (!this.notificationManager) {
+      logger.error('❌ NotificationManager non initialisé');
       return;
     }
 
-    this.metrics.commandsExecuted++;
-    
-    try {
-      await command.execute(interaction, this);
-      logger.info(`✅ Commande "${interaction.commandName}" exécutée par ${interaction.user.tag}`);
-    } catch (error) {
-      logger.error(`❌ Erreur exécution commande "${interaction.commandName}": ${error.message}`);
-      throw error;
-    }
-  }
-
-  async handleAutocomplete(interaction) {
-    const command = this.commands.get(interaction.commandName);
-    
-    if (command && command.autocomplete) {
-      try {
-        await command.autocomplete(interaction, this);
-      } catch (error) {
-        logger.error(`❌ Erreur autocomplétion "${interaction.commandName}": ${error.message}`);
-      }
-    }
-  }
-
-  async handleButton(interaction) {
-    // Gérer les boutons du dashboard
-    if (['refresh_dashboard', 'bot_settings', 'view_streamers'].includes(interaction.customId)) {
-      await this.handleDashboardButton(interaction);
-    }
-    
-    // Gérer les boutons de règlement
-    else if (interaction.customId.startsWith('accept_rules_')) {
-      const reglementCommand = this.commands.get('reglement-dashboard');
-      if (reglementCommand && reglementCommand.handleButtonInteraction) {
-        await reglementCommand.handleButtonInteraction(interaction, this);
-      }
-    }
-  }
-
-  async handleDashboardButton(interaction) {
-    // Vérifier les permissions
-    if (!interaction.member.permissions.has(PermissionFlagsBits.Administrator)) {
-      const embed = new EmbedBuilder()
-        .setDescription('❌ Vous devez être administrateur pour utiliser cette fonctionnalité.')
-        .setColor(Colors.Red);
-        
-      return interaction.reply({ embeds: [embed], ephemeral: true });
-    }
-
-    switch (interaction.customId) {
-      case 'refresh_dashboard':
-        await this.refreshDashboard(interaction);
-        break;
-      case 'bot_settings':
-        await this.showBotSettings(interaction);
-        break;
-      case 'view_streamers':
-        await this.showStreamers(interaction);
-        break;
-    }
-  }
-
-  async refreshDashboard(interaction) {
-    const streamersCount = (await this.database.getAllStreamers()).length;
-    const uptime = Math.floor(this.uptime / 1000);
-
-    const embed = new EmbedBuilder()
-      .setTitle('🔥 Phoenix Bot Dashboard (Actualisé)')
-      .setDescription(`Tableau de bord de **${this.user.username}**`)
-      .addFields(
-        { name: '🖥️ Serveurs', value: `${this.guilds.cache.size}`, inline: true },
-        { name: '👥 Utilisateurs', value: `${this.users.cache.size.toLocaleString()}`, inline: true },
-        { name: '🎮 Streamers totaux', value: `${streamersCount}`, inline: true },
-        { name: '🔴 En live', value: `${this.liveStreamers.size}`, inline: true },
-        { name: '⏱️ Uptime', value: `${Math.floor(uptime / 3600)}h ${Math.floor((uptime % 3600) / 60)}m`, inline: true },
-        { name: '📡 Ping', value: `${this.ws.ping}ms`, inline: true }
-      )
-      .setColor(Colors.Green)
-      .setThumbnail(this.user.displayAvatarURL({ dynamic: true }))
-      .setTimestamp();
-
-    const buttons = new ActionRowBuilder()
-      .addComponents(
-        new ButtonBuilder()
-          .setLabel('🔄 Actualiser')
-          .setStyle(ButtonStyle.Primary)
-          .setCustomId('refresh_dashboard'),
-        new ButtonBuilder()
-          .setLabel('⚙️ Informations système')
-          .setStyle(ButtonStyle.Secondary)
-          .setCustomId('bot_settings'),
-        new ButtonBuilder()
-          .setLabel('📊 Voir streamers')
-          .setStyle(ButtonStyle.Success)
-          .setCustomId('view_streamers')
-      );
-
-    await interaction.update({ embeds: [embed], components: [buttons] });
-  }
-
-  async showBotSettings(interaction) {
-    const embed = new EmbedBuilder()
-      .setTitle('⚙️ Informations Système - Phoenix Bot')
-      .setDescription('Configuration et état actuel du système')
-      .addFields(
-        { name: '🔧 Version', value: 'Phoenix Bot v2.1.0', inline: true },
-        { name: '📅 Démarré', value: `<t:${Math.floor(this.metrics.startTime / 1000)}:R>`, inline: true },
-        { name: '💾 Mémoire', value: `${Math.round(process.memoryUsage().heapUsed / 1024 / 1024)} MB`, inline: true },
-        { name: '🐧 Plateforme', value: process.platform, inline: true },
-        { name: '📡 Latence WS', value: `${this.ws.ping}ms`, inline: true },
-        { name: '🔗 Node.js', value: process.version, inline: true },
-        { name: '📊 Commandes exécutées', value: `${this.metrics.commandsExecuted}`, inline: true },
-        { name: '❌ Erreurs', value: `${this.metrics.errorsCount}`, inline: true },
-        { name: '🔔 Notifications', value: this.notifications ? '✅ Actives' : '❌ Inactives', inline: true }
-      )
-      .setColor(Colors.Gold)
-      .setTimestamp();
-
-    await interaction.reply({ embeds: [embed], ephemeral: true });
-  }
-
-  async showStreamers(interaction) {
-    const streamers = await this.database.getAllStreamers();
-    
-    if (streamers.length === 0) {
-      const embed = new EmbedBuilder()
-        .setTitle('📊 Liste des Streamers')
-        .setDescription('Aucun streamer enregistré pour le moment.')
-        .setColor(Colors.Orange);
-        
-      return interaction.reply({ embeds: [embed], ephemeral: true });
-    }
-
-    const liveStreamers = Array.from(this.liveStreamers.keys());
-    const streamersText = streamers.slice(0, 15).map(streamer => {
-      const isLive = liveStreamers.includes(streamer.name);
-      const status = isLive ? '🔴 **LIVE**' : '⚫ Hors ligne';
-      return `• **${streamer.name}** - ${status}`;
-    }).join('\n');
-
-    const embed = new EmbedBuilder()
-      .setTitle('📊 Liste des Streamers')
-      .setDescription(streamersText)
-      .addFields(
-        { 
-          name: '📈 Statistiques', 
-          value: `**${streamers.length}** streamers • **${liveStreamers.length}** en live`, 
-          inline: false 
-        }
-      )
-      .setColor(Colors.Aqua)
-      .setTimestamp();
-
-    if (streamers.length > 15) {
-      embed.setFooter({ text: `Et ${streamers.length - 15} autres streamers...` });
-    }
-
-    await interaction.reply({ embeds: [embed], ephemeral: true });
-  }
-
-  // ===============================
-  // SURVEILLANCE DES STREAMS
-  // ===============================
-
-  async startStreamMonitoring() {
-    if (!this.twitch || !this.notifications) {
-      logger.warn('⚠️ Surveillance impossible - Twitch ou notifications indisponibles');
-      return;
-    }
-
-    if (this.streamCheckInterval) {
-      clearInterval(this.streamCheckInterval);
-    }
-
+    // Démarrer la vérification périodique
     const intervalMs = (this.config.notificationIntervalMinutes || 5) * 60 * 1000;
     
-    logger.info(`🔔 Démarrage surveillance streams (intervalle: ${this.config.notificationIntervalMinutes || 5} min)`);
+    logger.info(`🔔 Démarrage du système de notifications (intervalle: ${this.config.notificationIntervalMinutes || 5} min)`);
     
     // Première vérification immédiate
-    await this.checkStreams();
+    this.checkStreamersLive().catch(error => {
+      logger.error(`❌ Erreur première vérification: ${error.message}`);
+    });
     
     // Puis vérifications périodiques
-    this.streamCheckInterval = setInterval(async () => {
-      try {
-        await this.checkStreams();
-      } catch (error) {
+    this.checkInterval = setInterval(() => {
+      this.checkStreamersLive().catch(error => {
         logger.error(`❌ Erreur vérification périodique: ${error.message}`);
-        this.metrics.errorsCount++;
-      }
+        this.metrics.recordError();
+      });
     }, intervalMs);
 
-    logger.info('✅ Surveillance des streams activée');
+    logger.info(`🔔 Système de notifications démarré avec succès`);
   }
 
-  async checkStreams() {
-    if (!this.botReady || !this.twitch) {
+  async checkStreamersLive() {
+    if (!this.isReady() || !this.twitch) {
+      logger.warn('⚠️ Bot non prêt ou Twitch indisponible, vérification ignorée');
       return;
     }
 
-    logger.info('🔍 Vérification des streamers...');
+    logger.info('🔍 Vérification des streamers en live...');
 
     try {
-      const streamers = await this.database.getAllStreamers();
+      const streamers = await this.db.getAllStreamers();
 
       if (streamers.length === 0) {
         logger.info('📭 Aucun streamer à vérifier');
         return;
       }
-
-      let checkedCount = 0;
-      let newLiveCount = 0;
-      let stoppedLiveCount = 0;
 
       for (const streamer of streamers) {
         try {
@@ -700,113 +609,58 @@ class PhoenixBot extends Client {
           }
 
           const { isLive, streamInfo } = await this.twitch.checkStreamStatus(twitchName);
-          checkedCount++;
 
-          // Nouveau live détecté
           if (isLive && !this.liveStreamers.has(streamer.name)) {
-            this.liveStreamers.set(streamer.name, true);
-            newLiveCount++;
-            
-            if (this.notifications) {
+            if (this.notificationManager) {
               try {
-                await this.notifications.sendLiveNotification(streamer, streamInfo);
-                logger.info(`🔴 ${streamer.name} en live - notification envoyée`);
+                await this.notificationManager.sendLiveNotification(streamer, streamInfo);
+                logger.info(`🔴 ${streamer.name} détecté en live - notification envoyée`);
               } catch (notifError) {
-                logger.warn(`⚠️ Notification échouée pour ${streamer.name}: ${notifError.message}`);
+                logger.warn(`⚠️ Notification live échouée pour ${streamer.name}: ${notifError.message}`);
               }
+            } else {
+              logger.info(`🔴 ${streamer.name} est en live (notifications désactivées)`);
             }
-          }
-          
-          // Stream terminé
-          else if (!isLive && this.liveStreamers.has(streamer.name)) {
-            this.liveStreamers.delete(streamer.name);
-            stoppedLiveCount++;
-            
-            if (this.notifications) {
+            this.liveStreamers.set(streamer.name, true);
+          } else if (!isLive && this.liveStreamers.has(streamer.name)) {
+            if (this.notificationManager) {
               try {
-                await this.notifications.removeLiveNotification(streamer.name);
-                logger.info(`⚫ ${streamer.name} plus en live - notification supprimée`);
+                await this.notificationManager.removeLiveNotification(streamer.name);
+                logger.info(`⚫ ${streamer.name} n'est plus en live - notification supprimée`);
               } catch (notifError) {
                 logger.warn(`⚠️ Suppression notification échouée pour ${streamer.name}: ${notifError.message}`);
               }
+            } else {
+              logger.info(`⚫ ${streamer.name} n'est plus en live (notifications désactivées)`);
             }
+            this.liveStreamers.delete(streamer.name);
           }
 
-          // Délai entre les requêtes pour éviter le rate limit
-          await new Promise(resolve => setTimeout(resolve, 150));
-
+          // Petit délai entre les requêtes pour éviter le rate limit
+          await new Promise(resolve => setTimeout(resolve, 100));
         } catch (error) {
           logger.error(`❌ Erreur vérification ${streamer.name}: ${error.message}`);
-          this.metrics.errorsCount++;
+          this.metrics.recordError();
         }
       }
 
-      // Mettre à jour le statut du bot
-      await this.updateBotStatus();
-
-      logger.info(`✅ Vérification terminée: ${checkedCount} vérifiés, ${newLiveCount} nouveaux lives, ${stoppedLiveCount} arrêtés`);
-
+      logger.info(`✅ Vérification terminée - ${this.liveStreamers.size} streamers en live`);
     } catch (error) {
-      logger.error(`❌ Erreur vérification globale: ${error.message}`);
-      this.metrics.errorsCount++;
+      logger.error(`❌ Erreur lors de la vérification globale: ${error.message}`);
+      this.metrics.recordError();
     }
   }
 
-  // ===============================
-  // GESTION DES ERREURS
-  // ===============================
-
-  handleError(error) {
-    logger.error(`❌ Erreur client Discord: ${error.message}`);
-    this.metrics.errorsCount++;
-  }
-
-  handleWarning(warning) {
-    logger.warn(`⚠️ Avertissement Discord: ${warning}`);
-  }
-
-  // ===============================
-  // UTILITAIRES
-  // ===============================
-
-  validateTwitchUrl(url) {
-    if (!url || typeof url !== 'string') return false;
-    const pattern = /^https:\/\/www\.twitch\.tv\/[a-zA-Z0-9_]{4,25}$/;
-    return pattern.test(url.trim());
-  }
-
-  isAdmin(member) {
-    return member?.permissions?.has(PermissionFlagsBits.Administrator) || false;
-  }
-
-  isModerator(member) {
-    return member?.permissions?.has(PermissionFlagsBits.ManageMessages) || this.isAdmin(member);
-  }
-
-  // ===============================
-  // ARRÊT DU BOT
-  // ===============================
-
   async shutdown() {
-    logger.info('🛑 Arrêt du bot en cours...');
+    logger.info('🛑 Arrêt du bot...');
     
     try {
-      this.botReady = false;
-      
-      // Arrêter la surveillance des streams
-      if (this.streamCheckInterval) {
-        clearInterval(this.streamCheckInterval);
-        this.streamCheckInterval = null;
-        logger.info('⏹️ Surveillance des streams arrêtée');
+      if (this.checkInterval) {
+        clearInterval(this.checkInterval);
+        logger.info('⏹️ Arrêt de la vérification des streams');
       }
 
-      // Fermer la base de données
-      if (this.database) {
-        await this.database.close();
-        logger.info('🗄️ Base de données fermée');
-      }
-
-      // Déconnecter le bot
+      await this.db.close();
       await this.destroy();
       
       logger.info('✅ Bot arrêté proprement');
@@ -814,87 +668,15 @@ class PhoenixBot extends Client {
       logger.error(`❌ Erreur lors de l'arrêt: ${error.message}`);
     }
   }
-
-  // ===============================
-  // MÉTHODES PUBLIQUES
-  // ===============================
-
-  async startNotifications() {
-    try {
-      logger.info('🔧 Démarrage manuel des notifications...');
-      
-      if (!this.twitch) {
-        if (!TwitchManager) {
-          throw new Error('TwitchManager non disponible');
-        }
-        
-        if (!this.config.twitchClientId || !this.config.twitchClientSecret) {
-          throw new Error('Credentials Twitch manquants');
-        }
-        
-        // Initialiser Twitch
-        await this.initializeTwitch();
-      }
-      
-      if (!this.notifications) {
-        if (!NotificationManager) {
-          throw new Error('NotificationManager non disponible');
-        }
-        
-        // Initialiser les notifications
-        await this.initializeNotifications();
-      }
-      
-      // Démarrer la surveillance
-      await this.startStreamMonitoring();
-      
-      logger.info('✅ Notifications démarrées manuellement');
-      return true;
-    } catch (error) {
-      logger.error(`❌ Impossible de démarrer les notifications: ${error.message}`);
-      return false;
-    }
-  }
-
-  async stopNotifications() {
-    try {
-      if (this.streamCheckInterval) {
-        clearInterval(this.streamCheckInterval);
-        this.streamCheckInterval = null;
-        logger.info('⏹️ Notifications arrêtées');
-        return true;
-      }
-      return false;
-    } catch (error) {
-      logger.error(`❌ Erreur arrêt notifications: ${error.message}`);
-      return false;
-    }
-  }
-
-  getMetrics() {
-    return {
-      ...this.metrics,
-      uptime: this.uptime,
-      guilds: this.guilds.cache.size,
-      users: this.users.cache.size,
-      streamers: this.liveStreamers.size,
-      ping: this.ws.ping,
-      ready: this.botReady
-    };
-  }
 }
 
-// ===============================
-// FONCTION PRINCIPALE
-// ===============================
-
+// Initialisation et démarrage du bot
 async function main() {
   try {
-    logger.info('🚀 Démarrage de Phoenix Bot...');
-    
-    // Charger et valider la configuration
+    // Charger la configuration
     const config = BotConfig.fromEnv();
     
+    // Valider la configuration
     const configErrors = config.validate();
     if (Object.keys(configErrors).length > 0) {
       logger.error('❌ Erreurs de configuration:');
@@ -904,67 +686,46 @@ async function main() {
       process.exit(1);
     }
 
-    logger.info('✅ Configuration validée');
+    // Créer le bot
+    const bot = new StreamerBot(config);
 
-    // Créer et démarrer le bot
-    const bot = new PhoenixBot(config);
-
-    // Gérer l'arrêt propre
-    const gracefulShutdown = async (signal) => {
-      logger.info(`🛑 Signal ${signal} reçu`);
-      await bot.shutdown();
-      process.exit(0);
-    };
-
-    process.on('SIGINT', () => gracefulShutdown('SIGINT'));
-    process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
-    
-    // Gérer les erreurs non capturées
-    process.on('unhandledRejection', (error) => {
-      logger.error(`❌ Rejection non gérée: ${error.message}`);
-      logger.error(error.stack);
-    });
-
-    process.on('uncaughtException', (error) => {
-      logger.error(`❌ Exception non capturée: ${error.message}`);
-      logger.error(error.stack);
-      process.exit(1);
-    });
-
-    // Démarrer le dashboard externe si disponible
+    // Démarrer le dashboard externe après que le bot soit prêt
     bot.on('ready', () => {
       setTimeout(() => {
         try {
-          const dashboardServer = require('./dashboard-server.js');
           dashboardServer.startDashboard(bot);
           logger.info('🌐 Dashboard externe démarré sur http://localhost:3000');
         } catch (error) {
-          logger.warn('⚠️ Dashboard externe non disponible:', error.message);
+          logger.warn('⚠️ Impossible de démarrer le dashboard externe:', error.message);
         }
-      }, 3000);
+      }, 2000);
     });
 
-    // Se connecter à Discord
+    // Gérer l'arrêt propre
+    process.on('SIGINT', async () => {
+      logger.info('🛑 Signal SIGINT reçu');
+      await bot.shutdown();
+      process.exit(0);
+    });
+
+    process.on('SIGTERM', async () => {
+      logger.info('🛑 Signal SIGTERM reçu');
+      await bot.shutdown();
+      process.exit(0);
+    });
+
+    // Connecter le bot
     await bot.login(config.discordToken);
     
   } catch (error) {
     logger.error(`❌ Erreur fatale: ${error.message}`);
-    logger.error(error.stack);
     process.exit(1);
   }
 }
 
-// ===============================
-// EXPORTATION ET DÉMARRAGE
-// ===============================
-
-// Exporter la classe pour les tests et l'utilisation externe
-module.exports = PhoenixBot;
-
-// Démarrer l'application si ce fichier est exécuté directement
+// Lancer l'application
 if (require.main === module) {
-  main().catch(error => {
-    logger.error(`❌ Erreur lors du démarrage: ${error.message}`);
-    process.exit(1);
-  });
+  main();
 }
+
+module.exports = StreamerBot;
