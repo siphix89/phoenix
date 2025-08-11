@@ -23,12 +23,20 @@ module.exports = {
 
         const dashboardType = interaction.options.getString('type') || 'discord';
 
+        // Fonction pour obtenir l'URL de base
+        function getBaseUrl() {
+            return process.env.RENDER_EXTERNAL_URL || 
+                   process.env.PUBLIC_URL || 
+                   'https://phoenix-1-iy68.onrender.com' ||
+                   'http://localhost:3000';
+        }
+
         // Dashboard Web
         if (dashboardType === 'web') {
             try {
                 // Générer un token d'authentification sécurisé
                 const dashboardServer = require('../dashboard-server.js');
-const token = dashboardServer.generateAuthToken(interaction.user.id, interaction.guild.id);
+                const token = dashboardServer.generateAuthToken(interaction.user.id, interaction.guild.id);
                 
                 if (!token) {
                     return interaction.reply({
@@ -37,7 +45,8 @@ const token = dashboardServer.generateAuthToken(interaction.user.id, interaction
                     });
                 }
 
-                const dashboardUrl = `http://localhost:3000/dashboard?token=${token}`;
+                const baseUrl = getBaseUrl();
+                const dashboardUrl = `${baseUrl}/dashboard?token=${token}`;
                 
                 const webEmbed = new EmbedBuilder()
                     .setTitle('🌐 Dashboard Web Phoenix Bot')
@@ -50,7 +59,7 @@ const token = dashboardServer.generateAuthToken(interaction.user.id, interaction
                     )
                     .setColor('#00ff88')
                     .setFooter({ 
-                        text: 'Dashboard Web • Phoenix Bot v2.0',
+                        text: 'Dashboard Web • Phoenix Bot v2.0 • Aujourd\'hui à ' + new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
                         iconURL: interaction.client.user.displayAvatarURL() 
                     })
                     .setTimestamp();
@@ -104,6 +113,7 @@ const token = dashboardServer.generateAuthToken(interaction.user.id, interaction
             })
             .setTimestamp();
 
+        const baseUrl = getBaseUrl();
         const buttons = new ActionRowBuilder()
             .addComponents(
                 new ButtonBuilder()
@@ -121,7 +131,7 @@ const token = dashboardServer.generateAuthToken(interaction.user.id, interaction
                 new ButtonBuilder()
                     .setLabel('🌐 Dashboard Web')
                     .setStyle(ButtonStyle.Link)
-                    .setURL('http://localhost:3000/dashboard')
+                    .setURL(`${baseUrl}/dashboard`)
             );
 
         await interaction.reply({ 
