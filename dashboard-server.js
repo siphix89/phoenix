@@ -69,21 +69,20 @@ function generateAuthToken(userId, guildId) {
     return token;
 }
 
-// Middleware d'authentification pour les API
-app.use('/api', (req, res, next) => {
-    const token = req.query.token || req.body.token;
-    if (!token) {
-        return res.status(401).json({ error: 'Token manquant' });
-    }
+// ==========================================
+// ROUTES PUBLIQUES (sans authentification)
+// ==========================================
 
-    const authData = authTokens.get(token);
-    if (!authData || Date.now() > authData.expires) {
-        authTokens.delete(token);
-        return res.status(401).json({ error: 'Token expiré' });
-    }
-
-    req.authData = authData;
-    next();
+// Route de santé pour le monitoring (NOUVELLE ROUTE AJOUTÉE)
+app.get('/health', (req, res) => {
+    res.json({
+        status: 'healthy',
+        timestamp: new Date().toISOString(),
+        bot: botInstance?.user?.tag || 'Unknown',
+        uptime: botInstance?.uptime || 0,
+        memory: Math.round(process.memoryUsage().heapUsed / 1024 / 1024),
+        ping: botInstance?.ws?.ping || 0
+    });
 });
 
 // Route dashboard principale avec authentification
@@ -109,6 +108,31 @@ app.get('/dashboard', (req, res) => {
 
     res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
 });
+
+// ==========================================
+// MIDDLEWARE D'AUTHENTIFICATION POUR /api
+// ==========================================
+
+// Middleware d'authentification pour les API
+app.use('/api', (req, res, next) => {
+    const token = req.query.token || req.body.token;
+    if (!token) {
+        return res.status(401).json({ error: 'Token manquant' });
+    }
+
+    const authData = authTokens.get(token);
+    if (!authData || Date.now() > authData.expires) {
+        authTokens.delete(token);
+        return res.status(401).json({ error: 'Token expiré' });
+    }
+
+    req.authData = authData;
+    next();
+});
+
+// ==========================================
+// API ROUTES (avec authentification)
+// ==========================================
 
 // API Statistiques du bot - ADAPTÉE À VOTRE DB
 app.get('/api/stats', async (req, res) => {
