@@ -9,9 +9,9 @@ const DatabaseManager = require('./database/databasemanager.js');
 // Import conditionnel du TwitchManager
 let TwitchManager;
 try {
-  TwitchManager = require('./twitch/TwitchManager');
+  TwitchManager = require('./twitch/twitchManager');
 } catch (error) {
-  console.log('⚠️ TwitchManager non trouvé, fonctionnalités Twitch désactivées');
+  console.log('⚠️ twitchManager non trouvé, fonctionnalités Twitch désactivées');
   TwitchManager = null;
 }
 
@@ -729,3 +729,4 @@ if (require.main === module) {
 }
 
 module.exports = StreamerBot;
+
