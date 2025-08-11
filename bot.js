@@ -9,9 +9,9 @@ const DatabaseManager = require('./database/databasemanager.js');
 // Import conditionnel du TwitchManager
 let TwitchManager;
 try {
-  TwitchManager = require('./twitch/twitchManager');
+  TwitchManager = require('./twitch/TwitchManager');
 } catch (error) {
-  console.log('⚠️ twitchManager non trouvé, fonctionnalités Twitch désactivées');
+  console.log('⚠️ TwitchManager non trouvé, fonctionnalités Twitch désactivées');
   TwitchManager = null;
 }
 
@@ -413,11 +413,6 @@ class StreamerBot extends Client {
         this.metrics.recordCommand(interaction.commandName, interaction.user.id);
 
         try {
-          // Déférer la réponse pour les commandes longues
-          if (!interaction.replied && !interaction.deferred) {
-            await interaction.deferReply();
-          }
-
           await command.execute(interaction, this);
           logger.info(`✅ Commande ${interaction.commandName} exécutée par ${interaction.user.tag}`);
         } catch (error) {
@@ -646,4 +641,3 @@ if (require.main === module) {
 }
 
 module.exports = StreamerBot;
-
