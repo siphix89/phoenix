@@ -233,20 +233,28 @@ class StreamerBot extends Client {
 
   async onGuildMemberAdd(member) {
     try {
-      // Attribution automatique du rôle
-      if (this.config.autoRoleId && this.config.autoRoleId !== 0) {
-        try {
-          const role = member.guild.roles.cache.get(this.config.autoRoleId.toString());
-          if (role) {
-            await member.roles.add(role);
-            logger.info(`✅ Rôle "${role.name}" attribué à ${member.user.tag}`);
-          } else {
-            logger.error(`❌ Rôle avec l'ID ${this.config.autoRoleId} non trouvé!`);
-          }
-        } catch (roleError) {
-          logger.error(`❌ Erreur attribution rôle pour ${member.user.tag}: ${roleError.message}`);
-        }
-      }
+      if (this.config.autoRoleId && this.config.autoRoleId !== '0') {
+  try {
+    logger.info(`🔍 Tentative attribution rôle ID: ${this.config.autoRoleId} pour ${member.user.tag}`);
+    
+    const role = member.guild.roles.cache.get(this.config.autoRoleId);
+    if (!role) {
+      logger.error(`❌ Rôle avec l'ID ${this.config.autoRoleId} non trouvé dans le serveur!`);
+      return;
+    }
+
+    if (member.roles.cache.has(this.config.autoRoleId)) {
+      logger.info(`ℹ️ ${member.user.tag} a déjà le rôle "${role.name}"`);
+      return;
+    }
+
+    await member.roles.add(role);
+    logger.info(`✅ Rôle "${role.name}" attribué à ${member.user.tag}`);
+  } catch (roleError) {
+    logger.error(`❌ Erreur attribution rôle pour ${member.user.tag}: ${roleError.message}`);
+    logger.error(`Stack trace: ${roleError.stack}`);
+  }
+}
 
       if (!this.config.welcomeChannel) {
         logger.warn(`⚠️ Channel de bienvenue non configuré pour: ${member.user.tag}`);
@@ -729,3 +737,4 @@ if (require.main === module) {
 }
 
 module.exports = StreamerBot;
+
