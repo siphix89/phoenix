@@ -1,4 +1,3 @@
-/ ===== commands/debug-notifications.js =====
 const { SlashCommandBuilder, EmbedBuilder, Colors } = require('discord.js');
 
 module.exports = {
@@ -56,24 +55,48 @@ module.exports = {
     
     if (bot.config.liveAffilieChannel && bot.config.liveAffilieChannel !== 0) {
       const channel = bot.channels.cache.get(bot.config.liveAffilieChannel.toString());
-      affilieChannelStatus = channel ? '✅' : '⚠️ (Non trouvé)';
+      affilieChannelStatus = channel ? '✅' : '⚠ (Non trouvé)';
     }
     
     if (bot.config.liveNonAffilieChannel && bot.config.liveNonAffilieChannel !== 0) {
       const channel = bot.channels.cache.get(bot.config.liveNonAffilieChannel.toString());
-      nonAffilieChannelStatus = channel ? '✅' : '⚠️ (Non trouvé)';
+      nonAffilieChannelStatus = channel ? '✅' : '⚠ (Non trouvé)';
     }
 
     const embed = new EmbedBuilder()
       .setTitle('🔍 Debug Système de Notifications')
       .setDescription('Diagnostic complet de l\'état des notifications')
       .addFields(
-        { name: '🔧 Managers', value: `TwitchManager: ${debug.twitchManager ? '✅' : '❌'}\nNotificationManager: ${debug.notificationManager ? '✅' : '❌'}`, inline: true },
-        { name: '⚙️ Configuration', value: `Auto Notifications: ${debug.autoNotifications ? '✅' : '❌'}\nIntervalle: ${debug.intervalMinutes} min`, inline: true },
-        { name: '🔑 Credentials', value: `Client ID: ${debug.twitchClientId ? '✅' : '❌'}\nClient Secret: ${debug.twitchClientSecret ? '✅' : '❌'}`, inline: true },
-        { name: '🔄 État système', value: `Check Interval: ${debug.checkInterval ? '✅' : '❌'}\nAccess Token: ${debug.accessToken}\nToken expire: ${debug.tokenExpiry}`, inline: false },
-        { name: '📺 Channels', value: `Affilié: ${affilieChannelStatus} (${debug.affilieChannel})\nNon-Affilié: ${nonAffilieChannelStatus} (${debug.nonAffilieChannel})`, inline: false },
-        { name: '📊 Statistiques', value: `Streamers totaux: ${debug.totalStreamers}\nStreamers live: ${debug.liveStreamers}`, inline: true }
+        { 
+          name: '🔧 Managers', 
+          value: `TwitchManager: ${debug.twitchManager ? '✅' : '❌'}\nNotificationManager: ${debug.notificationManager ? '✅' : '❌'}`, 
+          inline: true 
+        },
+        { 
+          name: '⚙️ Configuration', 
+          value: `Auto Notifications: ${debug.autoNotifications ? '✅' : '❌'}\nIntervalle: ${debug.intervalMinutes} min`, 
+          inline: true 
+        },
+        { 
+          name: '🔑 Credentials', 
+          value: `Client ID: ${debug.twitchClientId ? '✅' : '❌'}\nClient Secret: ${debug.twitchClientSecret ? '✅' : '❌'}`, 
+          inline: true 
+        },
+        { 
+          name: '🔄 État système', 
+          value: `Check Interval: ${debug.checkInterval ? '✅' : '❌'}\nAccess Token: ${debug.accessToken}\nToken expire: ${debug.tokenExpiry}`, 
+          inline: false 
+        },
+        { 
+          name: '📺 Channels', 
+          value: `Affilié: ${affilieChannelStatus} (${debug.affilieChannel})\nNon-Affilié: ${nonAffilieChannelStatus} (${debug.nonAffilieChannel})`, 
+          inline: false 
+        },
+        { 
+          name: '📊 Statistiques', 
+          value: `Streamers totaux: ${debug.totalStreamers}\nStreamers live: ${debug.liveStreamers}`, 
+          inline: true 
+        }
       )
       .setColor(debug.checkInterval ? Colors.Green : Colors.Orange)
       .setTimestamp();
