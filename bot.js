@@ -22,13 +22,17 @@ const { BotMetrics, RuleAcceptanceViewHandler } = require('./models');
 let NotificationManager;
 let notificationManager = null;
 try {
-  NotificationManager = require('./notifications');
+  NotificationManager = require('./notifications/NotificationManager');
 } catch (error) {
   console.log('⚠️ Module notifications non trouvé, notifications désactivées');
 }
 
 // Import du dashboard externe
 const dashboardServer = require('./dashboard-server.js');
+
+// Import des bouttons
+const ButtonManager = require('./boutons/gestion.js');
+console.log('🔍 DEBUG: ButtonManager importé:', typeof ButtonManager);
 
 // Keep-alive désactivé temporairement
 // const { keepAlive } = require('./keepalive.js');
@@ -57,7 +61,7 @@ class StreamerBot extends Client {
     this.commands = new Collection();
     this.keepAliveServer = null; // Désactivé temporairement
     this.notificationManager = null; // Référence directe
-
+    this.ButtonManager
     this.setupEventHandlers();
     this.loadCommands();
   }
@@ -331,157 +335,26 @@ class StreamerBot extends Client {
       this.metrics.recordError();
     }
   }
-
+  
   async onInteractionCreate(interaction) {
     try {
-      // Vérifier si l'interaction est encore valide
-      if (interaction.replied || interaction.deferred) {
-        logger.warn('⚠️ Interaction déjà traitée, ignorée');
-        return;
-      }
+      // Gérer les boutons avec le nouveau système
 
-      // Gérer les boutons de règlement (système existant)
-      if (this.ruleHandler && interaction.isButton()) {
-        await this.ruleHandler.handleInteraction(interaction);
-        return;
-      }
-
-      // Gérer les boutons du règlement-dashboard
-      if (interaction.isButton() && interaction.customId.startsWith('accept_rules_')) {
-        const reglementCommand = this.commands.get('reglement-dashboard');
-        if (reglementCommand && reglementCommand.handleButtonInteraction) {
-          const handled = await reglementCommand.handleButtonInteraction(interaction, this);
-          if (handled) return;
-        }
-      }
-
-      // Gérer les boutons du dashboard Phoenix
-      if (interaction.isButton() && ['refresh_dashboard', 'bot_settings', 'view_streamers'].includes(interaction.customId)) {
-        if (!interaction.member.permissions.has('Administrator')) {
-          return interaction.reply({
-            content: '❌ Permissions insuffisantes',
-            flags: 64
-          });
+             // Initialiser buttonManager si pas encore fait
+        if (!this.buttonManager) {
+            console.log('🔍 DEBUG: Initialisation tardive du ButtonManager...');
+            const ButtonManager = require('./boutons/gestion.js');
+            this.buttonManager = new ButtonManager(this);
         }
 
-        // Bouton Actualiser
-        if (interaction.customId === 'refresh_dashboard') {
-          const guild = interaction.guild;
-          const streamersCount = this.liveStreamers?.size || 0;
-          const totalStreamers = (await this.db.getAllStreamers()).length;
-          
-          const botStats = {
-            servers: this.guilds.cache.size,
-            users: this.users.cache.size,
-            uptime: Math.floor(this.uptime / 1000),
-            streamers: totalStreamers,
-            liveStreamers: streamersCount,
-            ping: this.ws.ping
-          };
-
-          const embed = new EmbedBuilder()
-            .setTitle('🔥 Phoenix Bot Dashboard (Actualisé)')
-            .setDescription(`Tableau de bord de **${this.user.username}**`)
-            .addFields(
-              { name: '🖥️ Serveurs', value: `${botStats.servers}`, inline: true },
-              { name: '👥 Utilisateurs', value: `${botStats.users.toLocaleString()}`, inline: true },
-              { name: '🎮 Streamers totaux', value: `${botStats.streamers}`, inline: true },
-              { name: '🔴 En live', value: `${botStats.liveStreamers}`, inline: true },
-              { name: '⏱️ Uptime', value: `${Math.floor(botStats.uptime / 3600)}h ${Math.floor((botStats.uptime % 3600) / 60)}m`, inline: true },
-              { name: '📡 Ping', value: `${botStats.ping}ms`, inline: true }
-            )
-            .setColor('#00FF00')
-            .setThumbnail(this.user.displayAvatarURL())
-            .setTimestamp();
-
-          const buttons = new ActionRowBuilder()
-            .addComponents(
-              new ButtonBuilder()
-                .setLabel('🔄 Actualiser')
-                .setStyle(ButtonStyle.Primary)
-                .setCustomId('refresh_dashboard'),
-              new ButtonBuilder()
-                .setLabel('⚙️ Informations système')
-                .setStyle(ButtonStyle.Secondary)
-                .setCustomId('bot_settings'),
-              new ButtonBuilder()
-                .setLabel('📊 Voir streamers')
-                .setStyle(ButtonStyle.Success)
-                .setCustomId('view_streamers')
-            );
-
-          await interaction.update({ 
-            embeds: [embed], 
-            components: [buttons]
-          });
-          return;
+        if (interaction.isButton()) {
+            console.log('🔍 DEBUG: Bouton détecté, buttonManager:', !!this.buttonManager);
+            const handled = await this.buttonManager.handleInteraction(interaction);
+            if (handled) return;
         }
-
-        // Bouton Informations système
-        if (interaction.customId === 'bot_settings') {
-          const settingsEmbed = new EmbedBuilder()
-            .setTitle('⚙️ Informations Système - Phoenix Bot')
-            .setDescription('Configuration et état actuel du système')
-            .addFields(
-              { name: '🔧 Version', value: 'Phoenix Bot v2.0.0', inline: true },
-              { name: '📅 Démarré', value: `<t:${Math.floor((Date.now() - this.uptime) / 1000)}:R>`, inline: true },
-              { name: '💾 Mémoire utilisée', value: `${Math.round(process.memoryUsage().heapUsed / 1024 / 1024)} MB`, inline: true },
-              { name: '🐧 Plateforme', value: process.platform, inline: true },
-              { name: '📡 Latence WebSocket', value: `${this.ws.ping}ms`, inline: true },
-              { name: '🔗 Node.js', value: process.version, inline: true }
-            )
-            .setColor('#FFD700')
-            .setTimestamp();
-
-          await interaction.reply({ 
-            embeds: [settingsEmbed], 
-            flags: 64
-          });
-          return;
-        }
-
-        // Bouton Voir streamers
-        if (interaction.customId === 'view_streamers') {
-          const streamers = await this.db.getAllStreamers();
-          
-          if (streamers.length === 0) {
-            const noStreamersEmbed = new EmbedBuilder()
-              .setTitle('📊 Liste des Streamers')
-              .setDescription('Aucun streamer enregistré pour le moment.')
-              .setColor('#ff6b6b');
-              
-            await interaction.reply({ 
-              embeds: [noStreamersEmbed], 
-              flags: 64
-            });
-            return;
-          }
-
-          const liveStreamers = Array.from(this.liveStreamers.keys());
-          const streamersText = streamers.slice(0, 10).map(streamer => {
-            const isLive = liveStreamers.includes(streamer.name);
-            const status = isLive ? '🔴 **LIVE**' : '⚫ Hors ligne';
-            return `• **${streamer.name}** - ${status}`;
-          }).join('\n');
-
-          const streamersEmbed = new EmbedBuilder()
-            .setTitle('📊 Liste des Streamers')
-            .setDescription(streamersText)
-            .addFields(
-              { name: '📈 Statistiques', value: `**${streamers.length}** streamers • **${liveStreamers.length}** en live`, inline: false }
-            )
-            .setColor('#4ecdc4')
-            .setTimestamp();
-
-          await interaction.reply({ 
-            embeds: [streamersEmbed], 
-            flags: 64
-          });
-          return;
-        }
-      }
 
       // Gérer les commandes slash
+
       if (interaction.isChatInputCommand()) {
         const command = this.commands.get(interaction.commandName);
 
@@ -737,4 +610,3 @@ if (require.main === module) {
 }
 
 module.exports = StreamerBot;
-
