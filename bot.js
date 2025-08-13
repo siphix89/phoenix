@@ -237,7 +237,7 @@ class StreamerBot extends Client {
 
   async onGuildMemberAdd(member) {
     try {
-      if (this.config.autoRoleId && this.config.autoRoleId !== '0') {
+      if (this.config.autoRoleId && this.config.autoRoleId !== '') {
   try {
     logger.info(`🔍 Tentative attribution rôle ID: ${this.config.autoRoleId} pour ${member.user.tag}`);
     
@@ -610,3 +610,4 @@ if (require.main === module) {
 }
 
 module.exports = StreamerBot;
+
