@@ -1,0 +1,56 @@
+// Gérer les boutons du règlement-dashboard (VERSION DEBUG DÉTAILLÉE)
+if (interaction.isButton() && interaction.customId.startsWith('accept_rules_')) {
+  console.log('🔍 DEBUG: Bouton règlement détecté');
+  console.log('🔍 DEBUG: CustomId:', interaction.customId);
+  console.log('🔍 DEBUG: User:', interaction.user.username);
+  console.log('🔍 DEBUG: Guild:', interaction.guild.name);
+  
+  // Répondre IMMÉDIATEMENT pour éviter le timeout Discord
+  try {
+    console.log('🔍 DEBUG: Tentative de deferReply...');
+    await interaction.deferReply({ ephemeral: true });
+    console.log('🔍 DEBUG: DeferReply réussi');
+  } catch (deferError) {
+    console.error('🔍 DEBUG: Erreur deferReply:', deferError);
+    return;
+  }
+  
+  try {
+    console.log('🔍 DEBUG: Recherche de la commande reglement-dashboard...');
+    const reglementCommand = this.commands.get('reglement-dashboard');
+    console.log('🔍 DEBUG: Commande trouvée:', !!reglementCommand);
+    
+    if (reglementCommand) {
+      console.log('🔍 DEBUG: Vérification handleButtonInteraction...');
+      console.log('🔍 DEBUG: HandleButtonInteraction existe:', typeof reglementCommand.handleButtonInteraction);
+      
+      if (reglementCommand.handleButtonInteraction) {
+        console.log('🔍 DEBUG: Exécution du gestionnaire...');
+        const handled = await reglementCommand.handleButtonInteraction(interaction, this);
+        console.log('🔍 DEBUG: Gestionnaire terminé, handled:', handled);
+        if (handled) return;
+      } else {
+        console.error('🔍 DEBUG: handleButtonInteraction manquant');
+        await interaction.editReply({
+          content: '❌ Gestionnaire de règlement non disponible. Contactez un administrateur.'
+        });
+      }
+    } else {
+      console.error('🔍 DEBUG: Commande reglement-dashboard non trouvée');
+      console.log('🔍 DEBUG: Commandes disponibles:', Array.from(this.commands.keys()));
+      await interaction.editReply({
+        content: '❌ Commande de règlement non disponible. Contactez un administrateur.'
+      });
+    }
+  } catch (error) {
+    console.error('🔍 DEBUG: Erreur dans le gestionnaire:', error);
+    this.logger?.error(`❌ Erreur bouton règlement: ${error}`);
+    
+    if (interaction.deferred) {
+      await interaction.editReply({
+        content: '❌ Une erreur s\'est produite. Veuillez réessayer.'
+      });
+    }
+  }
+  return;
+}
