@@ -285,9 +285,5 @@ class NotificationManager {
   getAllActiveStreams() {
     return Array.from(this.activeStreams.entries());
   }
-}
-// Dans updateLiveNotification, ajouter ces logs :
-console.log(`🔍 DEBUG - messageId stocké: ${messageId}`);
-console.log(`🔍 DEBUG - channelId: ${channelId}`);
-console.log(`🔍 DEBUG - activeStream:`, activeStream);
+
 module.exports = NotificationManager;
