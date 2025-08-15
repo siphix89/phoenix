@@ -132,19 +132,6 @@ class NotificationManager {
         return await this.sendLiveNotification(streamer, streamInfo);
       }
 
-      // CORRECTION: Vérifier s'il y a eu des changements significatifs
-      if (activeStream && !this.hasSignificantChanges(activeStream.streamInfo, streamInfo)) {
-        // Forcer une mise à jour toutes les 5 minutes 
-        const timeSinceUpdate = Date.now() - activeStream.lastUpdate; // CORRIGÉ: lastUpdate au lieu de LastUpdate
-        if (timeSinceUpdate < 5 * 60 * 1000) { // 5 minutes 
-          console.log(`⏭️ Pas de changements significatifs pour ${streamer.name}`); // CORRIGÉ: template string
-          activeStream.lastUpdate = Date.now(); // CORRIGÉ: lastUpdate au lieu de LastUpdate
-          return true; // AJOUTÉ: return manquant
-        } else {
-          console.log(`🔄 Mise à jour forcée après 5min pour ${streamer.name}`); // CORRIGÉ: template string
-        }
-      } // CORRIGÉ: accolade fermante ajoutée
-
       // Déterminer le channel approprié
       const channelId = streamer.status === StreamerStatus.AFFILIE 
         ? this.bot.config.liveAffilieChannel 
@@ -164,15 +151,40 @@ class NotificationManager {
       try {
         const message = await channel.messages.fetch(messageId);
         
-        // Mettre à jour l'embed
+        // Toujours créer l'embed avec les nouvelles données
         const embed = this.createStreamEmbed(streamer, streamInfo, true);
 
-        await message.edit({
-          content: `🚨 **${streamer.name}** est toujours en live ! 🎉`,
-          embeds: [embed],
-        });
+        // Vérifier s'il faut vraiment mettre à jour Discord ou juste les données internes
+        const hasSignificantChanges = this.hasSignificantChanges(
+          activeStream?.streamInfo, 
+          streamInfo
+        );
 
-        // Mettre à jour les informations stockées
+        if (hasSignificantChanges || !activeStream) {
+          // Mise à jour complète de Discord
+          await message.edit({
+            content: `🚨 **${streamer.name}** est toujours en live ! 🎉`,
+            embeds: [embed],
+          });
+          console.log(`✅ Notification mise à jour pour ${streamer.name}`);
+          logger.info(`✅ Notification live mise à jour pour ${streamer.name}`);
+        } else {
+          // Pas de changements significatifs, mais vérifier si mise à jour forcée nécessaire
+          const timeSinceUpdate = Date.now() - (activeStream?.lastUpdate || 0);
+          if (timeSinceUpdate >= 5 * 60 * 1000) { // 5 minutes
+            // Mise à jour forcée après 5 minutes
+            await message.edit({
+              content: `🚨 **${streamer.name}** est toujours en live ! 🎉`,
+              embeds: [embed],
+            });
+            console.log(`🔄 Mise à jour forcée après 5min pour ${streamer.name}`);
+            logger.info(`✅ Notification live mise à jour (forcée) pour ${streamer.name}`);
+          } else {
+            console.log(`⏭️ Pas de changements significatifs pour ${streamer.name}`);
+          }
+        }
+
+        // TOUJOURS mettre à jour les informations stockées avec les nouvelles données
         if (activeStream) {
           activeStream.streamInfo = { ...streamInfo };
           activeStream.lastUpdate = Date.now();
@@ -185,12 +197,9 @@ class NotificationManager {
           });
         }
 
-        console.log(`✅ Notification mise à jour pour ${streamer.name}`);
-        logger.info(`✅ Notification live mise à jour pour ${streamer.name}`);
         return true;
       } catch (error) {
         console.log(`⚠️ Message non trouvé pour ${streamer.name}, création d'une nouvelle notification`);
-        // Message non trouvé, créer une nouvelle notification
         return await this.sendLiveNotification(streamer, streamInfo);
       }
     } catch (error) {
@@ -240,11 +249,11 @@ class NotificationManager {
   hasSignificantChanges(oldInfo, newInfo) {
     if (!oldInfo || !newInfo) return true;
     
-    // Vérifier les changements significatifs - RENDU PLUS TOLÉRANT
+    // Vérifier les changements significatifs
     const titleChanged = (oldInfo.title || '') !== (newInfo.title || '');
     const gameChanged = (oldInfo.game || '') !== (newInfo.game || '');
     const viewerDiff = Math.abs((oldInfo.viewerCount || 0) - (newInfo.viewerCount || 0));
-    const significantViewerChange = viewerDiff > 2; // CHANGÉ: de 10 à 2 pour être plus sensible
+    const significantViewerChange = viewerDiff > 2;
     
     console.log(`📊 Analyse changements ${oldInfo.title || 'stream'}:
       - Titre: "${oldInfo.title}" → "${newInfo.title}" (changé: ${titleChanged})
