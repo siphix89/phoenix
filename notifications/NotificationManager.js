@@ -10,7 +10,11 @@ class NotificationManager {
   async sendLiveNotification(streamer, streamInfo) {
     try {
       console.log('🔍 Début sendLiveNotification pour:', streamer.name);
-      
+      // Vérifier si une notification existe déjà
+if (this.activeStreams.has(streamer.name)) {
+  console.log(`⚠️ Notification déjà active pour ${streamer.name}, mise à jour au lieu de création`);
+  return await this.updateLiveNotification(streamer, streamInfo);
+}
       // Déterminer le channel approprié
       const channelId = streamer.status === StreamerStatus.AFFILIE 
         ? this.bot.config.liveAffilieChannel 
