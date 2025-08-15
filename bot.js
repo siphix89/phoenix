@@ -22,8 +22,15 @@ const { BotMetrics, RuleAcceptanceViewHandler } = require('./models');
 let NotificationManager;
 let notificationManager = null;
 try {
-  NotificationManager = require('./notifications/NotificationManager');
-  console.log('✅ NotificationManager chargé avec succès');
+  console.log('🔍 Tentative de chargement de NotificationManager...');
+  console.log('🔍 Répertoire de travail:', __dirname);
+  
+  // Vérifier si le fichier existe
+  const fs = require('fs');
+  const path = require('path');
+  const notifPath = path.join(__dirname, 'notifications', 'NotificationManager.js');
+  console.log('🔍 Chemin recherché:', notifPath);
+  console.log('🔍 Fichier existe:', fs.existsSync(notifPath));
 } catch (error) {
   console.log('⚠️ Module notifications non trouvé, notifications désactivées');
 }
@@ -685,6 +692,7 @@ if (require.main === module) {
 }
 
 module.exports = StreamerBot;
+
 
 
 
