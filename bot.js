@@ -30,7 +30,7 @@ try {
 // Import du dashboard externe
 const dashboardServer = require('./dashboard-server.js');
 
-// Import des bouttons
+// Import des boutons
 const ButtonManager = require('./boutons/gestion.js');
 console.log('🔍 DEBUG: ButtonManager importé:', typeof ButtonManager);
 
@@ -53,15 +53,16 @@ class StreamerBot extends Client {
     this.config = config;
     this.db = new DatabaseManager('streamers.db', logger);
     this.twitch = TwitchManager ? new TwitchManager(config, logger) : null;
-    this.liveStreamers = new Map();
-    this.liveMessages = new Map();
+    this.liveStreamers = new Map(); // Stocke les streamers actuellement en live
+    this.liveMessages = new Map(); // Compatibilité ancienne version
     this.metrics = new BotMetrics();
     this.ruleHandler = null;
     this.checkInterval = null;
     this.commands = new Collection();
     this.keepAliveServer = null; // Désactivé temporairement
     this.notificationManager = null; // Référence directe
-    this.ButtonManager
+    this.buttonManager = null; // Corrigé: ajout de la propriété manquante
+    
     this.setupEventHandlers();
     this.loadCommands();
   }
@@ -119,6 +120,14 @@ class StreamerBot extends Client {
       // Initialiser la base de données
       await this.db.connect();
       await this.db.initDatabase();
+
+      // Initialiser le ButtonManager
+      try {
+        this.buttonManager = new ButtonManager(this);
+        logger.info('✅ ButtonManager initialisé');
+      } catch (error) {
+        logger.error(`❌ Erreur initialisation ButtonManager: ${error.message}`);
+      }
 
       // Initialiser Twitch et les notifications
       if (this.twitch && this.config.twitchClientId && this.config.twitchClientSecret) {
@@ -238,27 +247,27 @@ class StreamerBot extends Client {
   async onGuildMemberAdd(member) {
     try {
       if (this.config.autoRoleId && this.config.autoRoleId !== '') {
-  try {
-    logger.info(`🔍 Tentative attribution rôle ID: ${this.config.autoRoleId} pour ${member.user.tag}`);
-    
-    const role = member.guild.roles.cache.get(this.config.autoRoleId);
-    if (!role) {
-      logger.error(`❌ Rôle avec l'ID ${this.config.autoRoleId} non trouvé dans le serveur!`);
-      return;
-    }
+        try {
+          logger.info(`🔍 Tentative attribution rôle ID: ${this.config.autoRoleId} pour ${member.user.tag}`);
+          
+          const role = member.guild.roles.cache.get(this.config.autoRoleId);
+          if (!role) {
+            logger.error(`❌ Rôle avec l'ID ${this.config.autoRoleId} non trouvé dans le serveur!`);
+            return;
+          }
 
-    if (member.roles.cache.has(this.config.autoRoleId)) {
-      logger.info(`ℹ️ ${member.user.tag} a déjà le rôle "${role.name}"`);
-      return;
-    }
+          if (member.roles.cache.has(this.config.autoRoleId)) {
+            logger.info(`ℹ️ ${member.user.tag} a déjà le rôle "${role.name}"`);
+            return;
+          }
 
-    await member.roles.add(role);
-    logger.info(`✅ Rôle "${role.name}" attribué à ${member.user.tag}`);
-  } catch (roleError) {
-    logger.error(`❌ Erreur attribution rôle pour ${member.user.tag}: ${roleError.message}`);
-    logger.error(`Stack trace: ${roleError.stack}`);
-  }
-}
+          await member.roles.add(role);
+          logger.info(`✅ Rôle "${role.name}" attribué à ${member.user.tag}`);
+        } catch (roleError) {
+          logger.error(`❌ Erreur attribution rôle pour ${member.user.tag}: ${roleError.message}`);
+          logger.error(`Stack trace: ${roleError.stack}`);
+        }
+      }
 
       if (!this.config.welcomeChannel) {
         logger.warn(`⚠️ Channel de bienvenue non configuré pour: ${member.user.tag}`);
@@ -339,22 +348,28 @@ class StreamerBot extends Client {
   async onInteractionCreate(interaction) {
     try {
       // Gérer les boutons avec le nouveau système
-
-             // Initialiser buttonManager si pas encore fait
-        if (!this.buttonManager) {
-            console.log('🔍 DEBUG: Initialisation tardive du ButtonManager...');
-            const ButtonManager = require('./boutons/gestion.js');
-            this.buttonManager = new ButtonManager(this);
+      // Initialiser buttonManager si pas encore fait
+      if (!this.buttonManager && ButtonManager) {
+        console.log('🔍 DEBUG: Initialisation tardive du ButtonManager...');
+        try {
+          this.buttonManager = new ButtonManager(this);
+          logger.info('✅ ButtonManager initialisé tardivement');
+        } catch (error) {
+          logger.error(`❌ Erreur initialisation tardive ButtonManager: ${error.message}`);
         }
+      }
 
-        if (interaction.isButton()) {
-            console.log('🔍 DEBUG: Bouton détecté, buttonManager:', !!this.buttonManager);
-            const handled = await this.buttonManager.handleInteraction(interaction);
-            if (handled) return;
+      if (interaction.isButton() && this.buttonManager) {
+        console.log('🔍 DEBUG: Bouton détecté, buttonManager:', !!this.buttonManager);
+        try {
+          const handled = await this.buttonManager.handleInteraction(interaction);
+          if (handled) return;
+        } catch (error) {
+          logger.error(`❌ Erreur gestion bouton: ${error.message}`);
         }
+      }
 
       // Gérer les commandes slash
-
       if (interaction.isChatInputCommand()) {
         const command = this.commands.get(interaction.commandName);
 
@@ -481,6 +496,11 @@ class StreamerBot extends Client {
         return;
       }
 
+      // Nettoyage périodique des streams inactifs
+      if (this.notificationManager) {
+        this.notificationManager.cleanupInactiveStreams();
+      }
+
       for (const streamer of streamers) {
         try {
           const twitchName = streamer.url.split('/').pop();
@@ -492,18 +512,63 @@ class StreamerBot extends Client {
           const { isLive, streamInfo } = await this.twitch.checkStreamStatus(twitchName);
 
           if (isLive && !this.liveStreamers.has(streamer.name)) {
+            // ✅ NOUVEAU STREAM DÉTECTÉ
             if (this.notificationManager) {
               try {
-                await this.notificationManager.sendLiveNotification(streamer, streamInfo);
-                logger.info(`🔴 ${streamer.name} détecté en live - notification envoyée`);
+                const success = await this.notificationManager.sendLiveNotification(streamer, streamInfo);
+                if (success) {
+                  logger.info(`🔴 ${streamer.name} détecté en live - notification envoyée`);
+                  this.liveStreamers.set(streamer.name, { 
+                    startTime: Date.now(), 
+                    lastUpdate: Date.now(),
+                    streamInfo: { ...streamInfo }
+                  });
+                } else {
+                  logger.warn(`⚠️ Notification live échouée pour ${streamer.name}`);
+                }
               } catch (notifError) {
                 logger.warn(`⚠️ Notification live échouée pour ${streamer.name}: ${notifError.message}`);
               }
             } else {
               logger.info(`🔴 ${streamer.name} est en live (notifications désactivées)`);
+              this.liveStreamers.set(streamer.name, { 
+                startTime: Date.now(), 
+                lastUpdate: Date.now(),
+                streamInfo: { ...streamInfo }
+              });
             }
-            this.liveStreamers.set(streamer.name, true);
+            
+          } else if (isLive && this.liveStreamers.has(streamer.name)) {
+            // ✅ STREAM TOUJOURS EN COURS - MISE À JOUR
+            if (this.notificationManager) {
+              try {
+                const success = await this.notificationManager.updateLiveNotification(streamer, streamInfo);
+                if (success) {
+                  logger.info(`🔄 ${streamer.name} toujours en live - notification mise à jour`);
+                  // Mettre à jour les informations locales
+                  const liveData = this.liveStreamers.get(streamer.name);
+                  if (liveData) {
+                    liveData.lastUpdate = Date.now();
+                    liveData.streamInfo = { ...streamInfo };
+                  }
+                } else {
+                  logger.warn(`⚠️ Mise à jour notification échouée pour ${streamer.name}`);
+                }
+              } catch (notifError) {
+                logger.warn(`⚠️ Mise à jour notification échouée pour ${streamer.name}: ${notifError.message}`);
+              }
+            } else {
+              logger.info(`🔄 ${streamer.name} toujours en live (notifications désactivées)`);
+              // Mettre à jour même sans notifications
+              const liveData = this.liveStreamers.get(streamer.name);
+              if (liveData) {
+                liveData.lastUpdate = Date.now();
+                liveData.streamInfo = { ...streamInfo };
+              }
+            }
+            
           } else if (!isLive && this.liveStreamers.has(streamer.name)) {
+            // ✅ STREAM TERMINÉ
             if (this.notificationManager) {
               try {
                 await this.notificationManager.removeLiveNotification(streamer.name);
@@ -526,6 +591,15 @@ class StreamerBot extends Client {
       }
 
       logger.info(`✅ Vérification terminée - ${this.liveStreamers.size} streamers en live`);
+      
+      // Log détaillé des streams actifs pour debug
+      if (this.liveStreamers.size > 0) {
+        logger.info('📊 Streams actifs:');
+        for (const [name, data] of this.liveStreamers.entries()) {
+          const duration = Math.floor((Date.now() - data.startTime) / 60000);
+          logger.info(`   - ${name}: ${duration}min (viewers: ${data.streamInfo?.viewerCount || 'N/A'})`);
+        }
+      }
     } catch (error) {
       logger.error(`❌ Erreur lors de la vérification globale: ${error.message}`);
       this.metrics.recordError();
@@ -610,4 +684,3 @@ if (require.main === module) {
 }
 
 module.exports = StreamerBot;
-
