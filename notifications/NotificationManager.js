@@ -132,19 +132,19 @@ class NotificationManager {
         return await this.sendLiveNotification(streamer, streamInfo);
       }
 
-      // Vérifier s'il y a eu des changements significatifs
+      // CORRECTION: Vérifier s'il y a eu des changements significatifs
       if (activeStream && !this.hasSignificantChanges(activeStream.streamInfo, streamInfo)) {
-     // Forcer une mise a jour toutes les 5 minutes 
-       const timeSinceUpdate = Date.now() - activeStream.LastUpdate;
-        if (timeSinceUpdate < 5 * 60 * 1000) {// 5 minutes 
-          console.log('⏭️ pas de changement significatifs pour ${streamer.name}')};
-          activeStream.LastUpdate = Date.now();
-      } else {
-        console.log(`🔄 mise à jours forcée apres 5min pour %{streamer.name}`);
-      }
-     
+        // Forcer une mise à jour toutes les 5 minutes 
+        const timeSinceUpdate = Date.now() - activeStream.lastUpdate; // CORRIGÉ: lastUpdate au lieu de LastUpdate
+        if (timeSinceUpdate < 5 * 60 * 1000) { // 5 minutes 
+          console.log(`⏭️ Pas de changements significatifs pour ${streamer.name}`); // CORRIGÉ: template string
+          activeStream.lastUpdate = Date.now(); // CORRIGÉ: lastUpdate au lieu de LastUpdate
+          return true; // AJOUTÉ: return manquant
+        } else {
+          console.log(`🔄 Mise à jour forcée après 5min pour ${streamer.name}`); // CORRIGÉ: template string
+        }
+      } // CORRIGÉ: accolade fermante ajoutée
 
-  
       // Déterminer le channel approprié
       const channelId = streamer.status === StreamerStatus.AFFILIE 
         ? this.bot.config.liveAffilieChannel 
@@ -240,11 +240,16 @@ class NotificationManager {
   hasSignificantChanges(oldInfo, newInfo) {
     if (!oldInfo || !newInfo) return true;
     
-    // Vérifier les changements significatifs
-    const titleChanged = oldInfo.title !== newInfo.title;
-    const gameChanged = oldInfo.game !== newInfo.game;
+    // Vérifier les changements significatifs - RENDU PLUS TOLÉRANT
+    const titleChanged = (oldInfo.title || '') !== (newInfo.title || '');
+    const gameChanged = (oldInfo.game || '') !== (newInfo.game || '');
     const viewerDiff = Math.abs((oldInfo.viewerCount || 0) - (newInfo.viewerCount || 0));
-    const significantViewerChange = viewerDiff > Math.max(10, (oldInfo.viewerCount || 0) * 0.1); // 10% ou minimum 10
+    const significantViewerChange = viewerDiff > 2; // CHANGÉ: de 10 à 2 pour être plus sensible
+    
+    console.log(`📊 Analyse changements ${oldInfo.title || 'stream'}:
+      - Titre: "${oldInfo.title}" → "${newInfo.title}" (changé: ${titleChanged})
+      - Jeu: "${oldInfo.game}" → "${newInfo.game}" (changé: ${gameChanged})  
+      - Viewers: ${oldInfo.viewerCount} → ${newInfo.viewerCount} (diff: ${viewerDiff}, significatif: ${significantViewerChange})`);
     
     return titleChanged || gameChanged || significantViewerChange;
   }
