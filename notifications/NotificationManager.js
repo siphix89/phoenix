@@ -253,7 +253,7 @@ class NotificationManager {
     const titleChanged = (oldInfo.title || '') !== (newInfo.title || '');
     const gameChanged = (oldInfo.game || '') !== (newInfo.game || '');
     const viewerDiff = Math.abs((oldInfo.viewerCount || 0) - (newInfo.viewerCount || 0));
-    const significantViewerChange = viewerDiff > 2;
+    const significantViewerChange = viewerDiff > 0;
     
     console.log(`📊 Analyse changements ${oldInfo.title || 'stream'}:
       - Titre: "${oldInfo.title}" → "${newInfo.title}" (changé: ${titleChanged})
