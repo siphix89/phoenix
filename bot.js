@@ -20,7 +20,7 @@ const { BotMetrics, RuleAcceptanceViewHandler } = require('./models');
 
 // Import conditionnel des notifications
 let NotificationManager;
-let notificationManager = null;
+let NotificationManager = null;
 try {
   NotificationManager = require('./notifications/NotificationManager');
   console.log('✅ NotificationManager chargé avec succès');
@@ -685,4 +685,5 @@ if (require.main === module) {
 }
 
 module.exports = StreamerBot;
+
 
