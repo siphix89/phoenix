@@ -285,5 +285,6 @@ class NotificationManager {
   getAllActiveStreams() {
     return Array.from(this.activeStreams.entries());
   }
+}
 
 module.exports = NotificationManager;
