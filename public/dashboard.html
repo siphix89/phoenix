@@ -12,233 +12,483 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 2rem;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0f0f23;
+            color: #ffffff;
+            line-height: 1.6;
             min-height: 100vh;
-            margin: 0;
         }
 
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
+        /* Header MEE6 Style */
         .header {
-            text-align: center;
-            margin-bottom: 3rem;
+            background: linear-gradient(135deg, #7289da 0%, #5865f2 50%, #5b67ea 100%);
+            padding: 2rem 0;
+            position: relative;
+            overflow: hidden;
         }
 
-        .header h1 {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+            opacity: 0.3;
         }
 
-        .success {
-            background: rgba(34, 197, 94, 0.2);
-            border: 2px solid #22c55e;
-            border-radius: 15px;
-            padding: 1.5rem;
-            margin: 2rem 0;
-            text-align: center;
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            position: relative;
+            z-index: 1;
         }
 
-        .main-content {
-            display: grid;
-            grid-template-columns: 1fr 400px;
-            gap: 2rem;
-            margin-bottom: 3rem;
-        }
-
-        .left-panel {
+        .header-top {
             display: flex;
-            flex-direction: column;
-            gap: 2rem;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
         }
 
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        .logo {
+            display: flex;
+            align-items: center;
             gap: 1rem;
         }
 
-        .stat-card {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 1.5rem;
-            border-radius: 15px;
+        .logo-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #ff6b6b, #ffa500);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+
+        .logo-text h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin: 0;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        .logo-text p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+            margin: 0;
+        }
+
+        .header-stats {
+            display: flex;
+            gap: 2rem;
+            text-align: center;
+        }
+
+        .header-stat {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .header-stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .header-stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        /* Navigation MEE6 Style */
+        .nav {
+            background: #1a1a2e;
+            border-bottom: 1px solid #2d2d44;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 60px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-link {
+            color: #b9bbbe;
+            text-decoration: none;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: #5865f2;
+            background: rgba(88, 101, 242, 0.1);
+        }
+
+        .server-selector {
+            background: #2d2d44;
+            border: 1px solid #40444b;
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            color: #ffffff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Main Content */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Cards MEE6 Style */
+        .card {
+            background: #1a1a2e;
+            border: 1px solid #2d2d44;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            transition: all 0.2s ease;
+        }
+
+        .card:hover {
+            border-color: #5865f2;
+            box-shadow: 0 4px 20px rgba(88, 101, 242, 0.1);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: between;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #2d2d44;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .card-icon {
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(135deg, #5865f2, #7289da);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+        }
+
+        /* Quick Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: #1a1a2e;
+            border: 1px solid #2d2d44;
+            border-radius: 12px;
+            padding: 1.5rem;
             text-align: center;
-            transition: transform 0.3s ease;
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #5865f2, #7289da);
         }
 
         .stat-card:hover {
-            transform: translateY(-5px);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(88, 101, 242, 0.15);
         }
 
         .stat-value {
-            font-size: 2rem;
-            font-weight: bold;
-            color: #22c55e;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #5865f2;
             margin-bottom: 0.5rem;
         }
 
         .stat-label {
-            font-size: 0.9rem;
-            opacity: 0.8;
+            color: #b9bbbe;
+            font-size: 0.875rem;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 0.5px;
+            font-weight: 500;
         }
 
-        .status {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 1.5rem;
-            border-radius: 15px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
+        /* Commands Panel MEE6 Style */
         .commands-panel {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            padding: 2rem;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: #1a1a2e;
+            border: 1px solid #2d2d44;
+            border-radius: 12px;
+            padding: 1.5rem;
             height: fit-content;
-        }
-
-        .commands-panel h3 {
-            font-size: 1.5rem;
-            margin-bottom: 1.5rem;
-            text-align: center;
         }
 
         .command-category {
             margin-bottom: 2rem;
         }
 
-        .category-title {
-            font-size: 1.1rem;
-            font-weight: bold;
+        .category-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
             margin-bottom: 1rem;
-            padding: 0.5rem 1rem;
-            background: rgba(255, 255, 255, 0.1);
+            padding: 0.75rem 1rem;
+            background: rgba(88, 101, 242, 0.1);
             border-radius: 8px;
-            border-left: 4px solid #22c55e;
+            border-left: 4px solid #5865f2;
         }
 
-        .command-list {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
+        .category-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #5865f2;
         }
 
         .command-item {
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid #2d2d44;
+            border-radius: 8px;
             padding: 1rem;
-            border-radius: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: all 0.3s ease;
+            margin-bottom: 0.75rem;
             cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .command-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 0;
+            background: linear-gradient(135deg, #5865f2, #7289da);
+            transition: width 0.2s ease;
         }
 
         .command-item:hover {
-            background: rgba(255, 255, 255, 0.15);
-            transform: translateX(5px);
+            background: rgba(88, 101, 242, 0.05);
+            border-color: #5865f2;
+            transform: translateX(4px);
+        }
+
+        .command-item:hover::before {
+            width: 4px;
         }
 
         .command-name {
-            font-weight: bold;
-            color: #22c55e;
+            font-weight: 600;
+            color: #ffffff;
             margin-bottom: 0.25rem;
-        }
-
-        .command-desc {
-            font-size: 0.85rem;
-            opacity: 0.8;
-            line-height: 1.3;
-        }
-
-        .btn {
-            background: #22c55e;
-            color: white;
-            border: none;
-            padding: 1rem 2rem;
-            border-radius: 10px;
-            font-size: 1.1rem;
-            cursor: pointer;
-            margin: 0.5rem;
-            transition: all 0.3s ease;
-            display: inline-flex;
+            display: flex;
             align-items: center;
             gap: 0.5rem;
         }
 
+        .command-desc {
+            color: #b9bbbe;
+            font-size: 0.875rem;
+            line-height: 1.4;
+        }
+
+        /* Buttons MEE6 Style */
+        .btn {
+            background: linear-gradient(135deg, #5865f2, #7289da);
+            color: white;
+            border: none;
+            padding: 0.875rem 1.5rem;
+            border-radius: 8px;
+            font-size: 0.925rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            margin: 0.25rem;
+        }
+
         .btn:hover {
-            background: #16a34a;
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 15px rgba(88, 101, 242, 0.4);
+            filter: brightness(1.1);
         }
 
-        .btn:disabled {
-            background: #6b7280;
-            cursor: not-allowed;
-            transform: none;
+        .btn:active {
+            transform: translateY(0);
         }
 
-        .btn-secondary {
-            background: #3b82f6;
+        .btn-success {
+            background: linear-gradient(135deg, #57f287, #3ba55c);
         }
 
-        .btn-secondary:hover {
-            background: #2563eb;
+        .btn-success:hover {
+            box-shadow: 0 4px 15px rgba(87, 242, 135, 0.4);
         }
 
         .btn-danger {
-            background: #ef4444;
+            background: linear-gradient(135deg, #ed4245, #c9302c);
         }
 
         .btn-danger:hover {
-            background: #dc2626;
+            box-shadow: 0 4px 15px rgba(237, 66, 69, 0.4);
         }
 
-        .btn-execute {
-            background: #8b5cf6;
+        .btn-warning {
+            background: linear-gradient(135deg, #fee75c, #f0b90b);
         }
 
-        .btn-execute:hover {
-            background: #7c3aed;
+        .btn-warning:hover {
+            box-shadow: 0 4px 15px rgba(254, 231, 92, 0.4);
         }
 
-        .controls {
-            text-align: center;
-            margin: 2rem 0;
+        .btn-secondary {
+            background: #4f545c;
+            color: #ffffff;
         }
 
-        .activity-panel {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
+        .btn-secondary:hover {
+            background: #5d6269;
+            box-shadow: 0 4px 15px rgba(79, 84, 92, 0.4);
+        }
+
+        /* Status Indicator MEE6 Style */
+        .status-indicator {
+            background: #1a1a2e;
+            border: 1px solid #2d2d44;
+            border-radius: 12px;
             padding: 1.5rem;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            margin-bottom: 1.5rem;
+        }
+
+        .status-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #57f287;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(87, 242, 135, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(87, 242, 135, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(87, 242, 135, 0); }
+        }
+
+        .status-text {
+            font-weight: 600;
+            color: #57f287;
+        }
+
+        /* Activity Feed MEE6 Style */
+        .activity-feed {
+            background: #1a1a2e;
+            border: 1px solid #2d2d44;
+            border-radius: 12px;
+            padding: 1.5rem;
         }
 
         .activity-item {
-            background: rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
             padding: 1rem;
-            border-radius: 10px;
-            margin-bottom: 1rem;
-            border-left: 4px solid #3b82f6;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 8px;
+            margin-bottom: 0.75rem;
+            border-left: 3px solid #5865f2;
+        }
+
+        .activity-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, #5865f2, #7289da);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        .activity-content {
+            flex: 1;
+        }
+
+        .activity-text {
+            color: #ffffff;
+            font-weight: 500;
+            margin-bottom: 0.25rem;
         }
 
         .activity-time {
+            color: #b9bbbe;
             font-size: 0.8rem;
-            opacity: 0.7;
-            margin-bottom: 0.5rem;
         }
 
+        /* Modal MEE6 Style */
         .modal {
             display: none;
             position: fixed;
@@ -246,113 +496,83 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.85);
             z-index: 1000;
             justify-content: center;
             align-items: center;
         }
 
         .modal-content {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #1a1a2e;
+            border: 1px solid #2d2d44;
+            border-radius: 12px;
             padding: 2rem;
-            border-radius: 20px;
             max-width: 600px;
             width: 90%;
             max-height: 80vh;
             overflow-y: auto;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative;
         }
 
-        .modal h3 {
-            margin-bottom: 1rem;
-            text-align: center;
-        }
-
-        .close-btn {
-            float: right;
-            font-size: 1.5rem;
-            cursor: pointer;
-            background: none;
-            border: none;
-            color: white;
-        }
-
-        .form-group {
-            margin-bottom: 1rem;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: bold;
-        }
-
-        .form-group input {
-            width: 100%;
-            padding: 0.75rem;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 8px;
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            font-size: 1rem;
-        }
-
-        .form-group input::placeholder {
-            color: rgba(255, 255, 255, 0.6);
-        }
-
-        .streamers-list {
-            max-height: 300px;
-            overflow-y: auto;
-        }
-
-        .streamer-item {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 1rem;
-            border-radius: 10px;
-            margin-bottom: 0.5rem;
+        .modal-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #2d2d44;
         }
 
-        .streamer-info {
-            flex: 1;
+        .close-btn {
+            background: none;
+            border: none;
+            color: #b9bbbe;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.25rem;
+            border-radius: 4px;
+            transition: all 0.2s ease;
         }
 
-        .streamer-name {
-            font-weight: bold;
-            margin-bottom: 0.25rem;
+        .close-btn:hover {
+            background: #2d2d44;
+            color: #ffffff;
         }
 
-        .streamer-url {
-            font-size: 0.8rem;
-            opacity: 0.7;
+        /* Form MEE6 Style */
+        .form-group {
+            margin-bottom: 1.5rem;
         }
 
-        .streamer-status {
-            margin-left: 1rem;
-            padding: 0.25rem 0.75rem;
-            border-radius: 15px;
-            font-size: 0.8rem;
-            font-weight: bold;
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #ffffff;
         }
 
-        .status-live {
-            background: #22c55e;
-            color: white;
+        .form-input {
+            width: 100%;
+            padding: 0.875rem;
+            border: 1px solid #2d2d44;
+            border-radius: 8px;
+            background: #0f0f23;
+            color: #ffffff;
+            font-size: 0.925rem;
+            transition: all 0.2s ease;
         }
 
-        .status-offline {
-            background: #6b7280;
-            color: white;
+        .form-input:focus {
+            outline: none;
+            border-color: #5865f2;
+            box-shadow: 0 0 0 3px rgba(88, 101, 242, 0.1);
         }
 
-        .status-affiliate {
-            background: #8b5cf6;
-            color: white;
+        .form-input::placeholder {
+            color: #72767d;
         }
 
+        /* Loading Animation */
         .loading {
             text-align: center;
             padding: 2rem;
@@ -361,9 +581,9 @@
         .spinner {
             width: 40px;
             height: 40px;
-            border: 4px solid rgba(255, 255, 255, 0.3);
+            border: 4px solid #2d2d44;
             border-radius: 50%;
-            border-top-color: white;
+            border-top-color: #5865f2;
             animation: spin 1s ease-in-out infinite;
             margin: 0 auto 1rem;
         }
@@ -372,26 +592,48 @@
             to { transform: rotate(360deg); }
         }
 
+        /* Alert MEE6 Style */
         .alert {
             padding: 1rem;
-            border-radius: 10px;
+            border-radius: 8px;
             margin: 1rem 0;
+            border-left: 4px solid;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
         }
 
         .alert-success {
-            background: rgba(34, 197, 94, 0.2);
-            border: 1px solid #22c55e;
-            color: #22c55e;
+            background: rgba(87, 242, 135, 0.1);
+            border-color: #57f287;
+            color: #57f287;
         }
 
         .alert-error {
-            background: rgba(239, 68, 68, 0.2);
-            border: 1px solid #ef4444;
-            color: #ef4444;
+            background: rgba(237, 66, 69, 0.1);
+            border-color: #ed4245;
+            color: #ed4245;
         }
 
-        @media (max-width: 1200px) {
-            .main-content {
+        .alert-warning {
+            background: rgba(254, 231, 92, 0.1);
+            border-color: #fee75c;
+            color: #fee75c;
+        }
+
+        /* Controls Section */
+        .controls {
+            text-align: center;
+            margin: 2rem 0;
+            padding: 2rem;
+            background: #1a1a2e;
+            border: 1px solid #2d2d44;
+            border-radius: 12px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .main-grid {
                 grid-template-columns: 1fr;
             }
             
@@ -405,138 +647,265 @@
                 padding: 1rem;
             }
             
-            .header h1 {
-                font-size: 2rem;
+            .header-top {
+                flex-direction: column;
+                gap: 1.5rem;
+                text-align: center;
             }
             
-            .stats {
+            .header-stats {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .stats-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
             
-            .controls {
-                display: flex;
+            .nav-content {
+                flex-direction: column;
+                height: auto;
+                padding: 1rem;
+                gap: 1rem;
+            }
+            
+            .nav-links {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header-stats {
                 flex-direction: column;
                 gap: 1rem;
-                align-items: center;
             }
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #1a1a2e;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #2d2d44;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #5865f2;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>🔥 Phoenix Bot Dashboard</h1>
-            
-            <div class="success">
-                <h2>✅ Dashboard Fonctionnel !</h2>
-                <p>Dashboard interactif avec commandes Phoenix Bot fonctionnelles.</p>
-            </div>
-        </div>
-
-        <div class="main-content">
-            <div class="left-panel">
-                <div class="stats" id="stats">
-                    <div class="stat-card">
-                        <div class="stat-value" id="servers">-</div>
-                        <div class="stat-label">🖥️ Serveurs</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="users">-</div>
-                        <div class="stat-label">👥 Utilisateurs</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="streamers">-</div>
-                        <div class="stat-label">🎮 Streamers</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="uptime">-</div>
-                        <div class="stat-label">⚡ Uptime</div>
+    <!-- Header -->
+    <div class="header">
+        <div class="header-content">
+            <div class="header-top">
+                <div class="logo">
+                    <div class="logo-icon">🔥</div>
+                    <div class="logo-text">
+                        <h1>Phoenix Bot</h1>
+                        <p>Dashboard de gestion avancé</p>
                     </div>
                 </div>
-
-                <div class="status" id="status">
-                    <h3>📊 Statut du Bot</h3>
-                    <p>Chargement...</p>
-                </div>
-
-                <div class="activity-panel">
-                    <h3>📊 Activité Récente</h3>
-                    <div id="activity-list">
-                        <div class="activity-item">
-                            <div class="activity-time">Chargement...</div>
-                            <div>Dashboard en cours d'initialisation...</div>
-                        </div>
+                <div class="header-stats">
+                    <div class="header-stat">
+                        <div class="header-stat-value" id="header-servers">-</div>
+                        <div class="header-stat-label">Serveurs</div>
+                    </div>
+                    <div class="header-stat">
+                        <div class="header-stat-value" id="header-users">-</div>
+                        <div class="header-stat-label">Utilisateurs</div>
+                    </div>
+                    <div class="header-stat">
+                        <div class="header-stat-value" id="header-streamers">-</div>
+                        <div class="header-stat-label">Streamers</div>
                     </div>
                 </div>
             </div>
-
-            <div class="commands-panel">
-                <h3>⚡ Commandes Phoenix Bot</h3>
-                
-                <div class="command-category">
-                    <div class="category-title">🎮 Gestion Streamers</div>
-                    <div class="command-list">
-                        <div class="command-item" onclick="executeCommand('streamers')">
-                            <div class="command-name">📋 Voir Streamers</div>
-                            <div class="command-desc">Affiche tous les streamers configurés</div>
-                        </div>
-                        <div class="command-item" onclick="executeCommand('add-streamer')">
-                            <div class="command-name">➕ Ajouter Streamer</div>
-                            <div class="command-desc">Ajoute un nouveau streamer Twitch</div>
-                        </div>
-                        <div class="command-item" onclick="executeCommand('check-streams')">
-                            <div class="command-name">🔍 Vérifier Streams</div>
-                            <div class="command-desc">Force la vérification des streams</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="command-category">
-                    <div class="category-title">⚙️ Administration</div>
-                    <div class="command-list">
-                        <div class="command-item" onclick="executeCommand('ping')">
-                            <div class="command-name">📡 Test Ping</div>
-                            <div class="command-desc">Teste la latence du bot</div>
-                        </div>
-                        <div class="command-item" onclick="executeCommand('test-twitch')">
-                            <div class="command-name">🔗 Test Twitch</div>
-                            <div class="command-desc">Vérifie la connexion API Twitch</div>
-                        </div>
-                        <div class="command-item" onclick="executeCommand('server-info')">
-                            <div class="command-name">📊 Infos Serveur</div>
-                            <div class="command-desc">Détails du serveur Discord</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="command-category">
-                    <div class="category-title">🔧 Outils</div>
-                    <div class="command-list">
-                        <div class="command-item" onclick="executeCommand('detailed-stats')">
-                            <div class="command-name">📈 Stats Détaillées</div>
-                            <div class="command-desc">Statistiques complètes du bot</div>
-                        </div>
-                        <div class="command-item" onclick="executeCommand('logs')">
-                            <div class="command-name">📋 Logs Récents</div>
-                            <div class="command-desc">Historique des événements</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="controls">
-            <button class="btn" onclick="loadStats()">🔄 Actualiser Dashboard</button>
-            <button class="btn btn-secondary" onclick="executeCommand('refresh-all')">🚀 Actualisation Complète</button>
-            <button class="btn btn-danger" onclick="generateNewToken()">🔑 Nouveau Token</div>
         </div>
     </div>
 
-    <!-- Modal pour les résultats de commandes -->
+    <!-- Navigation -->
+    <div class="nav">
+        <div class="nav-content">
+            <div class="nav-links">
+                <a href="#" class="nav-link active">📊 Dashboard</a>
+                <a href="#" class="nav-link">🎮 Streamers</a>
+                <a href="#" class="nav-link">⚙️ Administration</a>
+                <a href="#" class="nav-link">📋 Logs</a>
+                <a href="#" class="nav-link">🔧 Paramètres</a>
+            </div>
+            <div class="server-selector">
+                <span>🌟 Serveur Principal</span>
+                <span>▼</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Status Indicator -->
+        <div class="status-indicator">
+            <div class="status-header">
+                <div class="status-dot"></div>
+                <div class="status-text">Phoenix Bot est en ligne</div>
+                <div style="margin-left: auto; color: #b9bbbe; font-size: 0.875rem;" id="last-update">
+                    Dernière mise à jour: Maintenant
+                </div>
+            </div>
+            <div style="color: #b9bbbe;">
+                Tous les systèmes fonctionnent normalement • Surveillance active des streamers • API Discord connectée
+            </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="servers">-</div>
+                <div class="stat-label">🖥️ Serveurs Discord</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="users">-</div>
+                <div class="stat-label">👥 Utilisateurs Actifs</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="streamers">-</div>
+                <div class="stat-label">🎮 Streamers Surveillés</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="uptime">-</div>
+                <div class="stat-label">⚡ Temps de Fonctionnement</div>
+            </div>
+        </div>
+
+        <!-- Main Grid -->
+        <div class="main-grid">
+            <div class="left-panel">
+                <!-- Activity Feed -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <div class="card-icon">📊</div>
+                            Activité Récente
+                        </div>
+                    </div>
+                    <div class="activity-feed" id="activity-list">
+                        <div class="activity-item">
+                            <div class="activity-icon">🔄</div>
+                            <div class="activity-content">
+                                <div class="activity-text">Dashboard en cours d'initialisation...</div>
+                                <div class="activity-time">Maintenant</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Commands Panel -->
+            <div class="commands-panel">
+                <div class="card-header">
+                    <div class="card-title">
+                        <div class="card-icon">⚡</div>
+                        Actions Rapides
+                    </div>
+                </div>
+
+                <div class="command-category">
+                    <div class="category-header">
+                        <span>🎮</span>
+                        <div class="category-title">Gestion Streamers</div>
+                    </div>
+                    <div class="command-list">
+                        <div class="command-item" onclick="executeCommand('streamers')">
+                            <div class="command-name">📋 Voir tous les Streamers</div>
+                            <div class="command-desc">Affiche la liste complète des streamers surveillés</div>
+                        </div>
+                        <div class="command-item" onclick="executeCommand('add-streamer')">
+                            <div class="command-name">➕ Ajouter un Streamer</div>
+                            <div class="command-desc">Ajoute un nouveau streamer à la surveillance</div>
+                        </div>
+                        <div class="command-item" onclick="executeCommand('check-streams')">
+                            <div class="command-name">🔍 Vérifier les Streams</div>
+                            <div class="command-desc">Force la vérification de tous les streams</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="command-category">
+                    <div class="category-header">
+                        <span>⚙️</span>
+                        <div class="category-title">Administration</div>
+                    </div>
+                    <div class="command-list">
+                        <div class="command-item" onclick="executeCommand('ping')">
+                            <div class="command-name">📡 Test de Latence</div>
+                            <div class="command-desc">Vérifie la latence du bot Discord</div>
+                        </div>
+                        <div class="command-item" onclick="executeCommand('test-twitch')">
+                            <div class="command-name">🔗 Test API Twitch</div>
+                            <div class="command-desc">Vérifie la connexion à l'API Twitch</div>
+                        </div>
+                        <div class="command-item" onclick="executeCommand('server-info')">
+                            <div class="command-name">📊 Informations Serveur</div>
+                            <div class="command-desc">Détails complets du serveur Discord</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="command-category">
+                    <div class="category-header">
+                        <span>🔧</span>
+                        <div class="category-title">Outils Avancés</div>
+                    </div>
+                    <div class="command-list">
+                        <div class="command-item" onclick="executeCommand('detailed-stats')">
+                            <div class="command-name">📈 Statistiques Détaillées</div>
+                            <div class="command-desc">Analyses complètes de performance</div>
+                        </div>
+                        <div class="command-item" onclick="executeCommand('logs')">
+                            <div class="command-name">📋 Journaux Système</div>
+                            <div class="command-desc">Historique des événements récents</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="controls">
+            <button class="btn" onclick="loadStats()">
+                🔄 Actualiser le Dashboard
+            </button>
+            <button class="btn btn-success" onclick="executeCommand('refresh-all')">
+                🚀 Actualisation Complète
+            </button>
+            <button class="btn btn-warning" onclick="generateNewToken()">
+                🔑 Générer un Nouveau Token
+            </button>
+            <button class="btn btn-secondary" onclick="window.open('https://discord.gg/votre-serveur', '_blank')">
+                💬 Support Discord
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal pour les résultats -->
     <div class="modal" id="resultModal">
         <div class="modal-content">
-            <button class="close-btn" onclick="closeModal()">&times;</button>
-            <h3 id="modalTitle">Résultat</h3>
+            <div class="modal-header">
+                <h3 id="modalTitle">Résultat</h3>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
             <div id="modalContent">
                 <!-- Le contenu sera généré par JavaScript -->
             </div>
@@ -546,19 +915,21 @@
     <!-- Modal pour ajouter un streamer -->
     <div class="modal" id="addStreamerModal">
         <div class="modal-content">
-            <button class="close-btn" onclick="closeModal()">&times;</button>
-            <h3>➕ Ajouter un Streamer</h3>
+            <div class="modal-header">
+                <h3>➕ Ajouter un Streamer</h3>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
             <form id="addStreamerForm">
                 <div class="form-group">
-                    <label for="streamerName">Nom du streamer :</label>
-                    <input type="text" id="streamerName" placeholder="Ex: MonStreamer" required>
+                    <label class="form-label" for="streamerName">Nom du streamer :</label>
+                    <input type="text" id="streamerName" class="form-input" placeholder="Ex: MonStreamer" required>
                 </div>
                 <div class="form-group">
-                    <label for="streamerUrl">URL Twitch :</label>
-                    <input type="url" id="streamerUrl" placeholder="https://www.twitch.tv/monstreamer" required>
+                    <label class="form-label" for="streamerUrl">URL Twitch :</label>
+                    <input type="url" id="streamerUrl" class="form-input" placeholder="https://www.twitch.tv/monstreamer" required>
                 </div>
                 <div class="controls">
-                    <button type="submit" class="btn">➕ Ajouter</button>
+                    <button type="submit" class="btn btn-success">➕ Ajouter le Streamer</button>
                     <button type="button" class="btn btn-secondary" onclick="closeModal()">Annuler</button>
                 </div>
             </form>
@@ -572,7 +943,7 @@
         const token = urlParams.get('token');
         
         if (!token) {
-            alert('Token d\'authentification manquant');
+            showAlert('Token d\'authentification manquant dans l\'URL', 'error');
         }
 
         // Fonction utilitaire pour les requêtes API
@@ -608,10 +979,15 @@
                     throw new Error(data.error);
                 }
                 
-                // Mettre à jour les statistiques
+                // Mettre à jour les statistiques principales
                 document.getElementById('servers').textContent = data.servers || '0';
                 document.getElementById('users').textContent = (data.users || 0).toLocaleString();
                 document.getElementById('streamers').textContent = data.streamers || '0';
+                
+                // Mettre à jour les statistiques du header
+                document.getElementById('header-servers').textContent = data.servers || '0';
+                document.getElementById('header-users').textContent = (data.users || 0).toLocaleString();
+                document.getElementById('header-streamers').textContent = data.streamers || '0';
                 
                 // Calculer l'uptime
                 const uptimeMs = data.uptime || 0;
@@ -619,23 +995,20 @@
                 const uptimeMinutes = Math.floor((uptimeMs % 3600000) / 60000);
                 document.getElementById('uptime').textContent = `${uptimeHours}h ${uptimeMinutes}m`;
                 
-                // Mettre à jour le statut
-                document.getElementById('status').innerHTML = `
-                    <h3>📊 Statut du Bot - ${new Date().toLocaleTimeString()}</h3>
-                    <p>✅ Bot en ligne • 📡 Ping: ${data.ping}ms • 🔒 Connexion sécurisée • 🎮 ${data.streamers} streamers surveillés</p>
-                `;
+                // Mettre à jour le timestamp
+                document.getElementById('last-update').textContent = `Dernière mise à jour: ${new Date().toLocaleTimeString()}`;
                 
-                addActivity(`Statistiques actualisées - ${data.servers} serveurs, ${data.users} utilisateurs`);
+                addActivity(`📊 Statistiques actualisées`, `${data.servers} serveurs, ${data.users} utilisateurs, ping: ${data.ping}ms`);
                 
             } catch (error) {
                 console.error('Erreur chargement stats:', error);
-                showAlert('Erreur de connexion: ' + error.message, 'error');
+                showAlert('Erreur de connexion au serveur: ' + error.message, 'error');
             }
         }
 
         // Exécution des commandes
         async function executeCommand(command) {
-            addActivity(`Exécution de la commande: ${command}`);
+            addActivity(`⚡ Commande exécutée`, `${command}`);
             
             try {
                 let result;
@@ -659,11 +1032,11 @@
                         
                     case 'ping':
                         result = await apiRequest('/api/ping');
-                        showResult('📡 Test Ping', result);
+                        showResult('📡 Test de Latence', result);
                         break;
                         
                     case 'test-twitch':
-                        showLoading('Test de l\'API Twitch...');
+                        showLoading('Test de l\'API Twitch en cours...');
                         result = await apiRequest('/api/test-twitch', 'POST');
                         hideLoading();
                         showResult('🔗 Test Twitch API', result);
@@ -689,64 +1062,91 @@
                         return;
                         
                     default:
-                        showAlert('Commande non reconnue', 'error');
+                        showAlert('Commande non reconnue: ' + command, 'error');
                         return;
                 }
                 
                 if (result && !result.success) {
-                    showAlert('Erreur: ' + result.error, 'error');
+                    showAlert('Erreur lors de l\'exécution: ' + result.error, 'error');
                 }
                 
             } catch (error) {
                 hideLoading();
                 console.error('Erreur commande:', error);
-                showAlert('Erreur lors de l\'exécution: ' + error.message, 'error');
+                showAlert('Erreur lors de l\'exécution de la commande: ' + error.message, 'error');
             }
         }
 
         // Affichage des résultats des streamers
         function showStreamersResult(result) {
             if (!result.success) {
-                showAlert('Erreur: ' + result.error, 'error');
+                showAlert('Erreur lors de la récupération des streamers: ' + result.error, 'error');
                 return;
             }
 
             const streamers = result.streamers || [];
-            let content = `<h4>📋 Liste des Streamers (${streamers.length})</h4>`;
+            let content = `
+                <div style="margin-bottom: 1.5rem;">
+                    <h4 style="color: #5865f2; margin-bottom: 0.5rem;">📋 Liste des Streamers (${streamers.length})</h4>
+                    <p style="color: #b9bbbe; font-size: 0.9rem;">Gestion complète de vos streamers surveillés</p>
+                </div>
+            `;
             
             if (streamers.length === 0) {
-                content += '<p>Aucun streamer configuré.</p>';
+                content += `
+                    <div style="text-align: center; padding: 2rem; color: #b9bbbe;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">🎮</div>
+                        <p>Aucun streamer configuré pour le moment</p>
+                        <button class="btn btn-success" onclick="closeModal(); executeCommand('add-streamer');" style="margin-top: 1rem;">
+                            ➕ Ajouter votre premier streamer
+                        </button>
+                    </div>
+                `;
             } else {
-                content += '<div class="streamers-list">';
+                content += '<div style="max-height: 400px; overflow-y: auto;">';
                 streamers.forEach(streamer => {
-                    const statusClass = streamer.isLive ? 'status-live' : 'status-offline';
-                    const statusText = streamer.isLive ? '🔴 LIVE' : '⚫ Offline';
-                    const affiliateText = streamer.isAffiliate ? '<span class="status-affiliate">⭐ Affilié</span>' : '';
+                    const statusClass = streamer.isLive ? 'btn-success' : 'btn-secondary';
+                    const statusText = streamer.isLive ? '🔴 EN DIRECT' : '⚫ Hors ligne';
+                    const affiliateText = streamer.isAffiliate ? '<span style="background: #8b5cf6; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">⭐ Affilié</span>' : '';
                     
                     content += `
-                        <div class="streamer-item">
-                            <div class="streamer-info">
-                                <div class="streamer-name">${streamer.name}</div>
-                                <div class="streamer-url">${streamer.url}</div>
+                        <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid #2d2d44; border-radius: 8px; padding: 1rem; margin-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center;">
+                            <div style="flex: 1;">
+                                <div style="font-weight: 600; color: #ffffff; margin-bottom: 0.25rem; display: flex; align-items: center; gap: 0.5rem;">
+                                    🎮 ${streamer.name}
+                                    ${affiliateText}
+                                </div>
+                                <div style="color: #b9bbbe; font-size: 0.875rem;">${streamer.url}</div>
                             </div>
-                            <div>
-                                <span class="streamer-status ${statusClass}">${statusText}</span>
-                                ${affiliateText}
-                                <button class="btn btn-danger" style="margin-left: 0.5rem; padding: 0.25rem 0.75rem; font-size: 0.8rem;" onclick="removeStreamer('${streamer.name}')">🗑️</button>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <span class="btn ${statusClass}" style="font-size: 0.75rem; padding: 0.375rem 0.75rem;">
+                                    ${statusText}
+                                </span>
+                                <button class="btn btn-danger" style="font-size: 0.75rem; padding: 0.375rem 0.75rem;" onclick="removeStreamer('${streamer.name}')">
+                                    🗑️ Supprimer
+                                </button>
                             </div>
                         </div>
                     `;
                 });
                 content += '</div>';
+                
+                content += `
+                    <div style="margin-top: 1.5rem; text-align: center; border-top: 1px solid #2d2d44; padding-top: 1.5rem;">
+                        <button class="btn btn-success" onclick="closeModal(); executeCommand('add-streamer');">
+                            ➕ Ajouter un nouveau streamer
+                        </button>
+                    </div>
+                `;
             }
 
-            showModal('📋 Gestion des Streamers', content);
+            showModal('🎮 Gestion des Streamers', content);
         }
 
         // Affichage des informations serveur
         function showServerInfo(result) {
             if (!result.success) {
-                showAlert('Erreur: ' + result.error, 'error');
+                showAlert('Erreur lors de la récupération des informations: ' + result.error, 'error');
                 return;
             }
 
@@ -754,180 +1154,245 @@
             const bot = result.bot;
             
             const content = `
-                <h4>🏠 Serveur Discord</h4>
-                <div class="server-info">
-                    <div class="info-item">
-                        <strong>📛 Nom:</strong><br>${server.name}
-                    </div>
-                    <div class="info-item">
-                        <strong>👥 Membres:</strong><br>${server.memberCount.toLocaleString()}
-                    </div>
-                    <div class="info-item">
-                        <strong>💬 Channels:</strong><br>${server.channels}
-                    </div>
-                    <div class="info-item">
-                        <strong>🎭 Rôles:</strong><br>${server.roles}
-                    </div>
-                    <div class="info-item">
-                        <strong>🚀 Boost Level:</strong><br>Niveau ${server.boostLevel}
-                    </div>
-                    <div class="info-item">
-                        <strong>💎 Boosts:</strong><br>${server.boostCount}
+                <div style="margin-bottom: 2rem;">
+                    <h4 style="color: #5865f2; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                        🏠 Informations du Serveur Discord
+                    </h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                        <div style="background: rgba(88, 101, 242, 0.1); padding: 1rem; border-radius: 8px; border-left: 4px solid #5865f2;">
+                            <div style="color: #5865f2; font-weight: 600; margin-bottom: 0.25rem;">📛 Nom du Serveur</div>
+                            <div style="color: #ffffff;">${server.name}</div>
+                        </div>
+                        <div style="background: rgba(87, 242, 135, 0.1); padding: 1rem; border-radius: 8px; border-left: 4px solid #57f287;">
+                            <div style="color: #57f287; font-weight: 600; margin-bottom: 0.25rem;">👥 Membres Total</div>
+                            <div style="color: #ffffff;">${server.memberCount.toLocaleString()}</div>
+                        </div>
+                        <div style="background: rgba(254, 231, 92, 0.1); padding: 1rem; border-radius: 8px; border-left: 4px solid #fee75c;">
+                            <div style="color: #fee75c; font-weight: 600; margin-bottom: 0.25rem;">💬 Channels</div>
+                            <div style="color: #ffffff;">${server.channels}</div>
+                        </div>
+                        <div style="background: rgba(237, 66, 69, 0.1); padding: 1rem; border-radius: 8px; border-left: 4px solid #ed4245;">
+                            <div style="color: #ed4245; font-weight: 600; margin-bottom: 0.25rem;">🎭 Rôles</div>
+                            <div style="color: #ffffff;">${server.roles}</div>
+                        </div>
+                        <div style="background: rgba(139, 92, 246, 0.1); padding: 1rem; border-radius: 8px; border-left: 4px solid #8b5cf6;">
+                            <div style="color: #8b5cf6; font-weight: 600; margin-bottom: 0.25rem;">🚀 Niveau Boost</div>
+                            <div style="color: #ffffff;">Niveau ${server.boostLevel}</div>
+                        </div>
+                        <div style="background: rgba(245, 158, 11, 0.1); padding: 1rem; border-radius: 8px; border-left: 4px solid #f59e0b;">
+                            <div style="color: #f59e0b; font-weight: 600; margin-bottom: 0.25rem;">💎 Boosts Actifs</div>
+                            <div style="color: #ffffff;">${server.boostCount}</div>
+                        </div>
                     </div>
                 </div>
                 
-                <h4>🤖 Bot Phoenix</h4>
-                <div class="server-info">
-                    <div class="info-item">
-                        <strong>👤 Nom:</strong><br>${bot.username}#${bot.discriminator}
-                    </div>
-                    <div class="info-item">
-                        <strong>🆔 ID:</strong><br>${bot.id}
-                    </div>
-                    <div class="info-item">
-                        <strong>🖥️ Serveurs:</strong><br>${bot.guilds}
-                    </div>
-                    <div class="info-item">
-                        <strong>👤 Utilisateurs:</strong><br>${bot.users.toLocaleString()}
+                <div>
+                    <h4 style="color: #5865f2; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                        🤖 Informations Phoenix Bot
+                    </h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                        <div style="background: rgba(88, 101, 242, 0.1); padding: 1rem; border-radius: 8px; border-left: 4px solid #5865f2;">
+                            <div style="color: #5865f2; font-weight: 600; margin-bottom: 0.25rem;">👤 Nom du Bot</div>
+                            <div style="color: #ffffff;">${bot.username}#${bot.discriminator}</div>
+                        </div>
+                        <div style="background: rgba(87, 242, 135, 0.1); padding: 1rem; border-radius: 8px; border-left: 4px solid #57f287;">
+                            <div style="color: #57f287; font-weight: 600; margin-bottom: 0.25rem;">🆔 ID du Bot</div>
+                            <div style="color: #ffffff; font-family: monospace; font-size: 0.9rem;">${bot.id}</div>
+                        </div>
+                        <div style="background: rgba(254, 231, 92, 0.1); padding: 1rem; border-radius: 8px; border-left: 4px solid #fee75c;">
+                            <div style="color: #fee75c; font-weight: 600; margin-bottom: 0.25rem;">🖥️ Serveurs Connectés</div>
+                            <div style="color: #ffffff;">${bot.guilds}</div>
+                        </div>
+                        <div style="background: rgba(237, 66, 69, 0.1); padding: 1rem; border-radius: 8px; border-left: 4px solid #ed4245;">
+                            <div style="color: #ed4245; font-weight: 600; margin-bottom: 0.25rem;">👤 Utilisateurs Total</div>
+                            <div style="color: #ffffff;">${bot.users.toLocaleString()}</div>
+                        </div>
                     </div>
                 </div>
             `;
 
-            showModal('📊 Informations Serveur', content);
+            showModal('📊 Informations Complètes', content);
         }
 
         // Affichage des statistiques détaillées
         function showDetailedStats(result) {
             if (!result.success) {
-                showAlert('Erreur: ' + result.error, 'error');
+                showAlert('Erreur lors de la récupération des statistiques: ' + result.error, 'error');
                 return;
             }
 
             const stats = result.stats;
             
             const content = `
-                <h4>🤖 Bot Statistics</h4>
-                <div class="server-info">
-                    <div class="info-item">
-                        <strong>⏱️ Uptime:</strong><br>${Math.floor(stats.bot.uptime / 3600000)}h ${Math.floor((stats.bot.uptime % 3600000) / 60000)}m
-                    </div>
-                    <div class="info-item">
-                        <strong>📡 Ping:</strong><br>${stats.bot.ping}ms
-                    </div>
-                    <div class="info-item">
-                        <strong>💾 Mémoire:</strong><br>${stats.bot.memory} MB
-                    </div>
-                    <div class="info-item">
-                        <strong>🖥️ Serveurs:</strong><br>${stats.bot.guilds}
-                    </div>
-                </div>
-                
-                <h4>🎮 Streamers</h4>
-                <div class="server-info">
-                    <div class="info-item">
-                        <strong>📊 Total:</strong><br>${stats.streamers.total}
-                    </div>
-                    <div class="info-item">
-                        <strong>🔴 En Live:</strong><br>${stats.streamers.live}
-                    </div>
-                    <div class="info-item">
-                        <strong>⭐ Affiliés:</strong><br>${stats.streamers.affiliates}
-                    </div>
-                    <div class="info-item">
-                        <strong>📈 Non-Affiliés:</strong><br>${stats.streamers.nonAffiliates}
+                <div style="margin-bottom: 2rem;">
+                    <h4 style="color: #5865f2; margin-bottom: 1rem;">🤖 Performances du Bot</h4>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+                        <div style="background: rgba(88, 101, 242, 0.1); padding: 1rem; border-radius: 8px;">
+                            <div style="color: #5865f2; font-weight: 600;">⏱️ Temps de Fonctionnement</div>
+                            <div style="color: #ffffff; font-size: 1.2rem;">${Math.floor(stats.bot.uptime / 3600000)}h ${Math.floor((stats.bot.uptime % 3600000) / 60000)}m</div>
+                        </div>
+                        <div style="background: rgba(87, 242, 135, 0.1); padding: 1rem; border-radius: 8px;">
+                            <div style="color: #57f287; font-weight: 600;">📡 Latence</div>
+                            <div style="color: #ffffff; font-size: 1.2rem;">${stats.bot.ping}ms</div>
+                        </div>
+                        <div style="background: rgba(254, 231, 92, 0.1); padding: 1rem; border-radius: 8px;">
+                            <div style="color: #fee75c; font-weight: 600;">💾 Utilisation Mémoire</div>
+                            <div style="color: #ffffff; font-size: 1.2rem;">${stats.bot.memory} MB</div>
+                        </div>
+                        <div style="background: rgba(237, 66, 69, 0.1); padding: 1rem; border-radius: 8px;">
+                            <div style="color: #ed4245; font-weight: 600;">🖥️ Serveurs Connectés</div>
+                            <div style="color: #ffffff; font-size: 1.2rem;">${stats.bot.guilds}</div>
+                        </div>
                     </div>
                 </div>
                 
-                <h4>🖥️ Système</h4>
-                <div class="server-info">
-                    <div class="info-item">
-                        <strong>🐧 Plateforme:</strong><br>${stats.system.platform}
+                <div style="margin-bottom: 2rem;">
+                    <h4 style="color: #5865f2; margin-bottom: 1rem;">🎮 Statistiques Streamers</h4>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+                        <div style="background: rgba(88, 101, 242, 0.1); padding: 1rem; border-radius: 8px;">
+                            <div style="color: #5865f2; font-weight: 600;">📊 Total Streamers</div>
+                            <div style="color: #ffffff; font-size: 1.2rem;">${stats.streamers.total}</div>
+                        </div>
+                        <div style="background: rgba(87, 242, 135, 0.1); padding: 1rem; border-radius: 8px;">
+                            <div style="color: #57f287; font-weight: 600;">🔴 En Direct</div>
+                            <div style="color: #ffffff; font-size: 1.2rem;">${stats.streamers.live}</div>
+                        </div>
+                        <div style="background: rgba(139, 92, 246, 0.1); padding: 1rem; border-radius: 8px;">
+                            <div style="color: #8b5cf6; font-weight: 600;">⭐ Affiliés</div>
+                            <div style="color: #ffffff; font-size: 1.2rem;">${stats.streamers.affiliates}</div>
+                        </div>
+                        <div style="background: rgba(107, 114, 128, 0.1); padding: 1rem; border-radius: 8px;">
+                            <div style="color: #6b7280; font-weight: 600;">📈 Non-Affiliés</div>
+                            <div style="color: #ffffff; font-size: 1.2rem;">${stats.streamers.nonAffiliates}</div>
+                        </div>
                     </div>
-                    <div class="info-item">
-                        <strong>🔗 Node.js:</strong><br>${stats.system.nodeVersion}
-                    </div>
-                    <div class="info-item">
-                        <strong>⏱️ Uptime Système:</strong><br>${Math.floor(stats.system.uptime / 3600)}h ${Math.floor((stats.system.uptime % 3600) / 60)}m
+                </div>
+                
+                <div>
+                    <h4 style="color: #5865f2; margin-bottom: 1rem;">🖥️ Informations Système</h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                        <div style="background: rgba(88, 101, 242, 0.1); padding: 1rem; border-radius: 8px;">
+                            <div style="color: #5865f2; font-weight: 600;">🐧 Plateforme</div>
+                            <div style="color: #ffffff;">${stats.system.platform}</div>
+                        </div>
+                        <div style="background: rgba(87, 242, 135, 0.1); padding: 1rem; border-radius: 8px;">
+                            <div style="color: #57f287; font-weight: 600;">🔗 Version Node.js</div>
+                            <div style="color: #ffffff;">${stats.system.nodeVersion}</div>
+                        </div>
+                        <div style="background: rgba(254, 231, 92, 0.1); padding: 1rem; border-radius: 8px;">
+                            <div style="color: #fee75c; font-weight: 600;">⏱️ Uptime Système</div>
+                            <div style="color: #ffffff;">${Math.floor(stats.system.uptime / 3600)}h ${Math.floor((stats.system.uptime % 3600) / 60)}m</div>
+                        </div>
                     </div>
                 </div>
             `;
 
-            showModal('📈 Statistiques Détaillées', content);
+            showModal('📈 Analyses Détaillées', content);
         }
 
         // Affichage des logs
         function showLogs(result) {
             if (!result.success) {
-                showAlert('Erreur: ' + result.error, 'error');
+                showAlert('Erreur lors de la récupération des logs: ' + result.error, 'error');
                 return;
             }
 
             const logs = result.logs || [];
-            let content = `<h4>📋 Logs Récents (${logs.length})</h4>`;
+            let content = `
+                <div style="margin-bottom: 1.5rem;">
+                    <h4 style="color: #5865f2; margin-bottom: 0.5rem;">📋 Journaux Système (${logs.length} entrées)</h4>
+                    <p style="color: #b9bbbe; font-size: 0.9rem;">Historique des événements et actions récentes</p>
+                </div>
+            `;
             
             if (logs.length === 0) {
-                content += '<p>Aucun log disponible.</p>';
+                content += `
+                    <div style="text-align: center; padding: 2rem; color: #b9bbbe;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">📋</div>
+                        <p>Aucun log disponible pour le moment</p>
+                    </div>
+                `;
             } else {
                 content += '<div style="max-height: 400px; overflow-y: auto;">';
                 logs.forEach(log => {
-                    const levelColor = {
-                        'info': '#3b82f6',
-                        'success': '#22c55e',
-                        'warning': '#f59e0b',
-                        'error': '#ef4444'
-                    }[log.level] || '#6b7280';
+                    const levelColors = {
+                        'info': '#5865f2',
+                        'success': '#57f287',
+                        'warning': '#fee75c',
+                        'error': '#ed4245'
+                    };
+                    const levelColor = levelColors[log.level] || '#6b7280';
+                    const levelEmojis = {
+                        'info': 'ℹ️',
+                        'success': '✅',
+                        'warning': '⚠️',
+                        'error': '❌'
+                    };
+                    const levelEmoji = levelEmojis[log.level] || '📝';
                     
                     content += `
-                        <div style="background: rgba(255, 255, 255, 0.05); padding: 0.75rem; border-radius: 8px; margin-bottom: 0.5rem; border-left: 4px solid ${levelColor};">
-                            <div style="font-size: 0.8rem; opacity: 0.7;">${new Date(log.timestamp).toLocaleString()}</div>
-                            <div><strong>[${log.level.toUpperCase()}]</strong> ${log.message}</div>
+                        <div style="background: rgba(255, 255, 255, 0.03); border-left: 4px solid ${levelColor}; padding: 1rem; border-radius: 8px; margin-bottom: 0.75rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+                                <span style="color: ${levelColor}; font-weight: 600; font-size: 0.875rem;">
+                                    ${levelEmoji} [${log.level.toUpperCase()}]
+                                </span>
+                                <span style="color: #b9bbbe; font-size: 0.8rem;">
+                                    ${new Date(log.timestamp).toLocaleString()}
+                                </span>
+                            </div>
+                            <div style="color: #ffffff; line-height: 1.4;">
+                                ${log.message}
+                            </div>
                         </div>
                     `;
                 });
                 content += '</div>';
             }
 
-            showModal('📋 Logs Système', content);
+            showModal('📋 Journaux Système', content);
         }
 
         // Suppression d'un streamer
         async function removeStreamer(name) {
-            if (!confirm(`Êtes-vous sûr de vouloir supprimer le streamer "${name}" ?`)) {
+            if (!confirm(`Êtes-vous sûr de vouloir supprimer le streamer "${name}" de la surveillance ?`)) {
                 return;
             }
 
             try {
+                showLoading(`Suppression de ${name}...`);
                 const result = await apiRequest(`/api/streamers/${encodeURIComponent(name)}`, 'DELETE');
+                hideLoading();
                 
                 if (result.success) {
-                    showAlert(`Streamer "${name}" supprimé avec succès`, 'success');
-                    addActivity(`Streamer "${name}" supprimé`);
-                    // Recharger la liste
-                    setTimeout(() => executeCommand('streamers'), 1000);
+                    showAlert(`✅ Streamer "${name}" supprimé avec succès`, 'success');
+                    addActivity(`🗑️ Streamer supprimé`, `${name} retiré de la surveillance`);
+                    // Recharger la liste après un court délai
+                    setTimeout(() => executeCommand('streamers'), 1500);
                 } else {
-                    showAlert('Erreur: ' + result.error, 'error');
+                    showAlert('❌ Erreur lors de la suppression: ' + result.error, 'error');
                 }
             } catch (error) {
-                showAlert('Erreur lors de la suppression: ' + error.message, 'error');
+                hideLoading();
+                showAlert('❌ Erreur lors de la suppression: ' + error.message, 'error');
             }
         }
 
         // Actualisation complète
         async function refreshAll() {
-            showLoading('Actualisation complète en cours...');
+            showLoading('🚀 Actualisation complète en cours...');
             
             try {
                 await loadStats();
-                await new Promise(resolve => setTimeout(resolve, 500)); // Petit délai
+                await new Promise(resolve => setTimeout(resolve, 1000));
                 const checkResult = await apiRequest('/api/check-streams', 'POST');
                 
                 hideLoading();
-                addActivity('Actualisation complète terminée');
-                showAlert('✅ Dashboard et streams actualisés', 'success');
+                addActivity(`🚀 Actualisation complète`, 'Dashboard et streams mis à jour');
+                showAlert('✅ Actualisation complète terminée avec succès', 'success');
                 
             } catch (error) {
                 hideLoading();
-                showAlert('Erreur lors de l\'actualisation: ' + error.message, 'error');
+                showAlert('❌ Erreur lors de l\'actualisation: ' + error.message, 'error');
             }
         }
 
@@ -939,18 +1404,20 @@
             const url = document.getElementById('streamerUrl').value.trim();
             
             if (!name || !url) {
-                showAlert('Veuillez remplir tous les champs', 'error');
+                showAlert('⚠️ Veuillez remplir tous les champs requis', 'warning');
                 return;
             }
 
             try {
+                showLoading(`Ajout de ${name}...`);
                 const result = await apiRequest('/api/streamers/add', 'POST', { name, url });
+                hideLoading();
                 
                 const resultDiv = document.getElementById('addStreamerResult');
                 
                 if (result.success) {
-                    resultDiv.innerHTML = `<div class="alert alert-success">${result.message}</div>`;
-                    addActivity(`Nouveau streamer ajouté: ${name}`);
+                    resultDiv.innerHTML = `<div class="alert alert-success">✅ ${result.message}</div>`;
+                    addActivity(`➕ Nouveau streamer`, `${name} ajouté à la surveillance`);
                     
                     // Réinitialiser le formulaire
                     document.getElementById('addStreamerForm').reset();
@@ -961,12 +1428,13 @@
                         loadStats(); // Recharger les stats
                     }, 2000);
                 } else {
-                    resultDiv.innerHTML = `<div class="alert alert-error">${result.error}</div>`;
+                    resultDiv.innerHTML = `<div class="alert alert-error">❌ ${result.error}</div>`;
                 }
                 
             } catch (error) {
+                hideLoading();
                 document.getElementById('addStreamerResult').innerHTML = 
-                    `<div class="alert alert-error">Erreur: ${error.message}</div>`;
+                    `<div class="alert alert-error">❌ Erreur: ${error.message}</div>`;
             }
         });
 
@@ -980,9 +1448,9 @@
         function showResult(title, result) {
             const content = `
                 <div class="alert ${result.success ? 'alert-success' : 'alert-error'}">
-                    ${result.message || result.error || 'Opération terminée'}
+                    ${result.success ? '✅' : '❌'} ${result.message || result.error || 'Opération terminée'}
                 </div>
-                ${result.data ? `<pre style="background: rgba(0,0,0,0.3); padding: 1rem; border-radius: 8px; overflow-x: auto;">${JSON.stringify(result.data, null, 2)}</pre>` : ''}
+                ${result.data ? `<pre style="background: #0f0f23; border: 1px solid #2d2d44; padding: 1rem; border-radius: 8px; overflow-x: auto; color: #ffffff; font-family: 'Courier New', monospace;">${JSON.stringify(result.data, null, 2)}</pre>` : ''}
             `;
             showModal(title, content);
         }
@@ -998,20 +1466,24 @@
         function showAlert(message, type = 'success') {
             const alertDiv = document.createElement('div');
             alertDiv.className = `alert alert-${type}`;
-            alertDiv.textContent = message;
+            alertDiv.innerHTML = message;
             
+            // Insérer l'alerte en haut de la page
             document.body.insertBefore(alertDiv, document.body.firstChild);
             
+            // Auto-supprimer après 5 secondes
             setTimeout(() => {
-                alertDiv.remove();
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
             }, 5000);
         }
 
-        function showLoading(message = 'Chargement...') {
+        function showLoading(message = 'Chargement en cours...') {
             const content = `
                 <div class="loading">
                     <div class="spinner"></div>
-                    <p>${message}</p>
+                    <p style="color: #b9bbbe; margin-top: 1rem;">${message}</p>
                 </div>
             `;
             showModal('⏳ Traitement', content);
@@ -1021,16 +1493,29 @@
             closeModal();
         }
 
-        function addActivity(action) {
+        function addActivity(title, description = '') {
             const activityList = document.getElementById('activity-list');
             const newActivity = document.createElement('div');
             newActivity.className = 'activity-item';
             newActivity.innerHTML = `
-                <div class="activity-time">Il y a quelques secondes</div>
-                <div>✅ ${action}</div>
+                <div class="activity-icon">⚡</div>
+                <div class="activity-content">
+                    <div class="activity-text">${title}</div>
+                    <div class="activity-time">${description || 'Il y a quelques secondes'}</div>
+                </div>
             `;
             
+            // Ajouter en premier
             activityList.insertBefore(newActivity, activityList.firstChild);
+            
+            // Animation d'entrée
+            newActivity.style.opacity = '0';
+            newActivity.style.transform = 'translateY(-10px)';
+            setTimeout(() => {
+                newActivity.style.transition = 'all 0.3s ease';
+                newActivity.style.opacity = '1';
+                newActivity.style.transform = 'translateY(0)';
+            }, 100);
             
             // Garder seulement les 5 dernières activités
             while (activityList.children.length > 5) {
@@ -1039,9 +1524,52 @@
         }
 
         function generateNewToken() {
-            alert('🔑 Pour générer un nouveau token, utilisez la commande /dash type:web sur Discord.\n\n⚠️ Le token actuel sera invalidé.');
-            addActivity('Demande de génération d\'un nouveau token');
+            const content = `
+                <div style="text-align: center; padding: 1rem;">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">🔑</div>
+                    <h4 style="color: #fee75c; margin-bottom: 1rem;">⚠️ Génération d'un nouveau token</h4>
+                    <div style="background: rgba(254, 231, 92, 0.1); border: 1px solid #fee75c; border-radius: 8px; padding: 1rem; margin: 1rem 0; text-align: left;">
+                        <p style="color: #fee75c; font-weight: 600; margin-bottom: 0.5rem;">Instructions:</p>
+                        <ol style="color: #b9bbbe; line-height: 1.6; margin-left: 1rem;">
+                            <li>Utilisez la commande <code style="background: rgba(0,0,0,0.3); padding: 0.2rem 0.4rem; border-radius: 4px; color: #5865f2;">/dash type:web</code> sur Discord</li>
+                            <li>Un nouveau token sera généré automatiquement</li>
+                            <li>Utilisez le nouveau lien fourni par Phoenix Bot</li>
+                            <li>L'ancien token sera invalidé immédiatement</li>
+                        </ol>
+                    </div>
+                    <div style="background: rgba(237, 66, 69, 0.1); border: 1px solid #ed4245; border-radius: 8px; padding: 1rem; margin: 1rem 0;">
+                        <p style="color: #ed4245; font-weight: 600;">⚠️ Important:</p>
+                        <p style="color: #b9bbbe;">Le token actuel sera invalidé et cette session sera fermée.</p>
+                    </div>
+                    <button class="btn btn-secondary" onclick="closeModal()">Compris</button>
+                </div>
+            `;
+            showModal('🔑 Nouveau Token d\'Authentification', content);
+            addActivity('🔑 Demande de token', 'Génération d\'un nouveau token demandée');
         }
+
+        // Navigation entre les onglets
+        function switchTab(tabName) {
+            // Supprimer la classe active de tous les liens
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            // Ajouter la classe active au lien cliqué
+            event.target.classList.add('active');
+            
+            // Ici vous pouvez ajouter la logique pour changer le contenu
+            addActivity(`📄 Navigation`, `Basculé vers ${tabName}`);
+        }
+
+        // Gestion des clics sur la navigation
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const tabName = link.textContent.trim();
+                switchTab(tabName);
+            });
+        });
 
         // Fermer les modals en cliquant à l'extérieur
         window.onclick = function(event) {
@@ -1053,14 +1581,134 @@
             });
         }
 
-        // Initialisation
-        window.addEventListener('load', () => {
-            loadStats();
-            addActivity('Dashboard Phoenix chargé avec commandes fonctionnelles');
+        // Raccourcis clavier
+        document.addEventListener('keydown', (e) => {
+            // Échap pour fermer les modals
+            if (e.key === 'Escape') {
+                closeModal();
+            }
             
-            // Actualiser automatiquement toutes les 30 secondes
-            setInterval(loadStats, 30000);
+            // Ctrl/Cmd + R pour actualiser
+            if ((e.ctrlKey || e.metaKey) && e.key === 'r') {
+                e.preventDefault();
+                loadStats();
+                addActivity('🔄 Actualisation', 'Stats rechargées via raccourci clavier');
+            }
         });
+
+        // Animation des cartes au survol
+        document.querySelectorAll('.stat-card, .command-item').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                card.style.transform = 'translateY(-4px)';
+            });
+            
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'translateY(0)';
+            });
+        });
+
+        // Initialisation au chargement de la page
+        window.addEventListener('load', () => {
+            // Chargement initial des statistiques
+            loadStats();
+            addActivity('🚀 Système démarré', 'Dashboard Phoenix Bot initialisé avec succès');
+            
+            // Actualisation automatique toutes les 30 secondes
+            setInterval(() => {
+                loadStats();
+            }, 30000);
+            
+            // Vérification de la connexion toutes les 5 minutes
+            setInterval(async () => {
+                try {
+                    const pingResult = await apiRequest('/api/ping');
+                    if (pingResult.success) {
+                        addActivity('📡 Connexion vérifiée', `Ping: ${pingResult.ping}ms`);
+                    }
+                } catch (error) {
+                    addActivity('⚠️ Problème de connexion', 'Tentative de reconnexion...');
+                }
+            }, 300000); // 5 minutes
+            
+            // Message de bienvenue
+            setTimeout(() => {
+                if (!sessionStorage.getItem('welcomeShown')) {
+                    showAlert('🎉 Bienvenue sur le Dashboard Phoenix Bot ! Votre bot est prêt à fonctionner.', 'success');
+                    sessionStorage.setItem('welcomeShown', 'true');
+                }
+            }, 1000);
+        });
+
+        // Gestion de la perte de focus/regain de focus
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') {
+                // Actualiser quand l'utilisateur revient sur l'onglet
+                loadStats();
+                addActivity('👁️ Focus regagné', 'Dashboard actualisé automatiquement');
+            }
+        });
+
+        // Fonction pour copier l'ID du bot (utile pour les développeurs)
+        function copyBotId() {
+            // Cette fonction serait implémentée avec les vraies données du bot
+            navigator.clipboard.writeText('BOT_ID_HERE').then(() => {
+                showAlert('📋 ID du bot copié dans le presse-papiers', 'success');
+            });
+        }
+
+        // Fonction pour télécharger les logs (feature avancée)
+        function downloadLogs() {
+            addActivity('💾 Téléchargement', 'Préparation des logs pour export');
+            showAlert('💾 Fonctionnalité en développement - Export des logs bientôt disponible', 'warning');
+        }
+
+        // Easter egg - Konami code
+        let konamiCode = [];
+        const konamiSequence = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'KeyB', 'KeyA'];
+        
+        document.addEventListener('keydown', (e) => {
+            konamiCode.push(e.code);
+            konamiCode = konamiCode.slice(-10);
+            
+            if (konamiCode.join(',') === konamiSequence.join(',')) {
+                showAlert('🎉 Konami Code activé ! Vous avez débloqué le mode développeur !', 'success');
+                addActivity('🎮 Easter Egg', 'Konami Code découvert par un utilisateur avancé !');
+                
+                // Ajouter des effets visuels temporaires
+                document.body.style.animation = 'pulse 0.5s ease-in-out 3';
+                setTimeout(() => {
+                    document.body.style.animation = '';
+                }, 1500);
+            }
+        });
+
+        // Fonction utilitaire pour formater les nombres
+        function formatNumber(num) {
+            if (num >= 1000000) {
+                return (num / 1000000).toFixed(1) + 'M';
+            } else if (num >= 1000) {
+                return (num / 1000).toFixed(1) + 'K';
+            }
+            return num.toString();
+        }
+
+        // Fonction pour afficher des notifications système (si supportées)
+        function showNotification(title, body) {
+            if ('Notification' in window && Notification.permission === 'granted') {
+                new Notification(title, {
+                    body: body,
+                    icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y="0.9em" font-size="90">🔥</text></svg>'
+                });
+            }
+        }
+
+        // Demander la permission pour les notifications
+        if ('Notification' in window && Notification.permission === 'default') {
+            Notification.requestPermission();
+        }
+
+        console.log('🔥 Phoenix Bot Dashboard chargé avec succès !');
+        console.log('💡 Conseils: Utilisez Ctrl+R pour actualiser rapidement, Échap pour fermer les modals');
     </script>
 </body>
 </html>
