@@ -23,6 +23,7 @@ let NotificationManager;
 let notificationManager = null;
 try {
   NotificationManager = require('./notifications/NotificationManager');
+  console.log('✅ NotificationManager chargé avec succès');
 } catch (error) {
   console.log('⚠️ Module notifications non trouvé, notifications désactivées');
 }
@@ -684,3 +685,4 @@ if (require.main === module) {
 }
 
 module.exports = StreamerBot;
+
