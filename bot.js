@@ -146,9 +146,17 @@ class StreamerBot extends Client {
           
           // Initialiser le gestionnaire de notifications
           if (NotificationManager) {
-            this.notificationManager = new NotificationManager(this);
-            notificationManager = this.notificationManager; // Compatibilité
-            logger.info('✅ NotificationManager initialisé');
+  try {
+    console.log('🔍 Tentative d\'initialisation du NotificationManager...');
+    this.notificationManager = new NotificationManager(this);
+    console.log('✅ NotificationManager initialisé avec succès');
+  } catch (error) {
+    console.log('❌ ERREUR lors de l\'initialisation:', error.message);
+    console.log('❌ Stack:', error.stack);
+  }
+} else {
+  console.log('⚠️ NotificationManager non disponible pour initialisation');
+}
             
             // Démarrer les notifications automatiquement si configuré
             if (this.config.autoNotifications) {
@@ -692,6 +700,7 @@ if (require.main === module) {
 }
 
 module.exports = StreamerBot;
+
 
 
 
