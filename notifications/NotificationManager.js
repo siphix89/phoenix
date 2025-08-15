@@ -134,11 +134,17 @@ class NotificationManager {
 
       // Vérifier s'il y a eu des changements significatifs
       if (activeStream && !this.hasSignificantChanges(activeStream.streamInfo, streamInfo)) {
-        console.log(`⏭️ Pas de changements significatifs pour ${streamer.name}`);
-        activeStream.lastUpdate = Date.now();
-        return true;
+     // Forcer une mise a jour toutes les 5 minutes 
+       const timeSinceUpdate = Date.now() - activeStream.LastUpdate;
+        if (timeSinceUpdate < 5 * 60 * 1000) {// 5 minutes 
+          console.log('⏭️ pas de changement significatifs pour ${streamer.name}')};
+          activeStream.LastUpdate = Date.now();
+      } else {
+        console.log(`🔄 mise à jours forcée apres 5min pour %{streamer.name}`);
       }
+     
 
+  
       // Déterminer le channel approprié
       const channelId = streamer.status === StreamerStatus.AFFILIE 
         ? this.bot.config.liveAffilieChannel 
@@ -268,4 +274,3 @@ class NotificationManager {
 }
 
 module.exports = NotificationManager;
-
