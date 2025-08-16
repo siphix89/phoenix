@@ -79,6 +79,7 @@ class BotConfig {
     rulesRoleName = "Membre Vérifié",
     autoNotifications = true,
     notificationIntervalMinutes = 2,
+    autoRoleId = 0,
   }) {
     this.discordToken = discordToken;
     this.commandPrefix = commandPrefix;
@@ -90,6 +91,7 @@ class BotConfig {
     this.twitchClientSecret = twitchClientSecret;
     this.rulesRoleId = rulesRoleId;
     this.rulesRoleName = rulesRoleName;
+    this.autoRoleId = autoRoleId;
     this.autoNotifications = autoNotifications;
     this.notificationIntervalMinutes = notificationIntervalMinutes;
   }
@@ -106,6 +108,7 @@ class BotConfig {
       twitchClientSecret: process.env.TWITCH_CLIENT_SECRET || "",
       rulesRoleId: process.env.RULES_ROLE_ID || "0",
       rulesRoleName: process.env.RULES_ROLE_NAME || "Membre Vérifié",
+      autoRoleId: process.env.AUTO_ROLE_ID || "0",
       autoNotifications: (process.env.AUTO_NOTIFICATIONS || "true").toLowerCase() === "true",
       notificationIntervalMinutes: parseInt(process.env.NOTIFICATION_INTERVAL) || 2,
     });
