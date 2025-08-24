@@ -1,8 +1,7 @@
-const { SlashCommandBuilder, EmbedBuilder, Colors, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder, Colors } = require('discord.js');
 const { StreamerStatus } = require('../config');
 
-const STREAMERS_PER_PAGE = 10;
-const MAX_EMBED_FIELD_LENGTH = 1024;
+const MAX_FIELD_VALUE_LENGTH = 1000; // Marge de sécurité pour les fields Discord (1024 max)
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -15,21 +14,15 @@ module.exports = {
         .addChoices(
           { name: 'Affiliés', value: 'affilie' },
           { name: 'Non-affiliés', value: 'non_affilie' }
-        ))
-    .addIntegerOption(option =>
-      option.setName('page')
-        .setDescription('Numéro de page (par défaut: 1)')
-        .setRequired(false)
-        .setMinValue(1)),
+        )),
 
   async execute(interaction, bot) {
     await interaction.deferReply();
 
     try {
       const statusFilter = interaction.options.getString('status');
-      const requestedPage = interaction.options.getInteger('page') ?? 1;
       
-      // Récupération des streamers avec gestion d'erreur spécifique
+      // Récupération des streamers
       let allStreamers;
       try {
         allStreamers = await bot.db.getAllStreamers();
@@ -43,10 +36,6 @@ module.exports = {
         ? allStreamers.filter(s => s.status === statusFilter)
         : allStreamers;
 
-      // Validation de la page demandée
-      const totalPages = Math.max(1, Math.ceil(streamers.length / STREAMERS_PER_PAGE));
-      const currentPage = Math.min(requestedPage, totalPages);
-
       // Cas aucun streamer trouvé
       if (streamers.length === 0) {
         const embed = new EmbedBuilder()
@@ -57,38 +46,15 @@ module.exports = {
         return await interaction.editReply({ embeds: [embed] });
       }
 
-      // Pagination
-      const startIndex = (currentPage - 1) * STREAMERS_PER_PAGE;
-      const endIndex = startIndex + STREAMERS_PER_PAGE;
-      const paginatedStreamers = streamers.slice(startIndex, endIndex);
-
-      // Construction de l'embed
-      const embed = this.buildStreamersEmbed(
-        paginatedStreamers, 
-        streamers.length, 
-        currentPage, 
-        totalPages, 
-        statusFilter
-      );
-
-      // Boutons de navigation si nécessaire
-      const components = totalPages > 1 
-        ? [this.createNavigationButtons(currentPage, totalPages, statusFilter)]
-        : [];
-
-      await interaction.editReply({ 
-        embeds: [embed], 
-        components 
-      });
+      // Envoyer en messages multiples
+      await this.sendMultipleMessages(interaction, streamers, statusFilter);
 
     } catch (error) {
       bot.logger.error(`❌ Erreur commande streamers: ${error.message}`, error.stack);
       
       const errorEmbed = new EmbedBuilder()
         .setTitle('❌ Erreur')
-        .setDescription(error.message === 'Erreur de connexion à la base de données' 
-          ? 'Impossible de se connecter à la base de données. Veuillez réessayer plus tard.'
-          : 'Une erreur inattendue s\'est produite. Veuillez réessayer.')
+        .setDescription('Une erreur s\'est produite lors de l\'affichage des streamers.')
         .setColor(Colors.Red);
 
       await interaction.editReply({ embeds: [errorEmbed] });
@@ -96,100 +62,103 @@ module.exports = {
   },
 
   /**
-   * Construit l'embed principal avec la liste des streamers
+   * Messages multiples
    */
-  buildStreamersEmbed(streamers, totalCount, currentPage, totalPages, statusFilter) {
-    const embed = new EmbedBuilder()
-      .setTitle('🎮 Liste des streamers')
-      .setColor(Colors.Purple)
-      .setTimestamp();
-
-    // Séparation par statut
+  async sendMultipleMessages(interaction, streamers, statusFilter) {
     const affilies = streamers.filter(s => s.status === StreamerStatus.AFFILIE);
     const nonAffilies = streamers.filter(s => s.status === StreamerStatus.NON_AFFILIE);
 
-    // Ajout des sections
+    // Message principal
+    const mainEmbed = new EmbedBuilder()
+      .setTitle('🎮 Liste des streamers')
+      .setDescription(`**Total: ${streamers.length} streamer(s)**\n\nListe envoyée en plusieurs messages...`)
+      .setColor(Colors.Purple)
+      .setTimestamp();
+
+    if (!statusFilter) {
+      mainEmbed.addFields(
+        { name: '⭐ Affiliés', value: affilies.length.toString(), inline: true },
+        { name: '🌟 Non-Affiliés', value: nonAffilies.length.toString(), inline: true }
+      );
+    }
+
+    await interaction.editReply({ embeds: [mainEmbed] });
+
+    // Envoyer les affiliés
     if (affilies.length > 0 && (!statusFilter || statusFilter === 'affilie')) {
-      this.addStreamersField(embed, '⭐ Streamers Affiliés', affilies);
+      const affilieEmbeds = this.createEmbedsForStreamers(affilies, '⭐ Streamers Affiliés', Colors.Gold);
+      for (const embed of affilieEmbeds) {
+        await interaction.followUp({ embeds: [embed] });
+      }
     }
 
+    // Envoyer les non-affiliés
     if (nonAffilies.length > 0 && (!statusFilter || statusFilter === 'non_affilie')) {
-      this.addStreamersField(embed, '🌟 Streamers Non-Affiliés', nonAffilies);
+      const nonAffilieeEmbeds = this.createEmbedsForStreamers(nonAffilies, '🌟 Streamers Non-Affiliés', Colors.Blue);
+      for (const embed of nonAffilieeEmbeds) {
+        await interaction.followUp({ embeds: [embed] });
+      }
     }
-
-    // Footer avec informations de pagination
-    const footerText = totalPages > 1 
-      ? `Page ${currentPage}/${totalPages} • Total: ${totalCount} streamer(s)`
-      : `Total: ${totalCount} streamer(s)`;
-    
-    embed.setFooter({ text: footerText });
-
-    return embed;
   },
 
   /**
-   * Ajoute un field avec une liste de streamers à l'embed
+   * Crée plusieurs embeds pour une liste de streamers
    */
-  addStreamersField(embed, title, streamers) {
+  createEmbedsForStreamers(streamers, title, color) {
+    const embeds = [];
+    let currentEmbed = new EmbedBuilder()
+      .setTitle(title)
+      .setColor(color);
+    
+    let embedCount = 1;
     let streamersList = '';
-    let count = 0;
+    let processedCount = 0;
 
     for (const streamer of streamers) {
-      const streamerLine = `• [${streamer.name}](${streamer.url})${streamer.description ? ` - ${streamer.description}` : ''}\n`;
+      const streamerLine = `• [${streamer.name}](${streamer.url})\n`;
       
-      // Vérifier si on dépasse la limite des embeds Discord
-      if (streamersList.length + streamerLine.length > MAX_EMBED_FIELD_LENGTH) {
-        streamersList += '*... (liste tronquée)*';
-        break;
+      // Vérifier si ajouter ce streamer dépasserait la limite du field
+      if (streamersList.length + streamerLine.length > MAX_FIELD_VALUE_LENGTH && processedCount > 0) {
+        // Ajouter le field avec les streamers actuels
+        currentEmbed.addFields({
+          name: embedCount === 1 ? `Liste (${processedCount} streamer${processedCount > 1 ? 's' : ''})` : `Suite (${processedCount} streamer${processedCount > 1 ? 's' : ''})`,
+          value: streamersList,
+          inline: false
+        });
+        
+        currentEmbed.setFooter({ text: `Partie ${embedCount} • ${processedCount} streamer(s)` });
+        embeds.push(currentEmbed);
+
+        // Créer un nouvel embed
+        embedCount++;
+        currentEmbed = new EmbedBuilder()
+          .setTitle(`${title} (suite)`)
+          .setColor(color);
+        streamersList = '';
+        processedCount = 0;
       }
-      
+
       streamersList += streamerLine;
-      count++;
+      processedCount++;
     }
 
-    embed.addFields({
-      name: `${title} (${streamers.length})`,
-      value: streamersList || 'Aucun streamer dans cette catégorie.',
-      inline: false,
-    });
-  },
-
-  /**
-   * Crée les boutons de navigation pour la pagination
-   */
-  createNavigationButtons(currentPage, totalPages, statusFilter) {
-    const row = new ActionRowBuilder();
-
-    // Bouton page précédente
-    if (currentPage > 1) {
-      row.addComponents(
-        new ButtonBuilder()
-          .setCustomId(`streamers_prev_${currentPage - 1}_${statusFilter || 'all'}`)
-          .setLabel('⬅️ Précédent')
-          .setStyle(ButtonStyle.Secondary)
-      );
+    // Ajouter le dernier embed s'il contient des streamers
+    if (processedCount > 0) {
+      currentEmbed.addFields({
+        name: embedCount === 1 ? `Liste (${processedCount} streamer${processedCount > 1 ? 's' : ''})` : `Suite (${processedCount} streamer${processedCount > 1 ? 's' : ''})`,
+        value: streamersList,
+        inline: false
+      });
+      
+      currentEmbed.setFooter({ 
+        text: embeds.length > 0 
+          ? `Partie ${embedCount} • ${processedCount} streamer(s)` 
+          : `${processedCount} streamer(s)`
+      });
+      embeds.push(currentEmbed);
     }
 
-    // Indicateur de page
-    row.addComponents(
-      new ButtonBuilder()
-        .setCustomId('streamers_page_indicator')
-        .setLabel(`${currentPage} / ${totalPages}`)
-        .setStyle(ButtonStyle.Secondary)
-        .setDisabled(true)
-    );
-
-    // Bouton page suivante
-    if (currentPage < totalPages) {
-      row.addComponents(
-        new ButtonBuilder()
-          .setCustomId(`streamers_next_${currentPage + 1}_${statusFilter || 'all'}`)
-          .setLabel('Suivant ➡️')
-          .setStyle(ButtonStyle.Secondary)
-      );
-    }
-
-    return row;
+    return embeds;
   },
 
   /**
