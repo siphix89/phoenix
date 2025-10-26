@@ -1,0 +1,2344 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phoenix Bot - API Réelle</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #000000;
+            color: #ffffff;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Layout Principal Hybride */
+        .layout-hybrid {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            grid-template-rows: auto auto 1fr;
+            grid-template-areas: 
+                "sidebar header"
+                "sidebar nav"
+                "sidebar main";
+            height: 100vh;
+        }
+
+        /* Sidebar améliorée */
+        .hybrid-sidebar {
+            grid-area: sidebar;
+            background: #000000;
+            border-right: 2px solid #00ffff;
+            padding: 24px 20px;
+            overflow-y: auto;
+            box-shadow: 2px 0 30px rgba(0, 255, 255, 0.4);
+            position: relative;
+        }
+
+        .hybrid-sidebar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 1px;
+            height: 100%;
+            background: linear-gradient(180deg, transparent 0%, #00ffff 50%, transparent 100%);
+            opacity: 0.6;
+        }
+
+        .sidebar-logo {
+            margin-bottom: 40px;
+            text-align: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(0, 255, 255, 0.3);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            justify-content: center;
+        }
+
+        .logo-icon {
+            width: 52px;
+            height: 52px;
+            background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            border: 2px solid #00ffff;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.6);
+            animation: pulse 3s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(0, 255, 255, 0.6); }
+            50% { box-shadow: 0 0 30px rgba(0, 255, 255, 0.9); }
+        }
+
+        .logo-text h1 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #ffffff;
+            margin: 0;
+        }
+
+        .logo-text p {
+            font-size: 12px;
+            color: #00ffff;
+            margin: 0;
+            opacity: 0.8;
+        }
+
+        /* Navigation sidebar */
+        .sidebar-navigation {
+            margin-bottom: 30px;
+        }
+
+        .nav-section {
+            margin-bottom: 25px;
+        }
+
+        .nav-section-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: #00ffff;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            padding-left: 12px;
+        }
+
+        .sidebar-nav-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 16px;
+            margin: 6px 0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sidebar-nav-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 4px;
+            height: 100%;
+            background: #00ffff;
+            transform: scaleY(0);
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-nav-item:hover {
+            background: rgba(139, 92, 246, 0.2);
+            border-color: #00ffff;
+            transform: translateX(4px);
+        }
+
+        .sidebar-nav-item:hover::before {
+            transform: scaleY(1);
+        }
+
+        .sidebar-nav-item.active {
+            background: linear-gradient(90deg, rgba(139, 92, 246, 0.4) 0%, rgba(0, 255, 255, 0.1) 100%);
+            border-color: #00ffff;
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.4);
+        }
+
+        .sidebar-nav-item.active::before {
+            transform: scaleY(1);
+        }
+
+        .nav-icon {
+            font-size: 18px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .nav-text {
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        /* Stats sidebar */
+        .sidebar-stats {
+            border-top: 2px solid #00ffff;
+            padding-top: 25px;
+            margin-top: auto;
+        }
+
+        .sidebar-stat {
+            margin-bottom: 16px;
+            padding: 16px 12px;
+            border: 2px solid #00ffff;
+            border-radius: 10px;
+            text-align: center;
+            background: rgba(0, 255, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-stat:hover {
+            background: rgba(139, 92, 246, 0.1);
+            border-color: #8b5cf6;
+            transform: scale(1.02);
+        }
+
+        .sidebar-stat-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #00ffff;
+            margin-bottom: 4px;
+        }
+
+        .sidebar-stat-label {
+            font-size: 0.85rem;
+            opacity: 0.9;
+            color: #ffffff;
+        }
+
+        /* Header moderne */
+        .hybrid-header {
+            grid-area: header;
+            background: linear-gradient(135deg, #000000 0%, #0a0a0a 100%);
+            border-bottom: 2px solid #00ffff;
+            padding: 24px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 30px rgba(0, 255, 255, 0.3);
+            position: relative;
+        }
+
+        .hybrid-header::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent 0%, #00ffff 50%, transparent 100%);
+        }
+
+        .header-title {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header-title h2 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #ffffff;
+            margin: 0;
+        }
+
+        .header-subtitle {
+            font-size: 14px;
+            color: #00ffff;
+            opacity: 0.8;
+            margin: 0;
+        }
+
+        .header-status {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 0, 0, 0.1);
+            border: 2px solid #ff0000;
+            border-radius: 25px;
+            padding: 10px 16px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            color: #ff0000;
+        }
+
+        .status-indicator.online {
+            border-color: #00ff00;
+            background: rgba(0, 255, 0, 0.1);
+            color: #00ff00;
+        }
+
+        .status-indicator:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+        }
+
+        /* Navigation horizontale moderne */
+        .hybrid-nav {
+            grid-area: nav;
+            background: rgba(0, 0, 0, 0.8);
+            border-bottom: 1px solid rgba(0, 255, 255, 0.3);
+            padding: 16px 40px;
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            backdrop-filter: blur(10px);
+        }
+
+        .nav-tab {
+            background: transparent;
+            border: 2px solid rgba(0, 255, 255, 0.3);
+            color: #ffffff;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            font-weight: 500;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-tab::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .nav-tab:hover::before {
+            left: 100%;
+        }
+
+        .nav-tab.active {
+            background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);
+            border-color: #00ffff;
+            color: #ffffff;
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.6);
+            transform: scale(1.05);
+        }
+
+        .nav-tab:hover:not(.active) {
+            background: rgba(139, 92, 246, 0.2);
+            border-color: #00ffff;
+            transform: translateY(-2px);
+        }
+
+        /* Contenu principal */
+        .hybrid-main {
+            grid-area: main;
+            padding: 30px 40px;
+            overflow-y: auto;
+            background: linear-gradient(135deg, #000000 0%, #0a0a0a 100%);
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        /* Cards améliorées */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 24px;
+            margin-bottom: 30px;
+        }
+
+        .main-stat-card {
+            background: linear-gradient(135deg, rgba(0, 255, 255, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%);
+            border: 2px solid #00ffff;
+            border-radius: 16px;
+            padding: 28px 24px;
+            text-align: center;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .main-stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.1), transparent);
+            transition: left 0.8s;
+        }
+
+        .main-stat-card:hover::before {
+            left: 100%;
+        }
+
+        .main-stat-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            border-color: #8b5cf6;
+            box-shadow: 0 15px 40px rgba(139, 92, 246, 0.4);
+        }
+
+        .stat-value {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: #ffffff;
+            text-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+        }
+
+        .stat-label {
+            color: #00ffff;
+            font-size: 16px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+        }
+
+        .main-card {
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.8) 0%, rgba(10, 10, 10, 0.9) 100%);
+            border: 2px solid #00ffff;
+            border-radius: 16px;
+            padding: 32px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 8px 32px rgba(0, 255, 255, 0.2);
+        }
+
+        .main-card h3 {
+            margin-bottom: 20px;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .action-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);
+            border: 2px solid #00ffff;
+            color: white;
+            padding: 16px 24px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.6s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(139, 92, 246, 0.6);
+            border-color: #ffffff;
+        }
+
+        .btn:active {
+            transform: translateY(-1px);
+        }
+
+        /* Debug Panel */
+        .debug-panel {
+            background: rgba(255, 0, 0, 0.1);
+            border: 2px solid #ff0000;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .debug-title {
+            color: #ff0000;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .debug-info {
+            font-family: monospace;
+            font-size: 12px;
+            color: #ffaa00;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px;
+            border-radius: 6px;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        /* API Config Panel */
+        .api-config {
+            background: rgba(0, 255, 255, 0.1);
+            border: 2px solid #00ffff;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .config-input {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #00ffff;
+            color: #ffffff;
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin: 5px 0;
+            font-size: 14px;
+        }
+
+        .config-input:focus {
+            outline: none;
+            border-color: #8b5cf6;
+            box-shadow: 0 0 10px rgba(139, 92, 246, 0.3);
+        }
+
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .loading::after {
+            content: ' ⏳';
+        }
+
+        /* Nouvelles fonctionnalités CSS */
+        
+        /* Streamer Form */
+        .streamer-form {
+            background: rgba(0, 255, 255, 0.05);
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            color: #00ffff;
+            margin-bottom: 5px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        /* Streamer List */
+        .streamer-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 8px;
+            border: 1px solid #333;
+            background: rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .streamer-item.live {
+            border-color: #00ff00;
+            background: rgba(0, 255, 0, 0.05);
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.2);
+        }
+
+        .streamer-item.offline {
+            border-color: #666;
+            background: rgba(102, 102, 102, 0.05);
+        }
+
+        .streamer-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status.live {
+            animation: pulse 2s infinite;
+        }
+
+        .viewers {
+            color: #ff6b6b;
+            font-size: 11px;
+        }
+
+        .streamer-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-small {
+            padding: 5px 10px;
+            font-size: 12px;
+            border: 1px solid #00ffff;
+            background: rgba(0, 255, 255, 0.1);
+            color: #00ffff;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-small:hover {
+            background: rgba(0, 255, 255, 0.2);
+            transform: translateY(-1px);
+        }
+
+        .btn-small.danger {
+            border-color: #ff4757;
+            color: #ff4757;
+            background: rgba(255, 71, 87, 0.1);
+        }
+
+        .btn-small.danger:hover {
+            background: rgba(255, 71, 87, 0.2);
+        }
+
+        /* Analytics */
+        .analytics-container {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            margin-top: 15px;
+        }
+
+        .chart-placeholder {
+            min-height: 200px;
+            background: rgba(0, 255, 255, 0.05);
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #00ffff;
+            padding: 20px;
+        }
+
+        .analytics-metrics {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: rgba(139, 92, 246, 0.1);
+            border: 1px solid #8b5cf6;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .metric:hover {
+            background: rgba(139, 92, 246, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .metric-label {
+            color: #a0aec0;
+            font-size: 12px;
+        }
+
+        .metric-value {
+            color: #00ffff;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        /* Live Streamers Grid */
+        .live-streamers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .live-streamer-card {
+            background: linear-gradient(135deg, rgba(0, 255, 0, 0.1) 0%, rgba(0, 255, 255, 0.05) 100%);
+            border: 2px solid #00ff00;
+            border-radius: 10px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .live-streamer-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 0, 0.1), transparent);
+            transition: left 0.6s;
+        }
+
+        .live-streamer-card:hover::before {
+            left: 100%;
+        }
+
+        .live-streamer-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 255, 0, 0.3);
+        }
+
+        .streamer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .live-indicator {
+            background: #ff0000;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: bold;
+            animation: pulse 2s infinite;
+        }
+
+        .streamer-details {
+            margin: 10px 0;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .streamer-details .game {
+            color: #00ffff;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .streamer-details .viewers {
+            color: #ff6b6b;
+            margin-bottom: 5px;
+        }
+
+        .streamer-details .title {
+            color: #a0aec0;
+            font-style: italic;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* Status Messages */
+        .loading {
+            text-align: center;
+            color: #00ffff;
+            padding: 30px;
+            font-style: italic;
+        }
+
+        .no-data {
+            text-align: center;
+            color: #666;
+            padding: 30px;
+            font-style: italic;
+        }
+
+        .error {
+            text-align: center;
+            color: #ff4757;
+            padding: 20px;
+            background: rgba(255, 71, 87, 0.1);
+            border: 1px solid #ff4757;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+
+        /* Animation améliorées */
+        @keyframes pulse {
+            0%, 100% { 
+                opacity: 1; 
+                transform: scale(1);
+            }
+            50% { 
+                opacity: 0.7; 
+                transform: scale(1.05);
+            }
+        }
+
+        /* Responsive pour nouvelles fonctionnalités */
+        @media (max-width: 768px) {
+            .analytics-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .live-streamers-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .quick-actions {
+                grid-template-columns: 1fr;
+            }
+            
+            .streamer-item {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .streamer-info {
+                width: 100%;
+            }
+            
+            .streamer-actions {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .hybrid-main {
+                padding: 20px 30px;
+            }
+        
+
+        @media (max-width: 1024px) {
+            .layout-hybrid {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto auto 1fr;
+                grid-template-areas: 
+                    "header"
+                    "nav"
+                    "sidebar"
+                    "main";
+            }
+            
+            .hybrid-sidebar {
+                border-right: none;
+                border-bottom: 2px solid #00ffff;
+                padding: 20px;
+                display: flex;
+                gap: 30px;
+                overflow-x: auto;
+            }
+
+            .sidebar-navigation {
+                display: flex;
+                gap: 20px;
+                margin: 0;
+            }
+
+            .nav-section {
+                margin: 0;
+                min-width: 200px;
+            }
+
+            .sidebar-stats {
+                border-top: none;
+                border-left: 2px solid #00ffff;
+                padding-top: 0;
+                padding-left: 20px;
+                margin: 0;
+                display: flex;
+                gap: 20px;
+            }
+
+            .sidebar-stat {
+                min-width: 120px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 16px;
+            }
+
+            .hybrid-main {
+                padding: 20px;
+            }
+
+            .hybrid-header {
+                padding: 20px;
+                flex-direction: column;
+                gap: 16px;
+                text-align: center;
+            }
+
+            .hybrid-nav {
+                padding: 12px 20px;
+            }
+
+            .nav-tab {
+                padding: 10px 16px;
+                font-size: 13px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="layout-hybrid">
+        <!-- Sidebar hybride -->
+        <div class="hybrid-sidebar">
+            <div class="sidebar-logo">
+                <div class="logo">
+                    <div class="logo-icon">🔥</div>
+                    <div class="logo-text">
+                        <h1>Phoenix Bot</h1>
+                        <p>v2.0 - Production</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="sidebar-navigation">
+                <div class="nav-section">
+                    <div class="nav-section-title">Principal</div>
+                    <div class="sidebar-nav-item active">
+                        <span class="nav-icon">📊</span>
+                        <span class="nav-text">Dashboard</span>
+                    </div>
+                    <div class="sidebar-nav-item">
+                        <span class="nav-icon">🎮</span>
+                        <span class="nav-text">Streamers</span>
+                    </div>
+                    <div class="sidebar-nav-item">
+                        <span class="nav-icon">⚙️</span>
+                        <span class="nav-text">Administration</span>
+                    </div>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Système</div>
+                    <div class="sidebar-nav-item">
+                        <span class="nav-icon">📋</span>
+                        <span class="nav-text">Logs</span>
+                    </div>
+                    <div class="sidebar-nav-item">
+                        <span class="nav-icon">🔧</span>
+                        <span class="nav-text">Paramètres</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-stats">
+                <div class="sidebar-stat">
+                    <div class="sidebar-stat-value" data-stat="servers">--</div>
+                    <div class="sidebar-stat-label">Serveurs</div>
+                </div>
+                <div class="sidebar-stat">
+                    <div class="sidebar-stat-value" data-stat="users">--</div>
+                    <div class="sidebar-stat-label">Utilisateurs</div>
+                </div>
+                <div class="sidebar-stat">
+                    <div class="sidebar-stat-value" data-stat="streamers">--</div>
+                    <div class="sidebar-stat-label">Streamers</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Header moderne -->
+        <div class="hybrid-header">
+            <div class="header-title">
+                <h2>Dashboard Principal - Production</h2>
+                <p class="header-subtitle">Interface connectée aux données réelles de votre bot Discord</p>
+            </div>
+            <div class="header-status">
+                <div class="status-indicator" id="api-status">
+                    <span>❌</span>
+                    <span>API Disconnected</span>
+                </div>
+                <div class="status-indicator" id="bot-status">
+                    <span>⚠️</span>
+                    <span>Bot Status Unknown</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation horizontale -->
+        <div class="hybrid-nav">
+            <button class="nav-tab active">
+                <span>📊</span>
+                <span>Vue d'ensemble</span>
+            </button>
+            <button class="nav-tab">
+                <span>📈</span>
+                <span>Analyses</span>
+            </button>
+            <button class="nav-tab">
+                <span>🎮</span>
+                <span>Streamers Live</span>
+            </button>
+            <button class="nav-tab">
+                <span>⚡</span>
+                <span>Activité</span>
+            </button>
+            <button class="nav-tab">
+                <span>🔧</span>
+                <span>Configuration API</span>
+            </button>
+        </div>
+
+        <!-- Contenu principal -->
+        <div class="hybrid-main">
+            <!-- Debug Panel -->
+            <div class="debug-panel">
+                <div class="debug-title">🔗 Connexion API - Données réelles</div>
+                <div class="debug-info" id="debug-output">Initialisation...</div>
+            </div>
+
+            <!-- API Configuration Panel -->
+            <div class="api-config">
+                <h3 style="color: #00ffff; margin-bottom: 15px;">⚙️ Configuration API Production</h3>
+                
+                <label style="color: #ffffff; display: block; margin-bottom: 5px;">URL de base de votre API:</label>
+                <input type="text" class="config-input" id="api-url" placeholder="https://api.votrebot.com" value="">
+                
+                <label style="color: #ffffff; display: block; margin-bottom: 5px; margin-top: 10px;">Token d'authentification:</label>
+                <input type="password" class="config-input" id="api-token" placeholder="Votre token Discord bot ou API key">
+                
+                <label style="color: #ffffff; display: block; margin-bottom: 5px; margin-top: 10px;">ID du Bot Discord:</label>
+                <input type="text" class="config-input" id="bot-id" placeholder="ID de votre bot Discord (optionnel)">
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px;">
+                    <button class="btn" onclick="updateAPIConfig()">
+                        <span>💾</span>
+                        <span>Sauvegarder</span>
+                    </button>
+                    <button class="btn" onclick="testConnection()">
+                        <span>🔍</span>
+                        <span>Tester</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Grid de statistiques -->
+            <div class="stats-grid">
+                <div class="main-stat-card">
+                    <div class="stat-value" data-stat="servers">--</div>
+                    <div class="stat-label">Serveurs</div>
+                </div>
+                <div class="main-stat-card">
+                    <div class="stat-value" data-stat="users">--</div>
+                    <div class="stat-label">Utilisateurs</div>
+                </div>
+                <div class="main-stat-card">
+                    <div class="stat-value" data-stat="streamers">--</div>
+                    <div class="stat-label">Streamers</div>
+                </div>
+                <div class="main-stat-card">
+                    <div class="stat-value" data-stat="uptime">--</div>
+                    <div class="stat-label">Uptime</div>
+                </div>
+            </div>
+
+            <!-- Contenu principal en grid -->
+            <div class="content-grid">
+                <div class="main-card">
+                    <h3>📊 Données Réelles du Bot</h3>
+                    <p style="color: #a0aec0; margin-bottom: 20px;">
+                        Statistiques en temps réel directement depuis votre API Discord Bot.
+                    </p>
+                    <div style="height: 200px; background: rgba(0, 255, 255, 0.05); border: 1px solid rgba(0, 255, 255, 0.2); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #00ffff; text-align: center;" id="data-visualization">
+                        📡 En attente de connexion API...<br>
+                        <small>Configurez votre endpoint pour voir les vraies données</small>
+                    </div>
+                </div>
+
+                <div class="action-panel">
+                    <div class="main-card" style="padding: 24px;">
+                        <h3>🚀 Actions Phoenix Bot</h3>
+                        <button class="btn" onclick="refreshData()">
+                            <span>🔄</span>
+                            <span>Actualiser Données</span>
+                        </button>
+                        <button class="btn" onclick="checkStreams()">
+                            <span>🔍</span>
+                            <span>Vérifier Streams</span>
+                        </button>
+                        <button class="btn" onclick="fetchStreamers()">
+                            <span>🎮</span>
+                            <span>Détails Streamers</span>
+                        </button>
+                        <button class="btn" onclick="testTwitchAPI()">
+                            <span>🧪</span>
+                            <span>Test API Twitch</span>
+                        </button>
+                    </div>
+
+                    <div class="main-card" style="padding: 24px;">
+                        <h3>ℹ️ Statut Production</h3>
+                        <div style="font-size: 14px; color: #a0aec0; line-height: 1.8;" id="system-status">
+                            <p>🔄 Initialisation...</p>
+                            <p>⚙️ Mode production</p>
+                            <p>🔗 Connexion API requise</p>
+                            <p>📡 Prêt pour données réelles</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Classe API améliorée pour données réelles
+        class PhoenixAPIReal {
+            constructor() {
+                this.baseURL = '';
+                this.token = '';
+                this.botId = '';
+                this.isConnected = false;
+                this.endpoints = {
+                    // Endpoints Discord API standard
+                    discord: {
+                        guilds: '/guilds/@me',
+                        users: '/users/@me',
+                        gateway: '/gateway'
+                    },
+                    // Endpoints personnalisés courants
+                    custom: {
+                        stats: ['/stats', '/api/stats', '/bot/stats'],
+                        guilds: ['/guilds', '/api/guilds', '/bot/guilds', '/servers'],
+                        users: ['/users', '/api/users', '/bot/users', '/members'],
+                        streamers: ['/streamers', '/api/streamers', '/twitch/streamers', '/live'],
+                        uptime: ['/uptime', '/api/uptime', '/bot/uptime', '/health']
+                    }
+                };
+                this.lastUpdate = null;
+                this.autoRefreshInterval = null;
+                this.init();
+            }
+
+            log(message, type = 'info') {
+                const timestamp = new Date().toLocaleTimeString();
+                const debugOutput = document.getElementById('debug-output');
+                const statusColors = {
+                    'info': '#00ffff',
+                    'error': '#ff0000',
+                    'success': '#00ff00',
+                    'warning': '#ffaa00'
+                };
+                
+                if (debugOutput) {
+                    const newLine = `[${timestamp}] ${message}\n`;
+                    debugOutput.innerHTML += newLine;
+                    debugOutput.style.color = statusColors[type] || '#00ffff';
+                    debugOutput.scrollTop = debugOutput.scrollHeight;
+                }
+                console.log(`[Phoenix API] ${message}`);
+            }
+
+            async init() {
+                this.log('🚀 Initialisation Phoenix Bot API Production', 'info');
+                
+                // Vérifier si on a un token dans l'URL (accès depuis Discord)
+                const urlParams = new URLSearchParams(window.location.search);
+                const urlToken = urlParams.get('token');
+                
+                if (urlToken) {
+                    this.log('🎯 Token trouvé dans l\'URL, connexion automatique...', 'info');
+                    this.baseURL = window.location.origin; // http://localhost:3001
+                    this.token = urlToken;
+                    
+                    // Remplir les champs
+                    document.getElementById('api-url').value = this.baseURL;
+                    document.getElementById('api-token').value = this.token;
+                    
+                    // Sauvegarder et connecter
+                    this.saveConfig();
+                    await this.connectToAPI();
+                } else {
+                    // Charger configuration sauvegardée
+                    const savedConfig = this.loadSavedConfig();
+                    if (savedConfig.url && savedConfig.token) {
+                        this.log('📁 Configuration sauvegardée trouvée, connexion automatique...', 'info');
+                        this.baseURL = savedConfig.url;
+                        this.token = savedConfig.token;
+                        this.botId = savedConfig.botId || '';
+                        
+                        // Remplir les champs
+                        document.getElementById('api-url').value = this.baseURL;
+                        document.getElementById('api-token').value = this.token;
+                        document.getElementById('bot-id').value = this.botId;
+                        
+                        await this.connectToAPI();
+                    } else {
+                        this.log('⚙️ Première utilisation - Configuration requise', 'warning');
+                        this.log('💡 Utilisez /dash type:web sur Discord pour obtenir un lien d\'accès', 'info');
+                        this.updateSystemStatus('config_required');
+                    }
+                }
+            }
+
+            loadSavedConfig() {
+                try {
+                    return {
+                        url: localStorage.getItem('phoenix_api_url') || '',
+                        token: localStorage.getItem('phoenix_api_token') || '',
+                        botId: localStorage.getItem('phoenix_bot_id') || ''
+                    };
+                } catch (error) {
+                    this.log('❌ Erreur lecture config: ' + error.message, 'error');
+                    return { url: '', token: '', botId: '' };
+                }
+            }
+
+            saveConfig() {
+                try {
+                    localStorage.setItem('phoenix_api_url', this.baseURL);
+                    localStorage.setItem('phoenix_api_token', this.token);
+                    localStorage.setItem('phoenix_bot_id', this.botId);
+                    this.log('💾 Configuration sauvegardée', 'success');
+                } catch (error) {
+                    this.log('❌ Erreur sauvegarde: ' + error.message, 'error');
+                }
+            }
+
+            async connectToAPI() {
+                if (!this.baseURL || !this.token) {
+                    this.log('⚠️ Configuration incomplète (URL ou token manquant)', 'warning');
+                    return false;
+                }
+
+                this.log(`🔗 Connexion à votre API Phoenix Bot...`, 'info');
+                this.updateConnectionStatus('connecting');
+
+                try {
+                    // Nettoyer l'URL
+                    this.baseURL = this.baseURL.replace(/\/$/, '');
+                    
+                    // Test de connexion avec votre API
+                    const response = await this.makeRequest('/api/ping');
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        this.log(`✅ Connexion réussie! ${data.message}`, 'success');
+                        this.log(`📊 Ping Discord: ${data.ping}ms`, 'info');
+                        
+                        this.isConnected = true;
+                        this.updateConnectionStatus('connected');
+                        
+                        // Charger les données
+                        await this.fetchPhoenixData();
+                        this.startAutoRefresh();
+                        
+                        return true;
+                    } else {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    
+                } catch (error) {
+                    this.log(`❌ Échec connexion: ${error.message}`, 'error');
+                    
+                    if (error.message.includes('401')) {
+                        this.log('🔑 Token invalide ou expiré', 'error');
+                        this.log('💡 Utilisez /dash type:web sur Discord pour générer un nouveau token', 'warning');
+                    }
+                    
+                    this.updateConnectionStatus('error', error.message);
+                    return false;
+                }
+            }
+
+            async detectAPIType() {
+                // Test si c'est l'API Discord officielle
+                if (this.baseURL.includes('discord.com') || this.baseURL.includes('discordapp.com')) {
+                    this.log('🔍 API Discord officielle détectée', 'info');
+                    return 'discord';
+                }
+                
+                // Test des endpoints de santé courants
+                const healthEndpoints = ['/health', '/ping', '/status', '/api/health'];
+                
+                for (const endpoint of healthEndpoints) {
+                    try {
+                        const response = await this.makeRequest(endpoint);
+                        if (response.ok) {
+                            this.log(`✅ API personnalisée détectée (${endpoint})`, 'success');
+                            return 'custom';
+                        }
+                    } catch (error) {
+                        // Continue to next endpoint
+                    }
+                }
+                
+                this.log('🤔 Type d\'API inconnu, tentative générique...', 'warning');
+                return 'custom';
+            }
+
+            async connectDiscordAPI() {
+                this.log('🎮 Connexion à l\'API Discord officielle...', 'info');
+                
+                try {
+                    // Test avec l'endpoint Discord /users/@me
+                    const userResponse = await this.makeRequest('https://discord.com/api/v10/users/@me');
+                    
+                    if (userResponse.ok) {
+                        const userData = await userResponse.json();
+                        this.log(`✅ Connecté en tant que: ${userData.username}#${userData.discriminator}`, 'success');
+                        
+                        this.isConnected = true;
+                        this.updateConnectionStatus('connected');
+                        
+                        // Charger les données Discord
+                        await this.fetchDiscordData();
+                        this.startAutoRefresh();
+                        
+                        return true;
+                    } else {
+                        throw new Error(`Discord API: ${userResponse.status} ${userResponse.statusText}`);
+                    }
+                    
+                } catch (error) {
+                    this.log(`❌ Erreur Discord API: ${error.message}`, 'error');
+                    throw error;
+                }
+            }
+
+            async connectCustomAPI() {
+                this.log('🔧 Connexion à l\'API personnalisée...', 'info');
+                
+                // Tenter plusieurs endpoints de test
+                const testEndpoints = [
+                    '/health', '/ping', '/status', '/api/health',
+                    '/stats', '/api/stats', '/bot/stats'
+                ];
+                
+                let connected = false;
+                
+                for (const endpoint of testEndpoints) {
+                    try {
+                        this.log(`🔄 Test: ${endpoint}`, 'info');
+                        const response = await this.makeRequest(endpoint);
+                        
+                        if (response.ok) {
+                            const data = await response.json();
+                            this.log(`✅ Endpoint ${endpoint} réussi`, 'success');
+                            this.log(`📦 Réponse: ${JSON.stringify(data).substring(0, 100)}...`, 'info');
+                            connected = true;
+                            break;
+                        }
+                        
+                    } catch (error) {
+                        this.log(`⚠️ ${endpoint}: ${error.message}`, 'warning');
+                    }
+                }
+                
+                if (connected) {
+                    this.isConnected = true;
+                    this.updateConnectionStatus('connected');
+                    await this.fetchCustomData();
+                    this.startAutoRefresh();
+                    return true;
+                } else {
+                    throw new Error('Aucun endpoint accessible');
+                }
+            }
+
+            async makeRequest(endpoint, options = {}) {
+                const url = endpoint.startsWith('http') ? endpoint : `${this.baseURL}${endpoint}`;
+                
+                const defaultOptions = {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${this.token}`,
+                        'Accept': 'application/json'
+                    },
+                    ...options
+                };
+
+                // Timeout de 10 secondes
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+                try {
+                    const response = await fetch(url, {
+                        ...defaultOptions,
+                        signal: controller.signal
+                    });
+                    clearTimeout(timeoutId);
+                    return response;
+                } catch (error) {
+                    clearTimeout(timeoutId);
+                    if (error.name === 'AbortError') {
+                        throw new Error('Timeout - Serveur non accessible');
+                    }
+                    throw error;
+                }
+            }
+
+            async fetchDiscordData() {
+                this.log('📊 Récupération données Discord...', 'info');
+                
+                try {
+                    const promises = [
+                        this.makeRequest('https://discord.com/api/v10/users/@me/guilds'),
+                        this.makeRequest('https://discord.com/api/v10/users/@me'),
+                        this.makeRequest('https://discord.com/api/v10/gateway')
+                    ];
+
+                    const [guildsResponse, userResponse, gatewayResponse] = await Promise.allSettled(promises);
+
+                    let stats = {
+                        servers: 0,
+                        users: 0,
+                        streamers: 0,
+                        uptime: 'N/A'
+                    };
+
+                    // Traitement des serveurs
+                    if (guildsResponse.status === 'fulfilled' && guildsResponse.value.ok) {
+                        const guilds = await guildsResponse.value.json();
+                        stats.servers = guilds.length;
+                        this.log(`📊 ${guilds.length} serveurs trouvés`, 'success');
+                        
+                        // Estimer les utilisateurs (approximatif)
+                        stats.users = guilds.reduce((total, guild) => total + (guild.approximate_member_count || 100), 0);
+                    }
+
+                    // Traitement utilisateur bot
+                    if (userResponse.status === 'fulfilled' && userResponse.value.ok) {
+                        const user = await userResponse.value.json();
+                        this.log(`👤 Bot: ${user.username}`, 'info');
+                    }
+
+                    this.updateStats(stats);
+                    this.lastUpdate = new Date();
+                    this.log('✅ Données Discord mises à jour', 'success');
+
+                } catch (error) {
+                    this.log(`❌ Erreur récupération Discord: ${error.message}`, 'error');
+                }
+            }
+
+            async fetchPhoenixData() {
+                this.log('📊 Récupération des données Phoenix Bot...', 'info');
+                
+                try {
+                    // Récupérer les statistiques principales
+                    const statsResponse = await this.makeRequest('/api/stats');
+                    
+                    if (statsResponse.ok) {
+                        const data = await statsResponse.json();
+                        
+                        if (data.success) {
+                            const stats = {
+                                servers: data.servers,
+                                users: this.formatNumber(data.users),
+                                streamers: `${data.liveStreamers}/${data.streamers}`,
+                                uptime: this.formatUptime(data.uptime)
+                            };
+
+                            this.updateStats(stats);
+                            this.lastUpdate = new Date();
+                            
+                            this.log(`📊 Stats: ${data.servers} serveurs, ${data.users} utilisateurs, ${data.liveStreamers}/${data.streamers} streamers`, 'success');
+                            this.log(`🚀 Uptime: ${this.formatUptime(data.uptime)}, Ping: ${data.ping}ms`, 'info');
+                            
+                            // Mettre à jour l'affichage des détails
+                            this.updateDataVisualization(data);
+                            
+                        } else {
+                            throw new Error(data.error || 'Réponse API invalide');
+                        }
+                    } else {
+                        throw new Error(`HTTP ${statsResponse.status}`);
+                    }
+
+                } catch (error) {
+                    this.log(`❌ Erreur récupération données: ${error.message}`, 'error');
+                    
+                    if (error.message.includes('401')) {
+                        this.log('🔑 Token expiré - Reconnectez-vous via Discord', 'warning');
+                        this.isConnected = false;
+                        this.updateConnectionStatus('error', 'Token expiré');
+                    }
+                }
+            }
+
+            updateDataVisualization(data) {
+                const dataViz = document.getElementById('data-visualization');
+                if (dataViz && data) {
+                    const lastUpdate = new Date().toLocaleTimeString();
+                    dataViz.innerHTML = `
+                        <div style="text-align: left; padding: 20px;">
+                            <h4 style="color: #00ffff; margin-bottom: 15px;">📊 Statistiques en Temps Réel</h4>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 14px;">
+                                <div>
+                                    <strong style="color: #8b5cf6;">🏠 Serveurs:</strong> ${data.servers}<br>
+                                    <strong style="color: #8b5cf6;">👥 Utilisateurs:</strong> ${data.users.toLocaleString()}<br>
+                                    <strong style="color: #8b5cf6;">🎮 Streamers:</strong> ${data.streamers} total
+                                </div>
+                                <div>
+                                    <strong style="color: #00ff00;">🔴 En direct:</strong> ${data.liveStreamers}<br>
+                                    <strong style="color: #8b5cf6;">⚡ Ping:</strong> ${data.ping}ms<br>
+                                    <strong style="color: #8b5cf6;">💾 RAM:</strong> ${data.memory}MB
+                                </div>
+                            </div>
+                            <hr style="border-color: rgba(0,255,255,0.3); margin: 15px 0;">
+                            <small style="color: #a0aec0;">Dernière MAJ: ${lastUpdate}</small>
+                        </div>
+                    `;
+                }
+            }
+
+            extractValue(obj, possibleKeys) {
+                if (!obj) return null;
+                
+                // Si c'est directement un nombre
+                if (typeof obj === 'number') return obj;
+                
+                // Si c'est un tableau
+                if (Array.isArray(obj)) return obj.length;
+                
+                // Chercher dans les clés possibles
+                for (const key of possibleKeys) {
+                    if (obj[key] !== undefined && obj[key] !== null) {
+                        return typeof obj[key] === 'number' ? obj[key] : 
+                               Array.isArray(obj[key]) ? obj[key].length : 
+                               obj[key];
+                    }
+                }
+                
+                // Si c'est un objet, essayer de compter ses propriétés
+                if (typeof obj === 'object') {
+                    const keys = Object.keys(obj);
+                    if (keys.length > 0) return keys.length;
+                }
+                
+                return null;
+            }
+
+            updateStats(data) {
+                // Mettre à jour tous les éléments avec data-stat
+                Object.keys(data).forEach(key => {
+                    const elements = document.querySelectorAll(`[data-stat="${key}"]`);
+                    elements.forEach(element => {
+                        if (element) {
+                            element.textContent = data[key];
+                            element.classList.add('loading');
+                            setTimeout(() => element.classList.remove('loading'), 500);
+                        }
+                    });
+                });
+
+                // Mettre à jour la visualisation
+                const dataViz = document.getElementById('data-visualization');
+                if (dataViz) {
+                    dataViz.innerHTML = `
+                        📊 Données actualisées<br>
+                        <small>Dernière mise à jour: ${new Date().toLocaleTimeString()}</small><br>
+                        <small>Serveurs: ${data.servers} | Utilisateurs: ${data.users}</small>
+                    `;
+                }
+
+                this.log('📊 Interface mise à jour', 'success');
+            }
+
+            updateConnectionStatus(status, message = '') {
+                const apiStatus = document.getElementById('api-status');
+                const botStatus = document.getElementById('bot-status');
+                
+                switch(status) {
+                    case 'connecting':
+                        if (apiStatus) {
+                            apiStatus.className = 'status-indicator';
+                            apiStatus.innerHTML = '<span>🔄</span><span>Connexion...</span>';
+                        }
+                        break;
+                        
+                    case 'connected':
+                        if (apiStatus) {
+                            apiStatus.className = 'status-indicator online';
+                            apiStatus.innerHTML = '<span>✅</span><span>API Connected</span>';
+                        }
+                        if (botStatus) {
+                            botStatus.className = 'status-indicator online';
+                            botStatus.innerHTML = '<span>🚀</span><span>Bot Active</span>';
+                        }
+                        this.updateSystemStatus('connected');
+                        break;
+                        
+                    case 'error':
+                        if (apiStatus) {
+                            apiStatus.className = 'status-indicator';
+                            apiStatus.innerHTML = '<span>❌</span><span>Connection Failed</span>';
+                        }
+                        if (botStatus) {
+                            botStatus.className = 'status-indicator';
+                            botStatus.innerHTML = '<span>⚠️</span><span>Bot Offline</span>';
+                        }
+                        this.updateSystemStatus('error', message);
+                        break;
+                }
+            }
+
+            updateSystemStatus(status, message = '') {
+                const systemStatus = document.getElementById('system-status');
+                if (!systemStatus) return;
+
+                const now = new Date().toLocaleTimeString();
+                let statusHTML = '';
+
+                switch(status) {
+                    case 'connected':
+                        statusHTML = `
+                            <p>✅ API connectée (${now})</p>
+                            <p>🚀 Bot Discord opérationnel</p>
+                            <p>📊 Données en temps réel</p>
+                            <p>🔄 Auto-refresh: ${this.autoRefreshInterval ? 'Actif' : 'Inactif'}</p>
+                        `;
+                        break;
+                        
+                    case 'error':
+                        statusHTML = `
+                            <p>❌ Erreur de connexion (${now})</p>
+                            <p>⚠️ ${message || 'Vérifiez votre configuration'}</p>
+                            <p>🔧 Reconfiguration nécessaire</p>
+                            <p>📡 Données indisponibles</p>
+                        `;
+                        break;
+                        
+                    case 'config_required':
+                        statusHTML = `
+                            <p>⚙️ Configuration requise</p>
+                            <p>📝 Entrez vos informations API</p>
+                            <p>🔗 URL + Token nécessaires</p>
+                            <p>🚀 Prêt pour connexion</p>
+                        `;
+                        break;
+                        
+                    case 'connecting':
+                        statusHTML = `
+                            <p>🔄 Connexion en cours...</p>
+                            <p>⏳ Test des endpoints...</p>
+                            <p>🔍 Détection du type d'API...</p>
+                            <p>📡 Veuillez patienter...</p>
+                        `;
+                        break;
+                }
+
+                systemStatus.innerHTML = statusHTML;
+            }
+
+            formatNumber(num) {
+                if (typeof num !== 'number') return num;
+                if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+                if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+                return num.toString();
+            }
+
+            formatUptime(value) {
+                if (typeof value === 'string') return value;
+                if (typeof value !== 'number') return 'N/A';
+                
+                // Si c'est en millisecondes
+                if (value > 1000000000) value = Math.floor(value / 1000);
+                
+                const seconds = Math.floor(value);
+                const minutes = Math.floor(seconds / 60);
+                const hours = Math.floor(minutes / 60);
+                const days = Math.floor(hours / 24);
+
+                if (days > 0) return `${days}j ${hours % 24}h`;
+                if (hours > 0) return `${hours}h ${minutes % 60}m`;
+                if (minutes > 0) return `${minutes}m ${seconds % 60}s`;
+                return `${seconds}s`;
+            }
+
+            startAutoRefresh() {
+                if (this.autoRefreshInterval) {
+                    clearInterval(this.autoRefreshInterval);
+                }
+
+                this.autoRefreshInterval = setInterval(async () => {
+                    if (this.isConnected) {
+                        this.log('🔄 Auto-refresh...', 'info');
+                        await this.fetchPhoenixData();
+                    }
+                }, 30000); // 30 secondes pour plus de réactivité
+
+                this.log('⏰ Auto-refresh configuré (30s)', 'success');
+            }
+
+            async refreshAllData() {
+                if (!this.isConnected) {
+                    this.log('⚠️ Pas de connexion API', 'warning');
+                    return;
+                }
+
+                this.log('🔄 Actualisation complète des données...', 'info');
+                await this.fetchPhoenixData();
+            }
+
+            async fetchStreamersData() {
+                this.log('🎮 Récupération des données streamers...', 'info');
+                
+                try {
+                    const response = await this.makeRequest('/api/streamers');
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        
+                        if (data.success) {
+                            this.log(`🎮 ${data.streamers.length} streamers trouvés`, 'success');
+                            
+                            const liveStreamers = data.streamers.filter(s => s.isLive);
+                            this.log(`🔴 ${liveStreamers.length} streamers en direct`, 'success');
+                            
+                            return data.streamers;
+                        }
+                    }
+                    
+                    throw new Error('Erreur récupération streamers');
+                } catch (error) {
+                    this.log(`❌ Erreur streamers: ${error.message}`, 'error');
+                    return [];
+                }
+            }
+
+            async checkStreams() {
+                this.log('🔍 Demande de vérification des streams...', 'info');
+                
+                try {
+                    const response = await this.makeRequest('/api/check-streams', {
+                        method: 'POST'
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        
+                        if (data.success) {
+                            this.log(`✅ ${data.message}`, 'success');
+                            
+                            // Actualiser les données après vérification
+                            setTimeout(() => this.fetchPhoenixData(), 2000);
+                            
+                            return data;
+                        }
+                    }
+                    
+                    throw new Error('Erreur vérification streams');
+                } catch (error) {
+                    this.log(`❌ Erreur vérification: ${error.message}`, 'error');
+                }
+            }
+
+            async testTwitch() {
+                this.log('🧪 Test de l\'API Twitch...', 'info');
+                
+                try {
+                    const response = await this.makeRequest('/api/test-twitch', {
+                        method: 'POST'
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        
+                        if (data.success) {
+                            this.log(`✅ API Twitch: ${data.message}`, 'success');
+                            this.log(`🔗 Token présent: ${data.data.hasToken ? 'Oui' : 'Non'}`, 'info');
+                            return data;
+                        }
+                    }
+                    
+                    throw new Error('Test Twitch échoué');
+                } catch (error) {
+                    this.log(`❌ Test Twitch: ${error.message}`, 'error');
+                }
+            }
+        }
+
+        // ==========================================
+        // GESTION AVANCÉE DES STREAMERS
+        // ==========================================
+
+        async function addStreamer() {
+            const nameInput = document.getElementById('streamer-name');
+            const urlInput = document.getElementById('streamer-url');
+
+            if (!nameInput || !urlInput) {
+                phoenixAPI.log('❌ Champs streamer introuvables', 'error');
+                return;
+            }
+
+            const name = nameInput.value.trim();
+            const url = urlInput.value.trim();
+
+            if (!name || !url) {
+                phoenixAPI.log('⚠️ Nom et URL requis', 'warning');
+                return;
+            }
+
+            phoenixAPI.log(`➕ Ajout du streamer: ${name}`, 'info');
+
+            try {
+                const response = await phoenixAPI.makeRequest('/api/streamers/add', {
+                    method: 'POST',
+                    body: JSON.stringify({ name, url })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        phoenixAPI.log(`✅ ${data.message}`, 'success');
+                        
+                        // Vider les champs
+                        nameInput.value = '';
+                        urlInput.value = '';
+                        
+                        // Actualiser les stats
+                        await phoenixAPI.fetchPhoenixData();
+                        
+                        // Recharger les streamers si on est dans cette section
+                        if (document.getElementById('streamers-list')) {
+                            await loadStreamersList();
+                        }
+                    } else {
+                        throw new Error(data.error);
+                    }
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+            } catch (error) {
+                phoenixAPI.log(`❌ Erreur ajout: ${error.message}`, 'error');
+            }
+        }
+
+        async function removeStreamer(streamerName) {
+            if (!confirm(`Supprimer le streamer "${streamerName}" ?`)) {
+                return;
+            }
+
+            phoenixAPI.log(`🗑️ Suppression: ${streamerName}`, 'info');
+
+            try {
+                const response = await phoenixAPI.makeRequest(`/api/streamers/${encodeURIComponent(streamerName)}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        phoenixAPI.log(`✅ ${data.message}`, 'success');
+                        
+                        // Actualiser les stats
+                        await phoenixAPI.fetchPhoenixData();
+                        
+                        // Recharger la liste si on est dans cette section
+                        if (document.getElementById('streamers-list')) {
+                            await loadStreamersList();
+                        }
+                    } else {
+                        throw new Error(data.error);
+                    }
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+            } catch (error) {
+                phoenixAPI.log(`❌ Erreur suppression: ${error.message}`, 'error');
+            }
+        }
+
+        async function loadStreamersList() {
+            const streamersList = document.getElementById('streamers-list');
+            if (!streamersList) return;
+
+            streamersList.innerHTML = '<div class="loading">Chargement...</div>';
+
+            try {
+                const streamers = await phoenixAPI.fetchStreamersData();
+
+                if (!streamers || streamers.length === 0) {
+                    streamersList.innerHTML = '<div class="no-data">Aucun streamer configuré</div>';
+                    return;
+                }
+
+                streamersList.innerHTML = streamers.map(streamer => `
+                    <div class="streamer-item ${streamer.isLive ? 'live' : 'offline'}">
+                        <div class="streamer-info">
+                            <span class="status ${streamer.isLive ? 'live' : 'offline'}">
+                                ${streamer.isLive ? '🔴' : '⚫'}
+                            </span>
+                            <strong>${streamer.name}</strong>
+                            ${streamer.isLive ? `<span class="viewers">(${streamer.viewerCount || 0} viewers)</span>` : ''}
+                        </div>
+                        <div class="streamer-actions">
+                            <button class="btn-small" onclick="window.open('${streamer.url}', '_blank')">
+                                🔗 Voir
+                            </button>
+                            <button class="btn-small danger" onclick="removeStreamer('${streamer.name}')">
+                                🗑️ Supprimer
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+
+                phoenixAPI.log(`📋 ${streamers.length} streamers chargés`, 'success');
+
+            } catch (error) {
+                streamersList.innerHTML = '<div class="error">Erreur de chargement</div>';
+                phoenixAPI.log(`❌ Erreur chargement streamers: ${error.message}`, 'error');
+            }
+        }
+
+        // ==========================================
+        // GESTION DES TABS ET NAVIGATION
+        // ==========================================
+
+        function switchToStreamersTab() {
+            // Changer le contenu principal pour la gestion des streamers
+            const contentGrid = document.querySelector('.content-grid');
+            if (!contentGrid) return;
+
+            contentGrid.innerHTML = `
+                <div class="main-card">
+                    <h3>🎮 Gestion des Streamers</h3>
+                    <div class="streamer-form">
+                        <h4 style="color: #00ffff; margin-bottom: 15px;">Ajouter un Streamer</h4>
+                        <div class="form-group">
+                            <label>Nom du Streamer</label>
+                            <input type="text" id="streamer-name" placeholder="Ex: ninja" class="config-input">
+                        </div>
+                        <div class="form-group">
+                            <label>URL Twitch</label>
+                            <input type="url" id="streamer-url" placeholder="https://twitch.tv/ninja" class="config-input">
+                        </div>
+                        <button class="btn" onclick="addStreamer()" style="width: 100%; margin-top: 10px;">
+                            <span>➕</span>
+                            <span>Ajouter Streamer</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="main-card">
+                    <h3>📋 Liste des Streamers</h3>
+                    <div id="streamers-list">
+                        <div class="loading">Chargement...</div>
+                    </div>
+                    <button class="btn" onclick="loadStreamersList()" style="margin-top: 15px; width: 100%;">
+                        <span>🔄</span>
+                        <span>Actualiser Liste</span>
+                    </button>
+                </div>
+            `;
+
+            // Charger la liste des streamers
+            setTimeout(() => loadStreamersList(), 500);
+        }
+
+        function switchToAnalyticsTab() {
+            const contentGrid = document.querySelector('.content-grid');
+            if (!contentGrid) return;
+
+            contentGrid.innerHTML = `
+                <div class="main-card">
+                    <h3>📈 Analyses Détaillées</h3>
+                    <div class="analytics-container">
+                        <div class="analytics-chart">
+                            <h4>Statistiques du Bot</h4>
+                            <div class="chart-placeholder" id="stats-chart">
+                                📊 Chargement des analyses...
+                            </div>
+                        </div>
+                        <div class="analytics-metrics" id="metrics-display">
+                            <div class="metric">
+                                <span class="metric-label">Chargement...</span>
+                                <span class="metric-value">--</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="main-card">
+                    <h3>⚡ Actions Rapides</h3>
+                    <div class="quick-actions">
+                        <button class="btn" onclick="checkStreams()">
+                            <span>🔍</span>
+                            <span>Vérifier Streams</span>
+                        </button>
+                        <button class="btn" onclick="testTwitchAPI()">
+                            <span>🧪</span>
+                            <span>Test Twitch</span>
+                        </button>
+                        <button class="btn" onclick="forceRefresh()">
+                            <span>⚡</span>
+                            <span>Actualisation Forcée</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            // Charger les analyses
+            setTimeout(() => loadAnalytics(), 500);
+        }
+
+        async function loadAnalytics() {
+            const statsChart = document.getElementById('stats-chart');
+            const metricsDisplay = document.getElementById('metrics-display');
+            
+            if (!statsChart || !metricsDisplay) return;
+
+            try {
+                const response = await phoenixAPI.makeRequest('/api/stats');
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        // Mettre à jour le graphique
+                        statsChart.innerHTML = `
+                            <div style="text-align: left; padding: 20px;">
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                                    <div>
+                                        <h5 style="color: #00ffff;">📊 Serveurs: ${data.servers}</h5>
+                                        <h5 style="color: #8b5cf6;">👥 Utilisateurs: ${data.users.toLocaleString()}</h5>
+                                        <h5 style="color: #00ff00;">🎮 Streamers: ${data.streamers}</h5>
+                                    </div>
+                                    <div>
+                                        <h5 style="color: #ff6b6b;">🔴 En direct: ${data.liveStreamers}</h5>
+                                        <h5 style="color: #ffd700;">⚡ Ping: ${data.ping}ms</h5>
+                                        <h5 style="color: #ff69b4;">💾 RAM: ${data.memory}MB</h5>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+
+                        // Mettre à jour les métriques
+                        metricsDisplay.innerHTML = `
+                            <div class="metric">
+                                <span class="metric-label">Utilisateurs/Serveur</span>
+                                <span class="metric-value">${Math.round(data.users / data.servers)}</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-label">Streamers Actifs</span>
+                                <span class="metric-value">${((data.liveStreamers / data.streamers) * 100).toFixed(1)}%</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-label">Uptime</span>
+                                <span class="metric-value">${phoenixAPI.formatUptime(data.uptime)}</span>
+                            </div>
+                        `;
+                    }
+                }
+            } catch (error) {
+                statsChart.innerHTML = '<div class="error">Erreur de chargement</div>';
+                phoenixAPI.log(`❌ Erreur analyses: ${error.message}`, 'error');
+            }
+        }
+
+        function switchToLiveStreamersTab() {
+            const contentGrid = document.querySelector('.content-grid');
+            if (!contentGrid) return;
+
+            contentGrid.innerHTML = `
+                <div class="main-card">
+                    <h3>🔴 Streamers En Direct</h3>
+                    <div id="live-streamers-container">
+                        <div class="loading">Chargement des streamers live...</div>
+                    </div>
+                </div>
+                <div class="main-card">
+                    <h3>🎮 Actions Streamers</h3>
+                    <div class="streamer-actions-panel">
+                        <button class="btn" onclick="refreshLiveStreamers()" style="width: 100%; margin-bottom: 10px;">
+                            <span>🔄</span>
+                            <span>Actualiser Streamers Live</span>
+                        </button>
+                        <button class="btn" onclick="checkStreams()" style="width: 100%; margin-bottom: 10px;">
+                            <span>🔍</span>
+                            <span>Vérifier Tous les Streams</span>
+                        </button>
+                        <button class="btn" onclick="switchToStreamersTab()" style="width: 100%;">
+                            <span>⚙️</span>
+                            <span>Gérer les Streamers</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            // Charger les streamers live
+            setTimeout(() => refreshLiveStreamers(), 500);
+        }
+
+        async function refreshLiveStreamers() {
+            const container = document.getElementById('live-streamers-container');
+            if (!container) return;
+
+            container.innerHTML = '<div class="loading">Actualisation...</div>';
+
+            try {
+                const streamers = await phoenixAPI.fetchStreamersData();
+                const liveStreamers = streamers ? streamers.filter(s => s.isLive) : [];
+
+                if (liveStreamers.length === 0) {
+                    container.innerHTML = '<div class="no-data">Aucun streamer en direct actuellement</div>';
+                    return;
+                }
+
+                container.innerHTML = `
+                    <div class="live-streamers-grid">
+                        ${liveStreamers.map(streamer => `
+                            <div class="live-streamer-card">
+                                <div class="streamer-header">
+                                    <span class="live-indicator">🔴 LIVE</span>
+                                    <strong>${streamer.name}</strong>
+                                </div>
+                                <div class="streamer-details">
+                                    <div class="game">🎮 ${streamer.game || 'Jeu inconnu'}</div>
+                                    <div class="viewers">👥 ${streamer.viewerCount || 0} viewers</div>
+                                    <div class="title">${streamer.title || 'Pas de titre'}</div>
+                                </div>
+                                <div class="streamer-actions">
+                                    <button class="btn-small" onclick="window.open('${streamer.url}', '_blank')">
+                                        🔗 Regarder
+                                    </button>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+
+                phoenixAPI.log(`🔴 ${liveStreamers.length} streamers en direct`, 'success');
+
+            } catch (error) {
+                container.innerHTML = '<div class="error">Erreur de chargement</div>';
+                phoenixAPI.log(`❌ Erreur streamers live: ${error.message}`, 'error');
+            }
+        }
+
+        async function forceRefresh() {
+            phoenixAPI.log('⚡ Actualisation forcée de toutes les données...', 'info');
+            
+            try {
+                // Actualiser les données principales
+                await phoenixAPI.fetchPhoenixData();
+                
+                // Vérifier les streams
+                await phoenixAPI.checkStreams();
+                
+                // Actualiser l'affichage selon la section active
+                const activeTab = document.querySelector('.nav-tab.active');
+                if (activeTab) {
+                    const tabText = activeTab.textContent.trim();
+                    if (tabText.includes('Streamers Live')) {
+                        setTimeout(() => refreshLiveStreamers(), 2000);
+                    } else if (tabText.includes('Analyses')) {
+                        setTimeout(() => loadAnalytics(), 1000);
+                    }
+                }
+                
+                phoenixAPI.log('✅ Actualisation forcée terminée', 'success');
+                
+            } catch (error) {
+                phoenixAPI.log(`❌ Erreur actualisation forcée: ${error.message}`, 'error');
+            }
+        }
+
+        async function updateAPIConfig() {
+            const url = document.getElementById('api-url').value.trim();
+            const token = document.getElementById('api-token').value.trim();
+            const botId = document.getElementById('bot-id').value.trim();
+
+            if (!url || !token) {
+                phoenixAPI.log('⚠️ URL et token requis', 'warning');
+                return;
+            }
+
+            phoenixAPI.baseURL = url.replace(/\/$/, '');
+            phoenixAPI.token = token;
+            phoenixAPI.botId = botId;
+            phoenixAPI.saveConfig();
+            
+            phoenixAPI.log('💾 Configuration sauvegardée', 'success');
+            await phoenixAPI.connectToAPI();
+        }
+
+        async function testConnection() {
+            phoenixAPI.log('🔍 Test de connexion manuel...', 'info');
+            await phoenixAPI.connectToAPI();
+        }
+
+        async function refreshData() {
+            await phoenixAPI.refreshAllData();
+        }
+
+        async function fetchGuilds() {
+            phoenixAPI.log('🏠 Actualisation des statistiques serveurs...', 'info');
+            await phoenixAPI.fetchPhoenixData();
+        }
+
+        async function fetchUsers() {
+            phoenixAPI.log('👥 Actualisation des statistiques utilisateurs...', 'info');
+            await phoenixAPI.fetchPhoenixData();
+        }
+
+        async function fetchStreamers() {
+            phoenixAPI.log('🎮 Récupération détaillée des streamers...', 'info');
+            const streamers = await phoenixAPI.fetchStreamersData();
+            
+            if (streamers && streamers.length > 0) {
+                // Mettre à jour l'affichage avec les détails des streamers
+                const liveCount = streamers.filter(s => s.isLive).length;
+                document.querySelectorAll('[data-stat="streamers"]').forEach(el => {
+                    el.textContent = `${liveCount}/${streamers.length}`;
+                });
+                
+                phoenixAPI.log(`🎮 Détails: ${liveCount} live sur ${streamers.length} total`, 'success');
+            }
+        }
+
+        async function checkStreams() {
+            phoenixAPI.log('🔍 Lancement de la vérification des streams...', 'info');
+            await phoenixAPI.checkStreams();
+        }
+
+        async function testTwitchAPI() {
+            phoenixAPI.log('🧪 Test de l\'intégration Twitch...', 'info');
+            await phoenixAPI.testTwitch();
+        }
+
+        // Navigation
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialisation
+            phoenixAPI = new PhoenixAPIReal();
+            
+            // Navigation tabs avec contenu dynamique
+            document.querySelectorAll('.nav-tab').forEach((tab, index) => {
+                tab.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    const tabText = this.textContent.trim();
+                    phoenixAPI.log(`📱 Navigation: ${tabText}`, 'info');
+                    
+                    // Changer le contenu selon l'onglet
+                    switch(index) {
+                        case 0: // Vue d'ensemble
+                            location.reload();
+                            break;
+                        case 1: // Analyses  
+                            switchToAnalyticsTab();
+                            break;
+                        case 2: // Streamers Live
+                            switchToLiveStreamersTab();
+                            break;
+                        case 3: // Activité
+                            switchToAnalyticsTab(); // Même contenu pour l'instant
+                            break;
+                        case 4: // Configuration API
+                            document.querySelector('.api-config').scrollIntoView({ behavior: 'smooth' });
+                            break;
+                    }
+                });
+            });
+
+            // Navigation sidebar avec contenu
+            document.querySelectorAll('.sidebar-nav-item').forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    document.querySelectorAll('.sidebar-nav-item').forEach(i => i.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    const sectionName = this.querySelector('.nav-text').textContent;
+                    phoenixAPI.log(`📋 Section: ${sectionName}`, 'info');
+                    
+                    // Changer le contenu selon la section
+                    switch(sectionName) {
+                        case 'Dashboard':
+                            location.reload();
+                            break;
+                        case 'Streamers':
+                            switchToStreamersTab();
+                            break;
+                        case 'Administration':
+                            switchToAnalyticsTab();
+                            break;
+                        case 'Logs':
+                            phoenixAPI.log('📋 Section Logs sélectionnée', 'info');
+                            // Ici vous pourriez ajouter une vue des logs
+                            break;
+                        case 'Paramètres':
+                            document.querySelector('.api-config').scrollIntoView({ behavior: 'smooth' });
+                            break;
+                    }
+                });
+            });
+
+            // Auto-save configuration avec debouncing
+            ['api-url', 'api-token', 'bot-id'].forEach(id => {
+                const input = document.getElementById(id);
+                if (input) {
+                    input.addEventListener('input', () => {
+                        clearTimeout(input.saveTimeout);
+                        input.saveTimeout = setTimeout(() => {
+                            if (phoenixAPI && input.value.trim()) {
+                                phoenixAPI.log(`💾 ${id} auto-sauvegardé`, 'info');
+                            }
+                        }, 2000);
+                    });
+                }
+            });
+        });
+
+        // Gestion des erreurs globales
+        window.addEventListener('error', (event) => {
+            if (phoenixAPI) {
+                phoenixAPI.log(`💥 Erreur: ${event.message}`, 'error');
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phoenix Bot - Gestion des Streamers</title>
+    <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+    <div class="layout-hybrid">
+        <!-- Sidebar Navigation -->
+        <div class="hybrid-sidebar">
+            <div class="sidebar-logo">
+                <div class="logo">
+                    <div class="logo-icon">🔥</div>
+                    <div class="logo-text">
+                        <h1>Phoenix Bot</h1>
+                        <p>v3.0 - Streamers</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="sidebar-navigation">
+                <div class="nav-section">
+                    <div class="nav-section-title">Principal</div>
+                    <div class="sidebar-nav-item" onclick="navigateTo('index.html')">
+                        <span class="nav-icon">📊</span>
+                        <span class="nav-text">Dashboard</span>
+                    </div>
+                    <div class="sidebar-nav-item active">
+                        <span class="nav-icon">🎮</span>
+                        <span class="nav-text">Streamers</span>
+                    </div>
+                    <div class="sidebar-nav-item" onclick="navigateTo('analytics.html')">
+                        <span class="nav-icon">📈</span>
+                        <span class="nav-text">Analyses</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-stats">
+                <div class="sidebar-stat">
+                    <div class="sidebar-stat-value" data-stat="total-streamers">--</div>
+                    <div class="sidebar-stat-label">Total</div>
+                </div>
+                <div class="sidebar-stat">
+                    <div class="sidebar-stat-value" data-stat="live-streamers">--</div>
+                    <div class="sidebar-stat-label">En Direct</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Header -->
+        <div class="hybrid-header">
+            <div class="header-title">
+                <h2>Gestion des Streamers</h2>
+                <p class="header-subtitle">Ajoutez, supprimez et surveillez vos streamers Twitch</p>
+            </div>
+            <div class="header-status">
+                <div class="status-indicator" id="api-status">
+                    <span>⌛</span>
+                    <span>Connexion...</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="hybrid-nav">
+            <button class="nav-tab active" onclick="showTab('manage')">
+                <span>⚙️</span>
+                <span>Gérer</span>
+            </button>
+            <button class="nav-tab" onclick="showTab('live')">
+                <span>🔴</span>
+                <span>En Direct</span>
+            </button>
+            <button class="nav-tab" onclick="showTab('offline')">
+                <span>⚫</span>
+                <span>Hors Ligne</span>
+            </button>
+        </div>
+
+        <!-- Main Content -->
+        <div class="hybrid-main">
+            <!-- Add Streamer Form -->
+            <div class="add-streamer-panel">
+                <div class="panel-title">➕ Ajouter un Nouveau Streamer</div>
+                <div class="streamer-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Nom du Streamer</label>
+                            <input type="text" id="streamer-name" placeholder="Ex: ninja" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label>URL Twitch</label>
+                            <input type="url" id="streamer-url" placeholder="https://twitch.tv/ninja" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <button class="btn primary" onclick="addStreamer()">
+                                <span>➕</span>
+                                <span>Ajouter</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab Content -->
+            <div id="tab-content">
+                <!-- Manage Tab (Default) -->
+                <div id="manage-tab" class="tab-content active">
+                    <div class="content-grid">
+                        <div class="main-card">
+                            <div class="card-header">
+                                <h3>📋 Liste des Streamers</h3>
+                                <button class="btn secondary" onclick="refreshStreamers()">
+                                    <span>🔄</span>
+                                    <span>Actualiser</span>
+                                </button>
+                            </div>
+                            <div class="streamers-container" id="streamers-list">
+                                <div class="loading">Chargement des streamers...</div>
+                            </div>
+                        </div>
+
+                        <div class="action-panel">
+                            <div class="main-card">
+                                <h3>⚡ Actions Rapides</h3>
+                                <button class="btn" onclick="checkAllStreams()">
+                                    <span>🔍</span>
+                                    <span>Vérifier Tous</span>
+                                </button>
+                                <button class="btn" onclick="testTwitchAPI()">
+                                    <span>🧪</span>
+                                    <span>Test Twitch API</span>
+                                </button>
+                            </div>
+
+                            <div class="main-card">
+                                <h3>📊 Statistiques</h3>
+                                <div class="quick-stats">
+                                    <div class="stat-item">
+                                        <span class="stat-icon">🎮</span>
+                                        <span class="stat-label">Total</span>
+                                        <span class="stat-value" id="total-count">--</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <span class="stat-icon">🔴</span>
+                                        <span class="stat-label">Live</span>
+                                        <span class="stat-value" id="live-count">--</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <span class="stat-icon">👥</span>
+                                        <span class="stat-label">Viewers</span>
+                                        <span class="stat-value" id="total-viewers">--</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Tab -->
+                <div id="live-tab" class="tab-content">
+                    <div class="live-streamers-grid" id="live-streamers">
+                        <div class="loading">Chargement des streamers en direct...</div>
+                    </div>
+                </div>
+
+                <!-- Offline Tab -->
+                <div id="offline-tab" class="tab-content">
+                    <div class="offline-streamers-list" id="offline-streamers">
+                        <div class="loading">Chargement des streamers hors ligne...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/js/phoenix-unified-api.js"></script>
+    <script src="/js/dashboard-navigation.js"></script>
+    <script>
+        let streamersData = [];
+
+        // Attendre que l'API soit prête
+        window.addEventListener('load', async () => {
+            if (window.phoenixAPI) {
+                // S'abonner aux mises à jour
+                phoenixAPI.onUpdate((state) => {
+                    if (state.streamers) {
+                        streamersData = state.streamers;
+                        updateAllViews();
+                    }
+                });
+
+                // Charger les données initiales
+                await loadStreamers();
+            }
+        });
+
+        // Gestion des tabs
+        function showTab(tabName) {
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            
+            event.target.closest('.nav-tab').classList.add('active');
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+            
+            updateTabContent(tabName);
+        }
+
+        function updateTabContent(tabName) {
+            switch(tabName) {
+                case 'live':
+                    loadLiveStreamers();
+                    break;
+                case 'offline':
+                    loadOfflineStreamers();
+                    break;
+                case 'manage':
+                    updateStreamersList();
+                    break;
+            }
+        }
+
+        // Ajouter un streamer
+        async function addStreamer() {
+            const name = document.getElementById('streamer-name').value.trim();
+            const url = document.getElementById('streamer-url').value.trim();
+
+            if (!name || !url) {
+                phoenixAPI.showNotification('Nom et URL requis', 'warning');
+                return;
+            }
+
+            try {
+                await phoenixAPI.addStreamer(name, url);
+                
+                document.getElementById('streamer-name').value = '';
+                document.getElementById('streamer-url').value = '';
+                
+                phoenixAPI.showNotification(`Streamer "${name}" ajouté`, 'success');
+                await loadStreamers();
+            } catch (error) {
+                phoenixAPI.showNotification(error.message, 'error');
+            }
+        }
+
+        // Charger les streamers
+        async function loadStreamers() {
+            try {
+                streamersData = await phoenixAPI.loadStreamers();
+                updateAllViews();
+            } catch (error) {
+                phoenixAPI.log(`Erreur chargement: ${error.message}`, 'error');
+            }
+        }
+
+        // Mettre à jour toutes les vues
+        function updateAllViews() {
+            updateStreamersList();
+            updateQuickStats();
+            updateSidebarStats();
+        }
+
+        // Mettre à jour la liste principale - CORRIGÉ POUR VOTRE API
+        function updateStreamersList() {
+            const container = document.getElementById('streamers-list');
+            
+            if (!streamersData || streamersData.length === 0) {
+                container.innerHTML = '<div class="no-data">Aucun streamer configuré</div>';
+                return;
+            }
+
+            container.innerHTML = streamersData.map(streamer => {
+                // Adapter les propriétés de votre API
+                const name = streamer.display_name || streamer.twitch_username;
+                const url = `https://twitch.tv/${streamer.twitch_username}`;
+                
+                return `
+                    <div class="streamer-item ${streamer.isLive ? 'live' : 'offline'}">
+                        <div class="streamer-avatar">
+                            <img src="https://via.placeholder.com/50" alt="${name}">
+                            <div class="status-badge ${streamer.isLive ? 'live' : 'offline'}">
+                                ${streamer.isLive ? '🔴' : '⚫'}
+                            </div>
+                        </div>
+                        <div class="streamer-info">
+                            <div class="streamer-name">${name}</div>
+                            <div class="streamer-status">
+                                ${streamer.isLive ? 
+                                    `🎮 ${streamer.game || 'Jeu inconnu'} • 👥 ${streamer.viewerCount || 0} viewers` :
+                                    'Hors ligne'
+                                }
+                            </div>
+                            ${streamer.isLive && streamer.title ? `<div class="stream-title">${streamer.title}</div>` : ''}
+                        </div>
+                        <div class="streamer-actions">
+                            <button class="btn-icon" onclick="window.open('${url}', '_blank')" title="Voir le stream">
+                                🔗
+                            </button>
+                            <button class="btn-icon danger" onclick="removeStreamer('${streamer.twitch_username}')" title="Supprimer">
+                                🗑️
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Supprimer un streamer
+        async function removeStreamer(name) {
+            if (!confirm(`Supprimer le streamer "${name}" ?`)) return;
+
+            try {
+                await phoenixAPI.removeStreamer(name);
+                phoenixAPI.showNotification(`Streamer "${name}" supprimé`, 'success');
+            } catch (error) {
+                phoenixAPI.showNotification(error.message, 'error');
+            }
+        }
+
+        // Actualiser les streamers
+        async function refreshStreamers() {
+            phoenixAPI.log('Actualisation des streamers...', 'info');
+            await loadStreamers();
+        }
+
+        // Vérifier tous les streams
+        async function checkAllStreams() {
+            try {
+                await phoenixAPI.checkStreams();
+            } catch (error) {
+                phoenixAPI.showNotification(error.message, 'error');
+            }
+        }
+
+        // Test Twitch API
+        async function testTwitchAPI() {
+            try {
+                const result = await phoenixAPI.testTwitchAPI();
+                phoenixAPI.showNotification(result.message, 'success');
+            } catch (error) {
+                phoenixAPI.showNotification(error.message, 'error');
+            }
+        }
+
+        // Charger les streamers en direct - CORRIGÉ
+        function loadLiveStreamers() {
+            const container = document.getElementById('live-streamers');
+            const liveStreamers = streamersData.filter(s => s.isLive);
+
+            if (liveStreamers.length === 0) {
+                container.innerHTML = '<div class="no-data">Aucun streamer en direct actuellement</div>';
+                return;
+            }
+
+            container.innerHTML = liveStreamers.map(streamer => {
+                const name = streamer.display_name || streamer.twitch_username;
+                const url = `https://twitch.tv/${streamer.twitch_username}`;
+                
+                return `
+                    <div class="live-streamer-card">
+                        <div class="card-header">
+                            <div class="streamer-name">${name}</div>
+                            <div class="live-badge">🔴 LIVE</div>
+                        </div>
+                        <div class="stream-info">
+                            <div class="game">🎮 ${streamer.game || 'Jeu inconnu'}</div>
+                            <div class="viewers">👥 ${streamer.viewerCount || 0} viewers</div>
+                            <div class="title">${streamer.title || 'Pas de titre'}</div>
+                        </div>
+                        <div class="card-actions">
+                            <button class="btn primary" onclick="window.open('${url}', '_blank')">
+                                <span>📺</span>
+                                <span>Regarder</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Charger les streamers hors ligne - CORRIGÉ
+        function loadOfflineStreamers() {
+            const container = document.getElementById('offline-streamers');
+            const offlineStreamers = streamersData.filter(s => !s.isLive);
+
+            if (offlineStreamers.length === 0) {
+                container.innerHTML = '<div class="no-data">Tous les streamers sont en ligne !</div>';
+                return;
+            }
+
+            container.innerHTML = offlineStreamers.map(streamer => {
+                const name = streamer.display_name || streamer.twitch_username;
+                const url = `https://twitch.tv/${streamer.twitch_username}`;
+                
+                return `
+                    <div class="offline-streamer-item">
+                        <div class="streamer-info">
+                            <span class="offline-indicator">⚫</span>
+                            <strong>${name}</strong>
+                            <span class="offline-text">Hors ligne</span>
+                        </div>
+                        <div class="streamer-actions">
+                            <button class="btn-small" onclick="window.open('${url}', '_blank')">
+                                🔗 Profil
+                            </button>
+                            <button class="btn-small danger" onclick="removeStreamer('${streamer.twitch_username}')">
+                                🗑️ Supprimer
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Mettre à jour les stats rapides
+        function updateQuickStats() {
+            const liveStreamers = streamersData.filter(s => s.isLive);
+            const totalViewers = liveStreamers.reduce((sum, s) => sum + (s.viewerCount || 0), 0);
+
+            document.getElementById('total-count').textContent = streamersData.length;
+            document.getElementById('live-count').textContent = liveStreamers.length;
+            document.getElementById('total-viewers').textContent = totalViewers.toLocaleString();
+        }
+
+        // Mettre à jour les stats de la sidebar
+        function updateSidebarStats() {
+            const liveCount = streamersData.filter(s => s.isLive).length;
+
+            document.querySelector('[data-stat="total-streamers"]').textContent = streamersData.length;
+            document.querySelector('[data-stat="live-streamers"]').textContent = liveCount;
+        }
+
+        // Navigation simplifiée
+        function navigateTo(page) {
+            const urlParams = new URLSearchParams(window.location.search);
+            const token = urlParams.get('token');
+            
+            let url = page;
+            if (token) {
+                url = `${page}${page.includes('?') ? '&' : '?'}token=${token}`;
+            }
+            
+            window.location.href = url;
+        }
+        
+
+// Fonction à appeler au chargement de la page
+async function loadGuildInfo() {
+    if (!window.phoenixAPI || !phoenixAPI.isConnected) {
+        return;
+    }
+
+    try {
+        const response = await phoenixAPI.request('/api/guild-info');
+        
+        if (response.success) {
+            updateGuildHeader(response.guild);
+            updateGuildStats(response.stats);
+        }
+    } catch (error) {
+        console.error('Erreur chargement infos serveur:', error);
+    }
+}
+
+// Mettre à jour le header avec les infos du serveur
+function updateGuildHeader(guild) {
+    // Mettre à jour le titre
+    const headerTitle = document.querySelector('.header-title h2');
+    if (headerTitle) {
+        const currentPage = headerTitle.textContent;
+        headerTitle.innerHTML = `
+            ${currentPage}
+            <span style="font-size: 0.7em; color: #00ffff; margin-left: 10px;">
+                • ${guild.name}
+            </span>
+        `;
+    }
+
+    // Ajouter l'icône du serveur dans la sidebar
+    const sidebarLogo = document.querySelector('.sidebar-logo .logo');
+    if (sidebarLogo && guild.icon) {
+        const guildIcon = document.createElement('img');
+        guildIcon.src = guild.icon;
+        guildIcon.alt = guild.name;
+        guildIcon.style.cssText = `
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid #00ffff;
+            margin-bottom: 10px;
+        `;
+        sidebarLogo.insertBefore(guildIcon, sidebarLogo.firstChild);
+    }
+
+    // Mettre à jour le titre de la page
+    document.title = `${guild.name} - Phoenix Bot Dashboard`;
+}
+
+// Mettre à jour les stats du serveur
+function updateGuildStats(stats) {
+    if (!stats) return;
+
+    // Afficher les stats affiliés si disponible
+    const statsContainer = document.querySelector('.sidebar-stats');
+    if (statsContainer && stats.affiliatedStreamers !== undefined) {
+        const affiliatedStat = document.createElement('div');
+        affiliatedStat.className = 'sidebar-stat';
+        affiliatedStat.innerHTML = `
+            <div class="sidebar-stat-value">${stats.affiliatedStreamers}</div>
+            <div class="sidebar-stat-label">Affiliés</div>
+        `;
+        statsContainer.appendChild(affiliatedStat);
+    }
+}
+
+// Ajouter au chargement de la page (dans window.addEventListener('load'))
+window.addEventListener('load', async () => {
+    if (window.phoenixAPI) {
+        phoenixAPI.onUpdate((state) => {
+            if (state.streamers) {
+                streamersData = state.streamers;
+                updateAllViews();
+            }
+        });
+        
+        // Charger les infos du serveur
+        await loadGuildInfo();
+        
+        // Charger les streamers
+        await loadStreamers();
+    }
+});
+
+// Fonction pour afficher un badge "Serveur actuel"
+function addGuildBadge() {
+    const header = document.querySelector('.hybrid-header .header-title');
+    if (!header) return;
+
+    const badge = document.createElement('div');
+    badge.style.cssText = `
+        display: inline-block;
+        background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);
+        border: 2px solid #00ffff;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        margin-left: 10px;
+        vertical-align: middle;
+    `;
+    badge.textContent = '📌 Dashboard de ce serveur';
+    
+    const subtitle = header.querySelector('.header-subtitle');
+    if (subtitle) {
+        subtitle.appendChild(badge);
+    }
+}
+    </script>
+</body>
+</html>

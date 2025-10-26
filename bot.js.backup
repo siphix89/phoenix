@@ -1,0 +1,1077 @@
+// ===== bot.js =====
+const { Client, GatewayIntentBits, Partials, EmbedBuilder, Colors, ActivityType, Collection, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+const path = require('path');
+const fs = require('fs');
+
+// ✅ NOUVELLE BASE DE DONNÉES MULTI-SERVEURS
+const StreamerDatabase = require('./database/databasemanager.js');
+
+// Import conditionnel du TwitchManager
+let TwitchManager;
+try {
+  TwitchManager = require('./twitch/twitchManager');
+} catch (error) {
+  console.log('⚠️ twitchManager non trouvé, fonctionnalités Twitch désactivées');
+  TwitchManager = null;
+}
+
+const { BotConfig, logger, StreamerStatus } = require('./config');
+const { BotMetrics, RuleAcceptanceViewHandler } = require('./models');
+
+// Import conditionnel des notifications
+let NotificationManager;
+let notificationManager = null;
+try {
+  NotificationManager = require('./notifications/NotificationManager');
+} catch (error) {
+  console.log('⚠️ Module notifications non trouvé, notifications désactivées');
+}
+
+// Import conditionnel du Dashboard API
+let DashboardAPI;
+try {
+  DashboardAPI = require('./dashboard/DashboardAPI');
+  console.log('✅ DashboardAPI importé avec succès');
+} catch (error) {
+  console.log('⚠️ DashboardAPI non trouvé, dashboard désactivé:', error.message);
+  DashboardAPI = null;
+}
+
+// Import du dashboard externe (garder pour compatibilité)
+let dashboardServer;
+try {
+  dashboardServer = require('./dashboard-server.js');
+} catch (error) {
+  console.log('⚠️ dashboard-server.js non trouvé');
+  dashboardServer = null;
+}
+
+// Import des boutons
+const ButtonManager = require('./boutons/gestion.js');
+console.log('🔍 DEBUG: ButtonManager importé:', typeof ButtonManager);
+
+class StreamerBot extends Client {
+  constructor(config) {
+    super({
+      intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.MessageContent,
+        GatewayIntentBits.GuildMembers,
+        GatewayIntentBits.GuildMessageReactions,
+      ],
+      partials: [Partials.Message, Partials.Channel, Partials.Reaction],
+    });
+
+    this.config = config;
+    
+    // ✅ NOUVELLE BASE DE DONNÉES MULTI-SERVEURS
+    this.db = new StreamerDatabase('./streamers.db');
+    
+    this.twitch = TwitchManager ? new TwitchManager(config, logger) : null;
+    this.liveStreamers = new Map(); // Stocke les streamers actuellement en live par nom d'utilisateur
+    this.liveMessages = new Map(); // Compatibilité ancienne version
+    this.metrics = new BotMetrics();
+    this.ruleHandler = null;
+    this.checkInterval = null;
+    this.commands = new Collection();
+    this.dashboardAPI = null;
+    this.keepAliveServer = null;
+    this.notificationManager = null;
+    this.buttonManager = null;
+    
+    this.setupEventHandlers();
+    this.loadCommands();
+  }
+
+  async loadCommands() {
+    const commandsPath = path.join(__dirname, 'commands');
+    if (!fs.existsSync(commandsPath)) {
+      logger.warn('📁 Dossier commands non trouvé');
+      return;
+    }
+
+    const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
+
+    for (const file of commandFiles) {
+      try {
+        const filePath = path.join(commandsPath, file);
+        // Supprimer du cache pour permettre le rechargement
+        delete require.cache[require.resolve(filePath)];
+        const command = require(filePath);
+        
+        if ('data' in command && 'execute' in command) {
+          this.commands.set(command.data.name, command);
+          logger.info(`✅ Commande ${command.data.name} chargée`);
+        } else {
+          logger.warn(`⚠️ Commande ${file} incomplète (data/execute manquant)`);
+        }
+      } catch (error) {
+        logger.error(`❌ Erreur chargement commande ${file}: ${error.message}`);
+      }
+    }
+  }
+
+  setupEventHandlers() {
+    this.once('ready', this.onReady.bind(this));
+    this.on('guildCreate', this.onGuildCreate.bind(this)); // ✅ NOUVEAU
+    this.on('guildDelete', this.onGuildDelete.bind(this)); // ✅ NOUVEAU
+    this.on('guildMemberAdd', this.onGuildMemberAdd.bind(this));
+    this.on('messageCreate', this.onMessageCreate.bind(this));
+    this.on('interactionCreate', this.onInteractionCreate.bind(this));
+    
+    // Gestion des erreurs
+    this.on('error', (error) => {
+      logger.error(`❌ Erreur client Discord: ${error.message}`);
+      this.metrics.recordError();
+    });
+
+    this.on('warn', (warning) => {
+      logger.warn(`⚠️ Avertissement Discord: ${warning}`);
+    });
+  }
+
+  // ✅ NOUVEAU: Gestion des nouveaux serveurs
+  async onGuildCreate(guild) {
+    logger.info(`🆕 Nouveau serveur rejoint: ${guild.name} (${guild.id})`);
+    
+    try {
+      // Enregistrer le nouveau serveur en base
+      await this.db.addGuild(guild.id, guild.name, null);
+      
+      // Envoyer un message de bienvenue au propriétaire du serveur
+      try {
+        const owner = await guild.fetchOwner();
+        const embed = new EmbedBuilder()
+          .setTitle('🎉 Merci de m\'avoir ajouté !')
+          .setDescription('Je suis maintenant prêt à surveiller vos streamers préférés !')
+          .setColor(Colors.Green)
+          .addFields(
+            { name: '🚀 Commandes principales', value: '`/addstreamer` - Ajouter un streamer\n`/streamers` - Voir la liste\n`/setchannel` - Configurer les notifications', inline: false },
+            { name: '⚙️ Configuration', value: 'Utilisez `/setchannel` dans le channel où vous voulez recevoir les notifications !', inline: false }
+          )
+          .setFooter({ text: `Serveur ID: ${guild.id}` })
+          .setTimestamp();
+
+        await owner.send({ embeds: [embed] });
+      } catch (dmError) {
+        logger.warn(`⚠️ Impossible d'envoyer un DM au propriétaire de ${guild.name}`);
+      }
+
+      // Essayer de trouver un channel général pour se présenter
+      const generalChannel = guild.channels.cache.find(channel => 
+        channel.type === 0 && // TEXT_CHANNEL
+        (channel.name.includes('general') || channel.name.includes('accueil') || 
+         channel.name.includes('welcome') || channel.name.includes('général')) &&
+        channel.permissionsFor(guild.members.me).has(['SendMessages', 'ViewChannel'])
+      );
+
+      if (generalChannel) {
+        const welcomeEmbed = new EmbedBuilder()
+          .setTitle('👋 Salut tout le monde !')
+          .setDescription('Je suis là pour vous tenir au courant quand vos streamers préférés sont en live !')
+          .setColor(Colors.Blue)
+          .addFields(
+            { name: '🎯 Pour commencer', value: 'Utilisez `/addstreamer <nom_twitch>` pour ajouter vos streamers', inline: false },
+            { name: '📺 Notifications', value: 'Configurez avec `/setchannel` le channel pour les notifications', inline: false }
+          );
+
+        await generalChannel.send({ embeds: [welcomeEmbed] });
+      }
+
+    } catch (error) {
+      logger.error(`❌ Erreur lors de l'ajout du serveur ${guild.name}: ${error.message}`);
+    }
+  }
+
+  // ✅ NOUVEAU: Gestion de la suppression du bot d'un serveur
+  async onGuildDelete(guild) {
+    logger.info(`👋 Serveur quitté: ${guild.name} (${guild.id})`);
+    
+    // Note: On ne supprime pas les données pour permettre une éventuelle réinvitation
+    // Les données seront nettoyées par un script de maintenance si nécessaire
+  }
+
+  async onReady() {
+    logger.info('🤖 Bot en ligne!');
+    logger.info(`🆔 ${this.user.tag} connecté`);
+
+    // Debug configuration
+    logger.info(`🔍 CONFIG DEBUG:`);
+    logger.info(`   - AUTO_ROLE_ID: "${process.env.AUTO_ROLE_ID}"`);
+    logger.info(`   - this.config.autoRoleId: "${this.config.autoRoleId}"`);
+    logger.info(`   - Type: ${typeof this.config.autoRoleId}`);
+
+    try {
+      // ✅ INITIALISER LA NOUVELLE BASE DE DONNÉES
+      await this.db.init();
+      logger.info('✅ Base de données multi-serveurs initialisée');
+
+      // ✅ ENREGISTRER TOUS LES SERVEURS ACTUELS
+      logger.info('🔄 Enregistrement des serveurs existants...');
+      let serversRegistered = 0;
+      for (const guild of this.guilds.cache.values()) {
+        try {
+          await this.db.addGuild(guild.id, guild.name, null);
+          serversRegistered++;
+        } catch (error) {
+          logger.warn(`⚠️ Impossible d'enregistrer le serveur ${guild.name}: ${error.message}`);
+        }
+      }
+      logger.info(`✅ ${serversRegistered} serveur(s) enregistré(s)`);
+
+      // Initialiser le ButtonManager
+      try {
+        this.buttonManager = new ButtonManager(this);
+        logger.info('✅ ButtonManager initialisé');
+      } catch (error) {
+        logger.error(`❌ Erreur initialisation ButtonManager: ${error.message}`);
+      }
+
+      // Initialiser Twitch et les notifications
+      if (this.twitch && this.config.twitchClientId && this.config.twitchClientSecret) {
+        try {
+          logger.info('🔧 Initialisation de Twitch...');
+          await this.twitch.initClient();
+          logger.info('✅ Client Twitch initialisé');
+          
+          // Initialiser le gestionnaire de notifications
+          if (NotificationManager) {
+            this.notificationManager = new NotificationManager(this);
+            notificationManager = this.notificationManager;
+            logger.info('✅ NotificationManager initialisé');
+            
+            // Démarrer les notifications automatiquement si configuré
+            if (this.config.autoNotifications) {
+              logger.info('🚀 Démarrage automatique des notifications...');
+              this.startStreamChecking();
+            } else {
+              logger.info('ℹ️ Notifications configurées mais auto-démarrage désactivé');
+            }
+          } else {
+            logger.warn('⚠️ NotificationManager non disponible');
+          }
+        } catch (error) {
+          logger.error(`❌ Erreur Twitch: ${error.message}`);
+        }
+      } else {
+        logger.warn('⚠️ Configuration Twitch incomplète:');
+        logger.warn(`   - TwitchManager: ${this.twitch ? 'Disponible' : 'Manquant'}`);
+        logger.warn(`   - Client ID: ${this.config.twitchClientId ? 'Configuré' : 'Manquant'}`);
+        logger.warn(`   - Client Secret: ${this.config.twitchClientSecret ? 'Configuré' : 'Manquant'}`);
+      }
+
+      // ============================================
+      // ✅ INITIALISER L'API DASHBOARD ICI
+      // ============================================
+      if (DashboardAPI) {
+        try {
+          logger.info('🔧 Initialisation du Dashboard API...');
+          this.dashboardAPI = new DashboardAPI(this);
+          this.dashboardAPI.start(3001);
+          
+          // Nettoyer les tokens expirés toutes les heures
+          setInterval(() => {
+            if (this.dashboardAPI) {
+              this.dashboardAPI.cleanupExpiredTokens();
+            }
+          }, 3600000);
+          
+          logger.info('🌐 Dashboard API démarrée sur le port 3001');
+          
+        } catch (error) {
+          logger.error(`❌ Erreur démarrage Dashboard API: ${error.message}`);
+        }
+      } else {
+        logger.warn('⚠️ DashboardAPI non disponible - créez le fichier dashboard/DashboardAPI.js');
+      }
+
+      // Enregistrer les commandes slash
+      try {
+        const commandsData = Array.from(this.commands.values()).map(command => command.data.toJSON());
+        await this.application.commands.set(commandsData);
+        logger.info(`⚡ ${commandsData.length} commandes slash synchronisées`);
+      } catch (error) {
+        logger.error(`❌ Erreur synchronisation commandes: ${error.message}`);
+      }
+
+      // Configurer le gestionnaire de rôles
+      if (this.config.rulesRoleId && this.config.rulesRoleId !== 0) {
+        this.ruleHandler = new RuleAcceptanceViewHandler(
+          this.config.rulesRoleId,
+          this.config.rulesRoleName,
+          logger
+        );
+      }
+
+      // ✅ STATISTIQUES MULTI-SERVEURS
+      const stats = await this.db.getStats();
+      logger.info(`📊 Statistiques de la base:`);
+      logger.info(`   - Serveurs: ${stats.guilds}`);
+      logger.info(`   - Streamers uniques: ${stats.streamers}`);
+      logger.info(`   - Total follows: ${stats.totalFollows}`);
+      logger.info(`   - Streams actifs: ${stats.activeStreams}`);
+
+      // Mettre à jour le statut du bot
+      await this.user.setPresence({
+        activities: [{ 
+          name: `${stats.streamers} streamers sur ${stats.guilds} serveurs`, 
+          type: ActivityType.Watching 
+        }],
+        status: 'online',
+      });
+
+      // Afficher l'état des notifications
+      logger.info('📋 État des notifications:');
+      logger.info(`   - Auto notifications: ${this.config.autoNotifications ? 'Activées' : 'Désactivées'}`);
+      logger.info(`   - Interval: ${this.config.notificationIntervalMinutes || 5} minutes`);
+      logger.info(`   - Check interval actif: ${this.checkInterval ? 'Oui' : 'Non'}`);
+      logger.info(`   - NotificationManager: ${this.notificationManager ? 'Initialisé' : 'Non disponible'}`);
+
+      logger.info('✅ Bot entièrement initialisé!');
+    } catch (error) {
+      logger.error(`❌ Erreur lors de l'initialisation: ${error.message}`);
+      this.metrics.recordError();
+    }
+  }
+
+  // Méthode pour démarrer manuellement les notifications
+  async startNotifications() {
+    try {
+      logger.info('🔧 Tentative de démarrage manuel des notifications...');
+      
+      if (!this.twitch) {
+        throw new Error('TwitchManager non disponible');
+      }
+      
+      if (!this.config.twitchClientId || !this.config.twitchClientSecret) {
+        throw new Error('Credentials Twitch manquants');
+      }
+      
+      // Initialiser Twitch si pas déjà fait
+      if (!this.twitch.accessToken) {
+        logger.info('🔑 Initialisation du client Twitch...');
+        await this.twitch.initClient();
+      }
+      
+      // Initialiser NotificationManager si pas déjà fait
+      if (!this.notificationManager && NotificationManager) {
+        this.notificationManager = new NotificationManager(this);
+        notificationManager = this.notificationManager;
+        logger.info('✅ NotificationManager initialisé manuellement');
+      }
+      
+      // Démarrer la vérification
+      this.startStreamChecking();
+      
+      logger.info('✅ Notifications démarrées manuellement avec succès');
+      return true;
+    } catch (error) {
+      logger.error(`❌ Impossible de démarrer les notifications: ${error.message}`);
+      return false;
+    }
+  }
+
+  async onGuildMemberAdd(member) {
+    try {
+      // ✅ RÉCUPÉRER LA CONFIGURATION DU SERVEUR
+      const guildConfig = await this.db.getGuild(member.guild.id);
+      if (!guildConfig) {
+        logger.warn(`⚠️ Configuration serveur non trouvée pour ${member.guild.name}`);
+        // Enregistrer le serveur s'il n'existe pas
+        await this.db.addGuild(member.guild.id, member.guild.name, null);
+      }
+
+      if (this.config.autoRoleId && this.config.autoRoleId !== '') {
+        try {
+          logger.info(`🔍 Tentative attribution rôle ID: ${this.config.autoRoleId} pour ${member.user.tag}`);
+          
+          const role = member.guild.roles.cache.get(this.config.autoRoleId);
+          if (!role) {
+            logger.error(`❌ Rôle avec l'ID ${this.config.autoRoleId} non trouvé dans le serveur!`);
+            return;
+          }
+
+          if (member.roles.cache.has(this.config.autoRoleId)) {
+            logger.info(`ℹ️ ${member.user.tag} a déjà le rôle "${role.name}"`);
+            return;
+          }
+
+          await member.roles.add(role);
+          logger.info(`✅ Rôle "${role.name}" attribué à ${member.user.tag}`);
+        } catch (roleError) {
+          logger.error(`❌ Erreur attribution rôle pour ${member.user.tag}: ${roleError.message}`);
+          logger.error(`Stack trace: ${roleError.stack}`);
+        }
+      }
+
+      if (!this.config.welcomeChannel) {
+        logger.warn(`⚠️ Channel de bienvenue non configuré pour: ${member.user.tag}`);
+        return;
+      }
+
+      const welcomeChannel = this.channels.cache.get(this.config.welcomeChannel.toString());
+      if (!welcomeChannel) {
+        logger.error(`❌ Channel de bienvenue ${this.config.welcomeChannel} non trouvé!`);
+        return;
+      }
+
+      // ✅ STATISTIQUES DU SERVEUR SPÉCIFIQUE
+      const guildStreamers = await this.db.getGuildStreamers(member.guild.id);
+
+      // Récupérer le nom du rôle attribué pour l'afficher dans l'embed
+      let roleText = '';
+      if (this.config.autoRoleId && this.config.autoRoleId !== 0) {
+        const role = member.guild.roles.cache.get(this.config.autoRoleId.toString());
+        if (role) {
+          roleText = `\n🎭 Rôle **${role.name}** attribué automatiquement`;
+        }
+      }
+
+      const embed = new EmbedBuilder()
+        .setTitle('🎉 Bienvenue sur le serveur !')
+        .setDescription(`Salut ${member.toString()} ! Nous sommes ravis de t'accueillir parmi nous ! 🚀${roleText}`)
+        .setColor(Colors.Green)
+        .setThumbnail(member.displayAvatarURL())
+        .addFields(
+          {
+            name: '📋 Première étape',
+            value: '• Lis le règlement\n• Présente-toi si tu le souhaites\n• Explore les différents channels',
+            inline: false,
+          },
+          {
+            name: '📊 Serveur',
+            value: `👥 **${member.guild.memberCount}** membres\n🎮 **${guildStreamers.length}** streamers suivis`,
+            inline: true,
+          }
+        )
+        .setFooter({
+          text: `Membre #${member.guild.memberCount} • Bienvenue !`,
+          iconURL: member.guild.iconURL() || undefined,
+        })
+        .setTimestamp();
+
+      await welcomeChannel.send({ 
+        content: `🎊 Tout le monde, accueillez ${member.toString()} !`, 
+        embeds: [embed] 
+      });
+
+      logger.info(`✅ Message de bienvenue envoyé pour ${member.user.tag}`);
+    } catch (error) {
+      logger.error(`❌ Erreur dans le message de bienvenue pour ${member.user.tag}: ${error.message}`);
+      this.metrics.recordError();
+    }
+  }
+
+  async onMessageCreate(message) {
+    if (message.author.bot) return;
+
+    try {
+      const contentLower = message.content.toLowerCase();
+
+      // Réponses automatiques avec statistiques du serveur
+      if (['stream', 'live'].includes(contentLower)) {
+        const guildStreamers = await this.db.getGuildStreamers(message.guildId);
+        const activeStreams = await this.db.getActiveStreams();
+        const guildActiveStreams = activeStreams.filter(stream => 
+          guildStreamers.some(gs => gs.twitch_username === stream.twitch_username)
+        );
+
+        const embed = new EmbedBuilder()
+          .setDescription(`👋 Salut ${message.author.toString()} ! Découvre nos streamers !`)
+          .setColor(Colors.Blue)
+          .addFields({
+            name: '📊 Sur ce serveur',
+            value: `🎮 **${guildStreamers.length}** streamers suivis\n🔴 **${guildActiveStreams.length}** actuellement en live`,
+            inline: true
+          });
+
+        await message.reply({ embeds: [embed], allowedMentions: { repliedUser: false } });
+      }
+    } catch (error) {
+      logger.error(`❌ Erreur traitement message: ${error.message}`);
+      this.metrics.recordError();
+    }
+  }
+  
+  async onInteractionCreate(interaction) {
+    try {
+      // Gérer les boutons avec le nouveau système
+      if (!this.buttonManager && ButtonManager) {
+        console.log('🔍 DEBUG: Initialisation tardive du ButtonManager...');
+        try {
+          this.buttonManager = new ButtonManager(this);
+          logger.info('✅ ButtonManager initialisé tardivement');
+        } catch (error) {
+          logger.error(`❌ Erreur initialisation tardive ButtonManager: ${error.message}`);
+        }
+      }
+
+      if (interaction.isButton() && this.buttonManager) {
+        console.log('🔍 DEBUG: Bouton détecté, buttonManager:', !!this.buttonManager);
+        try {
+          const handled = await this.buttonManager.handleInteraction(interaction);
+          if (handled) return;
+        } catch (error) {
+          logger.error(`❌ Erreur gestion bouton: ${error.message}`);
+        }
+      }
+
+      // Gérer les commandes slash
+      if (interaction.isChatInputCommand()) {
+        const command = this.commands.get(interaction.commandName);
+
+        if (!command) {
+          logger.error(`❌ Commande inconnue: ${interaction.commandName}`);
+          return;
+        }
+
+        this.metrics.recordCommand(interaction.commandName, interaction.user.id);
+
+        try {
+          await command.execute(interaction, this);
+          logger.info(`✅ Commande ${interaction.commandName} exécutée par ${interaction.user.tag} sur ${interaction.guild?.name || 'DM'}`);
+        } catch (error) {
+          logger.error(`❌ Erreur exécution commande ${interaction.commandName}: ${error.message}`);
+          this.metrics.recordError();
+
+          const errorMessage = {
+            content: '❌ Une erreur est survenue lors de l\'exécution de la commande.',
+            ephemeral: true
+          };
+
+          try {
+            if (interaction.deferred) {
+              await interaction.editReply(errorMessage);
+            } else if (!interaction.replied) {
+              await interaction.reply(errorMessage);
+            }
+          } catch (replyError) {
+            logger.error(`❌ Impossible de répondre à l'interaction: ${replyError.message}`);
+          }
+        }
+      }
+
+      // Gérer l'autocomplétion
+      if (interaction.isAutocomplete()) {
+        const command = this.commands.get(interaction.commandName);
+        if (command && command.autocomplete) {
+          try {
+            await command.autocomplete(interaction, this);
+          } catch (error) {
+            logger.error(`❌ Erreur autocomplétion ${interaction.commandName}: ${error.message}`);
+          }
+        }
+      }
+    } catch (error) {
+      logger.error(`❌ Erreur lors du traitement de l'interaction: ${error.message}`);
+      this.metrics.recordError();
+    }
+  }
+
+  // ============================================
+  // MÉTHODES UTILITAIRES POUR L'API DASHBOARD
+  // ============================================
+
+  validateTwitchUrl(url) {
+    if (!url || typeof url !== 'string') return false;
+    const pattern = /^https:\/\/www\.twitch\.tv\/[a-zA-Z0-9_]{4,25}$/;
+    return pattern.test(url.trim());
+  }
+
+  isAdmin(member) {
+    if (!member || !member.permissions) return false;
+    return member.permissions.has('Administrator');
+  }
+
+  isModerator(member) {
+    if (!member || !member.permissions) return false;
+    return member.permissions.has('ManageMessages') || this.isAdmin(member);
+  }
+
+  // ============================================
+  // ✅ SYSTÈME DE VÉRIFICATION MULTI-SERVEURS
+  // ============================================
+
+  startStreamChecking() {
+    if (this.checkInterval) {
+      clearInterval(this.checkInterval);
+    }
+    
+    // Vérifications préalables
+    if (!this.isReady()) {
+      logger.warn('⚠️ Bot non prêt, notifications reportées');
+      setTimeout(() => this.startStreamChecking(), 5000);
+      return;
+    }
+    
+    if (!this.twitch || !this.config.twitchClientId || !this.config.twitchClientSecret) {
+      logger.error('❌ Configuration Twitch incomplète, notifications désactivées');
+      return;
+    }
+    
+    if (!this.notificationManager) {
+      logger.error('❌ NotificationManager non initialisé');
+      return;
+    }
+
+    // Démarrer la vérification périodique
+    const intervalMs = (this.config.notificationIntervalMinutes || 5) * 60 * 1000;
+    
+    logger.info(`🔔 Démarrage du système de notifications multi-serveurs (intervalle: ${this.config.notificationIntervalMinutes || 5} min)`);
+    
+    // Première vérification immédiate
+    this.checkStreamersLive().catch(error => {
+      logger.error(`❌ Erreur première vérification: ${error.message}`);
+    });
+    
+    // Puis vérifications périodiques
+    this.checkInterval = setInterval(() => {
+      this.checkStreamersLive().catch(error => {
+        logger.error(`❌ Erreur vérification périodique: ${error.message}`);
+        this.metrics.recordError();
+      });
+    }, intervalMs);
+
+    logger.info(`🔔 Système de notifications multi-serveurs démarré avec succès`);
+  }
+
+  async checkStreamersLive() {
+    if (!this.isReady() || !this.twitch) {
+      logger.warn('⚠️ Bot non prêt ou Twitch indisponible, vérification ignorée');
+      return;
+    }
+
+    logger.info('🔍 Vérification des streamers en live (multi-serveurs)...');
+
+    try {
+      // ✅ RÉCUPÉRER TOUS LES STREAMERS UNIQUES
+      const allStreamers = await this.db.getAllStreamers();
+
+      if (allStreamers.length === 0) {
+        logger.info('📭 Aucun streamer à vérifier');
+        return;
+      }
+
+      // Nettoyage périodique des streams inactifs
+      if (this.notificationManager) {
+        this.notificationManager.cleanupInactiveStreams();
+      }
+
+      // ✅ VÉRIFIER PAR BATCH (TWITCH API LIMITE: 100 par requête)
+      const batches = [];
+      for (let i = 0; i < allStreamers.length; i += 100) {
+        batches.push(allStreamers.slice(i, i + 100));
+      }
+
+      for (const batch of batches) {
+        await this.checkStreamerBatch(batch);
+        // Petit délai entre les batches pour éviter le rate limit
+        if (batches.length > 1) {
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+      }
+
+      logger.info(`✅ Vérification terminée - ${this.liveStreamers.size} streamers en live sur tous les serveurs`);
+      
+      // Log détaillé des streams actifs pour debug
+      if (this.liveStreamers.size > 0) {
+        logger.info('📊 Streams actifs globaux:');
+        for (const [username, data] of this.liveStreamers.entries()) {
+          const duration = Math.floor((Date.now() - data.startTime) / 60000);
+          const guildsFollowing = await this.db.getStreamerGuilds(username);
+          logger.info(`   - ${username}: ${duration}min (viewers: ${data.streamInfo?.viewerCount || 'N/A'}) - ${guildsFollowing.length} serveur(s)`);
+        }
+      }
+    } catch (error) {
+      logger.error(`❌ Erreur lors de la vérification globale: ${error.message}`);
+      this.metrics.recordError();
+    }
+  }
+
+  // ✅ NOUVELLE MÉTHODE: Vérification par batch avec gestion multi-serveurs
+  async checkStreamerBatch(streamers) {
+    try {
+      // Construire la liste des noms d'utilisateurs pour l'API Twitch
+      const usernames = streamers.map(s => s.twitch_username).join('&user_login=');
+      
+      const response = await fetch(`https://api.twitch.tv/helix/streams?user_login=${usernames}`, {
+        headers: {
+          'Client-ID': this.config.twitchClientId,
+          'Authorization': `Bearer ${this.twitch.accessToken}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`API Twitch error: ${response.status} ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      const liveStreams = data.data || [];
+      
+      // Streamers actuellement en ligne selon l'API
+      const currentlyLive = liveStreams.map(stream => stream.user_login.toLowerCase());
+      
+      // Streamers en base qui étaient en ligne
+      const activeStreams = await this.db.getActiveStreams();
+      const previouslyLive = activeStreams.map(s => s.twitch_username.toLowerCase());
+
+      // Nouveaux streams (démarrés)
+      const newStreams = liveStreams.filter(stream => 
+        !previouslyLive.includes(stream.user_login.toLowerCase())
+      );
+
+      // Streams terminés
+      const endedStreams = previouslyLive.filter(username => 
+        !currentlyLive.includes(username) &&
+        streamers.some(s => s.twitch_username === username) // Seulement ceux dans ce batch
+      );
+
+      // Streams mis à jour (toujours en ligne mais données changées)
+      const updatedStreams = liveStreams.filter(stream => 
+        previouslyLive.includes(stream.user_login.toLowerCase())
+      );
+
+      // ✅ TRAITER LES NOUVEAUX STREAMS
+      for (const stream of newStreams) {
+        await this.handleStreamStarted(stream);
+      }
+
+      // ✅ TRAITER LES STREAMS MIS À JOUR
+      for (const stream of updatedStreams) {
+        await this.handleStreamUpdated(stream);
+      }
+
+      // ✅ TRAITER LES STREAMS TERMINÉS
+      for (const username of endedStreams) {
+        await this.handleStreamEnded(username);
+      }
+
+    } catch (error) {
+      logger.error(`❌ Erreur vérification batch: ${error.message}`);
+      // En cas d'erreur API, essayer de renouveler le token
+      if (error.message.includes('401') && this.twitch) {
+        logger.warn('🔑 Token Twitch expiré, tentative de renouvellement...');
+        try {
+          await this.twitch.initClient();
+          logger.info('✅ Token Twitch renouvelé');
+        } catch (tokenError) {
+          logger.error(`❌ Impossible de renouveler le token: ${tokenError.message}`);
+        }
+      }
+    }
+  }
+
+  // ✅ NOUVELLE MÉTHODE: Gérer le début d'un stream (multi-serveurs)
+  async handleStreamStarted(streamData) {
+    const username = streamData.user_login.toLowerCase();
+    
+    try {
+      logger.info(`🔴 NOUVEAU STREAM: ${streamData.user_name} a commencé à streamer`);
+      
+      // Marquer comme actif en base
+      await this.db.setStreamActive(username, {
+        id: streamData.id,
+        title: streamData.title || 'Pas de titre',
+        game_name: streamData.game_name || 'Pas de catégorie',
+        viewer_count: streamData.viewer_count || 0,
+        started_at: streamData.started_at
+      });
+
+      // Ajouter aux streams en mémoire
+      this.liveStreamers.set(username, { 
+        startTime: Date.now(), 
+        lastUpdate: Date.now(),
+        streamInfo: { ...streamData }
+      });
+
+      // ✅ OBTENIR TOUS LES SERVEURS QUI SUIVENT CE STREAMER
+      const guildsFollowing = await this.db.getStreamerGuilds(username);
+      
+      if (guildsFollowing.length === 0) {
+        logger.warn(`⚠️ Aucun serveur ne suit ${username}`);
+        return;
+      }
+
+      logger.info(`📢 Notification à envoyer sur ${guildsFollowing.length} serveur(s) pour ${streamData.user_name}`);
+
+      // ✅ ENVOYER LES NOTIFICATIONS À TOUS LES SERVEURS
+      const notifiedGuilds = [];
+      for (const guildData of guildsFollowing) {
+        if (!guildData.notification_enabled || !guildData.notification_channel_id) {
+          logger.info(`⏭️ Notifications désactivées pour ${username} sur ${guildData.name || guildData.id}`);
+          continue;
+        }
+        
+        try {
+          const success = await this.sendStreamNotification(guildData, streamData);
+          if (success) {
+            notifiedGuilds.push(guildData.id);
+            logger.info(`✅ Notification envoyée pour ${streamData.user_name} sur ${guildData.name || guildData.id}`);
+          }
+        } catch (error) {
+          logger.error(`❌ Notification échouée pour ${streamData.user_name} sur ${guildData.name || guildData.id}: ${error.message}`);
+        }
+      }
+
+      // Mettre à jour la liste des serveurs notifiés
+      if (notifiedGuilds.length > 0) {
+        await this.db.updateNotifiedGuilds(username, notifiedGuilds);
+        logger.info(`📊 ${notifiedGuilds.length}/${guildsFollowing.length} serveurs notifiés pour ${streamData.user_name}`);
+      }
+
+    } catch (error) {
+      logger.error(`❌ Erreur gestion nouveau stream ${username}: ${error.message}`);
+    }
+  }
+
+  // ✅ NOUVELLE MÉTHODE: Gérer la mise à jour d'un stream
+  async handleStreamUpdated(streamData) {
+    const username = streamData.user_login.toLowerCase();
+    
+    try {
+      // Mettre à jour les informations en base
+      await this.db.setStreamActive(username, {
+        id: streamData.id,
+        title: streamData.title || 'Pas de titre',
+        game_name: streamData.game_name || 'Pas de catégorie',
+        viewer_count: streamData.viewer_count || 0,
+        started_at: streamData.started_at
+      });
+
+      // Mettre à jour en mémoire
+      const liveData = this.liveStreamers.get(username);
+      if (liveData) {
+        liveData.lastUpdate = Date.now();
+        liveData.streamInfo = { ...streamData };
+      }
+
+      // Log pour le debug (peut être commenté en production)
+      const duration = liveData ? Math.floor((Date.now() - liveData.startTime) / 60000) : 'N/A';
+      logger.info(`🔄 Stream mis à jour: ${streamData.user_name} (${duration}min, ${streamData.viewer_count} viewers)`);
+
+    } catch (error) {
+      logger.error(`❌ Erreur mise à jour stream ${username}: ${error.message}`);
+    }
+  }
+
+  // ✅ NOUVELLE MÉTHODE: Gérer la fin d'un stream
+  async handleStreamEnded(username) {
+    try {
+      logger.info(`⚫ STREAM TERMINÉ: ${username} n'est plus en live`);
+      
+      // Supprimer de la base des streams actifs
+      await this.db.setStreamInactive(username);
+      
+      // Supprimer de la mémoire
+      this.liveStreamers.delete(username);
+      
+      // Optionnel: Envoyer des notifications de fin de stream
+      // (décommentez si vous voulez cette fonctionnalité)
+      /*
+      const guildsFollowing = await this.db.getStreamerGuilds(username);
+      for (const guildData of guildsFollowing) {
+        if (guildData.notification_enabled && guildData.notification_channel_id) {
+          try {
+            await this.sendStreamEndNotification(guildData, username);
+          } catch (error) {
+            logger.error(`❌ Notification fin échouée pour ${username} sur ${guildData.id}: ${error.message}`);
+          }
+        }
+      }
+      */
+
+    } catch (error) {
+      logger.error(`❌ Erreur gestion fin stream ${username}: ${error.message}`);
+    }
+  }
+
+  // ✅ NOUVELLE MÉTHODE: Envoyer une notification de stream à un serveur spécifique
+  async sendStreamNotification(guildData, streamData) {
+    try {
+      const channel = await this.channels.fetch(guildData.notification_channel_id);
+      if (!channel) {
+        logger.warn(`⚠️ Channel ${guildData.notification_channel_id} non trouvé pour ${guildData.id}`);
+        return false;
+      }
+
+      // Construire l'embed de notification
+      const embed = new EmbedBuilder()
+        .setTitle(`🔴 ${streamData.user_name} est en live !`)
+        .setDescription(streamData.title || 'Pas de titre')
+        .setURL(`https://twitch.tv/${streamData.user_login}`)
+        .setColor('#9146ff')
+        .addFields(
+          { 
+            name: '🎮 Catégorie', 
+            value: streamData.game_name || 'Pas de catégorie', 
+            inline: true 
+          },
+          { 
+            name: '👥 Spectateurs', 
+            value: streamData.viewer_count?.toString() || '0', 
+            inline: true 
+          }
+        )
+        .setTimestamp(new Date(streamData.started_at));
+
+      // Ajouter la miniature si disponible
+      if (streamData.thumbnail_url) {
+        const thumbnailUrl = streamData.thumbnail_url
+          .replace('{width}', '320')
+          .replace('{height}', '180');
+        embed.setImage(thumbnailUrl);
+      }
+
+      // Message personnalisé du serveur ou message par défaut
+      let content = guildData.custom_message || `**${streamData.user_name}** est maintenant en live ! 🔴`;
+      
+      // Remplacer les placeholders dans le message personnalisé
+      content = content
+        .replace('{streamer}', streamData.user_name)
+        .replace('{game}', streamData.game_name || 'Pas de catégorie')
+        .replace('{title}', streamData.title || 'Pas de titre');
+
+      await channel.send({ content, embeds: [embed] });
+      return true;
+
+    } catch (error) {
+      logger.error(`❌ Erreur envoi notification: ${error.message}`);
+      return false;
+    }
+  }
+
+  // ✅ MÉTHODE UTILITAIRE: Obtenir les statistiques en temps réel
+  async getRealTimeStats() {
+    const dbStats = await this.db.getStats();
+    const activeStreams = await this.db.getActiveStreams();
+    
+    return {
+      guilds: this.guilds.cache.size,
+      dbGuilds: dbStats.guilds,
+      streamers: dbStats.streamers,
+      totalFollows: dbStats.totalFollows,
+      activeStreams: activeStreams.length,
+      liveStreamers: this.liveStreamers.size,
+      uptime: process.uptime(),
+      memoryUsage: process.memoryUsage()
+    };
+  }
+
+  // ============================================
+  // MÉTHODES DE COMPATIBILITÉ (ANCIENNES API)
+  // ============================================
+
+  // Pour la compatibilité avec l'ancienne API
+  async getAllStreamers() {
+    return await this.db.getAllStreamers();
+  }
+
+  async addStreamer(guildId, twitchUsername, addedBy) {
+    return await this.db.addStreamerToGuild(guildId, twitchUsername, addedBy);
+  }
+
+  async removeStreamer(guildId, twitchUsername) {
+    return await this.db.removeStreamerFromGuild(guildId, twitchUsername);
+  }
+
+  async getGuildStreamers(guildId) {
+    return await this.db.getGuildStreamers(guildId);
+  }
+
+  // ============================================
+  // ARRÊT PROPRE DU BOT
+  // ============================================
+
+  async shutdown() {
+    logger.info('🛑 Arrêt du bot...');
+    
+    try {
+      if (this.checkInterval) {
+        clearInterval(this.checkInterval);
+        logger.info('⏹️ Arrêt de la vérification des streams');
+      }
+
+      // Arrêter l'API Dashboard
+      if (this.dashboardAPI && this.dashboardAPI.server) {
+        this.dashboardAPI.server.close(() => {
+          logger.info('🌐 Dashboard API arrêtée');
+        });
+      }
+
+      // Fermer la base de données
+      await this.db.close();
+      logger.info('💾 Base de données fermée');
+
+      // Déconnecter le bot Discord
+      await this.destroy();
+      
+      logger.info('✅ Bot arrêté proprement');
+    } catch (error) {
+      logger.error(`❌ Erreur lors de l'arrêt: ${error.message}`);
+    }
+  }
+}
+
+// ============================================
+// INITIALISATION ET DÉMARRAGE DU BOT
+// ============================================
+
+async function main() {
+  try {
+    // Charger la configuration
+    const config = BotConfig.fromEnv();
+    
+    // Valider la configuration
+    const configErrors = config.validate();
+    if (Object.keys(configErrors).length > 0) {
+      logger.error('❌ Erreurs de configuration:');
+      Object.entries(configErrors).forEach(([field, error]) => {
+        logger.error(`  • ${field}: ${error}`);
+      });
+      process.exit(1);
+    }
+
+    // Créer le bot
+    const bot = new StreamerBot(config);
+
+    // Gérer l'arrêt propre
+    process.on('SIGINT', async () => {
+      logger.info('🛑 Signal SIGINT reçu');
+      await bot.shutdown();
+      process.exit(0);
+    });
+
+    process.on('SIGTERM', async () => {
+      logger.info('🛑 Signal SIGTERM reçu');
+      await bot.shutdown();
+      process.exit(0);
+    });
+
+    // Gérer les erreurs non capturées
+    process.on('unhandledRejection', (reason, promise) => {
+      logger.error('❌ Erreur non gérée:', reason);
+      bot.metrics.recordError();
+    });
+
+    process.on('uncaughtException', (error) => {
+      logger.error('❌ Exception non capturée:', error);
+      bot.metrics.recordError();
+    });
+
+    // Connecter le bot
+    logger.info('🚀 Démarrage du bot multi-serveurs...');
+    await bot.login(config.discordToken);
+    
+  } catch (error) {
+    logger.error(`❌ Erreur fatale: ${error.message}`);
+    process.exit(1);
+  }
+}
+
+// Lancer l'application
+if (require.main === module) {
+  main();
+}
+
+module.exports = StreamerBot;

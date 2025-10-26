@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phoenix Bot - Dashboard Principal</title>
+    <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+    <div class="layout-hybrid">
+        <!-- Sidebar Navigation -->
+        <div class="hybrid-sidebar">
+            <div class="sidebar-logo">
+                <div class="logo">
+                    <div class="logo-icon">🔥</div>
+                    <div class="logo-text">
+                        <h1>Phoenix Bot</h1>
+                        <p>v2.0 - Production</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="sidebar-navigation">
+                <div class="nav-section">
+                    <div class="nav-section-title">Principal</div>
+                    <div class="sidebar-nav-item active" onclick="navigateTo('index.html')">
+                        <span class="nav-icon">📊</span>
+                        <span class="nav-text">Dashboard</span>
+                    </div>
+                    <div class="sidebar-nav-item" onclick="navigateTo('streamers.html')">
+                        <span class="nav-icon">🎮</span>
+                        <span class="nav-text">Streamers</span>
+                    </div>
+                    <div class="sidebar-nav-item" onclick="navigateTo('analytics.html')">
+                        <span class="nav-icon">📈</span>
+                        <span class="nav-text">Analyses</span>
+                    </div>
+                    <div class="sidebar-nav-item" onclick="navigateTo('admin.html')">
+                        <span class="nav-icon">⚙️</span>
+                        <span class="nav-text">Administration</span>
+                    </div>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Système</div>
+                    <div class="sidebar-nav-item" onclick="navigateTo('logs.html')">
+                        <span class="nav-icon">📋</span>
+                        <span class="nav-text">Logs</span>
+                    </div>
+                    <div class="sidebar-nav-item" onclick="navigateTo('settings.html')">
+                        <span class="nav-icon">🔧</span>
+                        <span class="nav-text">Paramètres</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-stats">
+                <div class="sidebar-stat">
+                    <div class="sidebar-stat-value" data-stat="servers">--</div>
+                    <div class="sidebar-stat-label">Serveurs</div>
+                </div>
+                <div class="sidebar-stat">
+                    <div class="sidebar-stat-value" data-stat="users">--</div>
+                    <div class="sidebar-stat-label">Utilisateurs</div>
+                </div>
+                <div class="sidebar-stat">
+                    <div class="sidebar-stat-value" data-stat="streamers">--</div>
+                    <div class="sidebar-stat-label">Streamers</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Header -->
+        <div class="hybrid-header">
+            <div class="header-title">
+                <h2>Dashboard Principal</h2>
+                <p class="header-subtitle">Vue d'ensemble de votre bot Discord Phoenix</p>
+            </div>
+            <div class="header-status">
+                <div class="status-indicator" id="api-status">
+                    <span>❌</span>
+                    <span>API Disconnected</span>
+                </div>
+                <div class="status-indicator" id="bot-status">
+                    <span>⚠️</span>
+                    <span>Bot Status Unknown</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="hybrid-nav">
+            <button class="nav-tab active">
+                <span>📊</span>
+                <span>Vue d'ensemble</span>
+            </button>
+            <button class="nav-tab" onclick="navigateTo('analytics.html')">
+                <span>📈</span>
+                <span>Analyses</span>
+            </button>
+            <button class="nav-tab" onclick="navigateTo('streamers.html')">
+                <span>🎮</span>
+                <span>Streamers</span>
+            </button>
+            <button class="nav-tab" onclick="navigateTo('admin.html')">
+                <span>⚡</span>
+                <span>Administration</span>
+            </button>
+            <button class="nav-tab" onclick="navigateTo('settings.html')">
+                <span>🔧</span>
+                <span>Configuration</span>
+            </button>
+        </div>
+
+        <!-- Main Content -->
+        <div class="hybrid-main">
+            <!-- Connection Status -->
+            <div class="connection-panel">
+                <div class="connection-title">🔗 État de la Connexion</div>
+                <div class="connection-info" id="connection-output">Initialisation...</div>
+            </div>
+
+            <!-- Main Stats Grid -->
+            <div class="stats-grid">
+                <div class="main-stat-card">
+                    <div class="stat-value" data-stat="servers">--</div>
+                    <div class="stat-label">Serveurs Discord</div>
+                    <div class="stat-description">Serveurs où le bot est présent</div>
+                </div>
+                <div class="main-stat-card">
+                    <div class="stat-value" data-stat="users">--</div>
+                    <div class="stat-label">Utilisateurs</div>
+                    <div class="stat-description">Total des membres sur tous les serveurs</div>
+                </div>
+                <div class="main-stat-card">
+                    <div class="stat-value" data-stat="streamers">--</div>
+                    <div class="stat-label">Streamers</div>
+                    <div class="stat-description">Streamers configurés / En direct</div>
+                </div>
+                <div class="main-stat-card">
+                    <div class="stat-value" data-stat="uptime">--</div>
+                    <div class="stat-label">Uptime</div>
+                    <div class="stat-description">Temps de fonctionnement du bot</div>
+                </div>
+            </div>
+
+            <!-- Content Grid -->
+            <div class="content-grid">
+                <!-- Overview Card -->
+                <div class="main-card">
+                    <h3>📊 Vue d'Ensemble</h3>
+                    <div class="overview-content">
+                        <div class="overview-section">
+                            <h4>🚀 Statut du Bot</h4>
+                            <div class="status-list" id="bot-status-list">
+                                <div class="status-item">
+                                    <span class="status-dot loading"></span>
+                                    <span>Connexion Discord: Vérification...</span>
+                                </div>
+                                <div class="status-item">
+                                    <span class="status-dot loading"></span>
+                                    <span>API Twitch: Vérification...</span>
+                                </div>
+                                <div class="status-item">
+                                    <span class="status-dot loading"></span>
+                                    <span>Base de données: Vérification...</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="overview-section">
+                            <h4>📈 Activité Récente</h4>
+                            <div class="activity-list" id="recent-activity">
+                                <div class="activity-item">
+                                    <span class="activity-time">--:--</span>
+                                    <span class="activity-text">Dashboard initialisé</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions Card -->
+                <div class="action-panel">
+                    <div class="main-card" style="padding: 24px;">
+                        <h3>⚡ Actions Rapides</h3>
+                        <button class="btn" onclick="refreshAllData()">
+                            <span>🔄</span>
+                            <span>Actualiser Tout</span>
+                        </button>
+                        <button class="btn" onclick="checkStreams()">
+                            <span>🔍</span>
+                            <span>Vérifier Streams</span>
+                        </button>
+                        <button class="btn" onclick="testConnections()">
+                            <span>🧪</span>
+                            <span>Test Connexions</span>
+                        </button>
+                        <button class="btn" onclick="navigateTo('streamers.html')">
+                            <span>🎮</span>
+                            <span>Gérer Streamers</span>
+                        </button>
+                    </div>
+
+                    <!-- System Info Card -->
+                    <div class="main-card" style="padding: 24px;">
+                        <h3>ℹ️ Informations Système</h3>
+                        <div class="system-info" id="system-info">
+                            <div class="info-item">
+                                <span class="info-label">Version:</span>
+                                <span class="info-value">Phoenix Bot v2.0</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Ping API:</span>
+                                <span class="info-value" id="api-ping">--ms</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Mémoire:</span>
+                                <span class="info-value" id="memory-usage">--MB</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Dernière MAJ:</span>
+                                <span class="info-value" id="last-update">--:--</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/phoenix-unified-api.js"></script>
+    <script src="/js/dashboard-navigation.js"></script>
+    <script>
+    window.addEventListener('load', async () => {
+        if (window.phoenixAPI) {
+            // S'abonner aux mises à jour
+            phoenixAPI.onUpdate((state) => {
+                if (state.stats) {
+                    updateDashboardStats(state.stats);
+                }
+            });
+        }
+    });
+
+    function updateDashboardStats(stats) {
+        // Mise à jour automatique des stats
+        console.log('Stats mises à jour', stats);
+    }
+
+    async function refreshAllData() {
+        try {
+            await phoenixAPI.loadAllData();
+            phoenixAPI.showNotification('Données actualisées', 'success');
+        } catch (error) {
+            phoenixAPI.showNotification(error.message, 'error');
+        }
+    }
+
+    async function checkStreams() {
+        try {
+            await phoenixAPI.checkStreams();
+        } catch (error) {
+            phoenixAPI.showNotification(error.message, 'error');
+        }
+    }
+
+    async function testConnections() {
+        phoenixAPI.log('Test des connexions...', 'info');
+        
+        try {
+            await phoenixAPI.testConnection();
+            await phoenixAPI.testTwitchAPI();
+        } catch (error) {
+            phoenixAPI.showNotification(error.message, 'error');
+        }
+    }
+    
+
+// Fonction à appeler au chargement de la page
+async function loadGuildInfo() {
+    if (!window.phoenixAPI || !phoenixAPI.isConnected) {
+        return;
+    }
+
+    try {
+        const response = await phoenixAPI.request('/api/guild-info');
+        
+        if (response.success) {
+            updateGuildHeader(response.guild);
+            updateGuildStats(response.stats);
+        }
+    } catch (error) {
+        console.error('Erreur chargement infos serveur:', error);
+    }
+}
+
+// Mettre à jour le header avec les infos du serveur
+function updateGuildHeader(guild) {
+    // Mettre à jour le titre
+    const headerTitle = document.querySelector('.header-title h2');
+    if (headerTitle) {
+        const currentPage = headerTitle.textContent;
+        headerTitle.innerHTML = `
+            ${currentPage}
+            <span style="font-size: 0.7em; color: #00ffff; margin-left: 10px;">
+                • ${guild.name}
+            </span>
+        `;
+    }
+
+    // Ajouter l'icône du serveur dans la sidebar
+    const sidebarLogo = document.querySelector('.sidebar-logo .logo');
+    if (sidebarLogo && guild.icon) {
+        const guildIcon = document.createElement('img');
+        guildIcon.src = guild.icon;
+        guildIcon.alt = guild.name;
+        guildIcon.style.cssText = `
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid #00ffff;
+            margin-bottom: 10px;
+        `;
+        sidebarLogo.insertBefore(guildIcon, sidebarLogo.firstChild);
+    }
+
+    // Mettre à jour le titre de la page
+    document.title = `${guild.name} - Phoenix Bot Dashboard`;
+}
+
+// Mettre à jour les stats du serveur
+function updateGuildStats(stats) {
+    if (!stats) return;
+
+    // Afficher les stats affiliés si disponible
+    const statsContainer = document.querySelector('.sidebar-stats');
+    if (statsContainer && stats.affiliatedStreamers !== undefined) {
+        const affiliatedStat = document.createElement('div');
+        affiliatedStat.className = 'sidebar-stat';
+        affiliatedStat.innerHTML = `
+            <div class="sidebar-stat-value">${stats.affiliatedStreamers}</div>
+            <div class="sidebar-stat-label">Affiliés</div>
+        `;
+        statsContainer.appendChild(affiliatedStat);
+    }
+}
+
+// Ajouter au chargement de la page (dans window.addEventListener('load'))
+window.addEventListener('load', async () => {
+    if (window.phoenixAPI) {
+        phoenixAPI.onUpdate((state) => {
+            if (state.streamers) {
+                streamersData = state.streamers;
+                updateAllViews();
+            }
+        });
+        
+        // Charger les infos du serveur
+        await loadGuildInfo();
+        
+        // Charger les streamers
+        await loadStreamers();
+    }
+});
+
+// Fonction pour afficher un badge "Serveur actuel"
+function addGuildBadge() {
+    const header = document.querySelector('.hybrid-header .header-title');
+    if (!header) return;
+
+    const badge = document.createElement('div');
+    badge.style.cssText = `
+        display: inline-block;
+        background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);
+        border: 2px solid #00ffff;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        margin-left: 10px;
+        vertical-align: middle;
+    `;
+    badge.textContent = '📌 Dashboard de ce serveur';
+    
+    const subtitle = header.querySelector('.header-subtitle');
+    if (subtitle) {
+        subtitle.appendChild(badge);
+    }
+}
+</script>
+</body>
+</html>
