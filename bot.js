@@ -1,4 +1,4 @@
-// ===== bot.js - VERSION CORRIGÉE =====
+// ===== bot.js - VERSION CORRIGÉE MULTI-SERVEURS =====
 const { Client, GatewayIntentBits, Partials, EmbedBuilder, Colors, ActivityType, Collection } = require('discord.js');
 const path = require('path');
 const fs = require('fs');
@@ -675,9 +675,8 @@ class StreamerBot extends Client {
         await this.handleStreamStarted(stream);
       }
 
-      // ✅ FIX: Ne mettre à jour QUE si changements significatifs
       for (const stream of updatedStreams) {
-        await this.handleStreamUpdated(stream, true); // true = update silencieux
+        await this.handleStreamUpdated(stream, true);
       }
 
       for (const username of endedStreams) {
@@ -721,7 +720,6 @@ class StreamerBot extends Client {
         const existingData = this.liveStreamers.get(username);
         const timeSinceStart = Date.now() - existingData.startTime;
         
-        // Si le stream est connu depuis moins de 2 minutes, c'est probablement un doublon
         if (timeSinceStart < 120000) {
           logger.info(`⏩ Stream ${username} déjà en mémoire depuis ${Math.floor(timeSinceStart/1000)}s, ignoré`);
           return;
@@ -764,7 +762,6 @@ class StreamerBot extends Client {
               streamer_data: streamer
             });
             
-            // Marquer comme actif pour CHAQUE serveur
             await this.db.setStreamActive(guild_id, username, {
               id: streamData.id,
               title: streamData.title || 'Pas de titre',
@@ -781,18 +778,18 @@ class StreamerBot extends Client {
 
       if (guildsFollowing.length === 0) {
         logger.warn(`⚠️ Aucun serveur ne suit ${username}`);
-        this.processedStreams.delete(streamId); // Nettoyer si pas de serveur
+        this.processedStreams.delete(streamId);
         this.liveStreamers.delete(username);
         return;
       }
 
       logger.info(`📢 Notification à envoyer sur ${guildsFollowing.length} serveur(s) pour ${streamData.user_name}`);
 
-      // ✅ ENVOI DES NOTIFICATIONS - Une seule méthode
+      // ✅ ENVOI DES NOTIFICATIONS - MÉTHODE CORRIGÉE
       const notifiedGuilds = [];
       
       if (this.notificationManager) {
-        // Utiliser UNIQUEMENT le NotificationManager
+        // ✅ UTILISER sendLiveNotificationToGuild pour chaque serveur
         for (const guildData of guildsFollowing) {
           if (!guildData.notification_channel_id) {
             logger.info(`⏭️ Pas de channel configuré pour ${username} sur ${guildData.id}`);
@@ -816,8 +813,9 @@ class StreamerBot extends Client {
                 : null
             };
 
-            // ✅ UTILISER handleStreamNotification (il gère automatiquement nouveau vs update)
-            const success = await this.notificationManager.handleStreamNotification(
+            // ✅ UTILISER LA NOUVELLE MÉTHODE sendLiveNotificationToGuild
+            const success = await this.notificationManager.sendLiveNotificationToGuild(
+              guildData.id,  // ← ID du serveur spécifique
               streamerForNotif, 
               streamInfoForNotif
             );
@@ -832,7 +830,7 @@ class StreamerBot extends Client {
           }
         }
       } else {
-        // Fallback sans NotificationManager (ne devrait jamais arriver)
+        // Fallback sans NotificationManager
         logger.warn(`⚠️ NotificationManager non disponible, utilisation méthode de secours`);
         for (const guildData of guildsFollowing) {
           if (guildData.notification_channel_id) {
@@ -853,18 +851,15 @@ class StreamerBot extends Client {
 
     } catch (error) {
       logger.error(`❌ Erreur gestion nouveau stream ${username}: ${error.message}`);
-      // En cas d'erreur, nettoyer le tracking
       this.processedStreams.delete(streamId);
       this.liveStreamers.delete(username);
     }
   }
 
-  // ✅ FIX: Mise à jour silencieuse par défaut
   async handleStreamUpdated(streamData, silent = false) {
     const username = streamData.user_login.toLowerCase();
     
     try {
-      // Mettre à jour pour CHAQUE serveur qui suit ce streamer
       const allGuilds = await this.db.masterDb.all('SELECT guild_id FROM registered_guilds WHERE is_active = 1');
       
       for (const { guild_id } of allGuilds) {
@@ -890,11 +885,9 @@ class StreamerBot extends Client {
         liveData.streamInfo = { ...streamData };
       }
 
-      // ✅ FIX: Ne mettre à jour les notifications QUE si changement significatif
       if (!silent && this.notificationManager && this.notificationManager.isStreamActive(username)) {
         const previousInfo = liveData?.streamInfo;
         
-        // Vérifier si mise à jour nécessaire (changement de jeu ou titre)
         const needsUpdate = !previousInfo || 
           previousInfo.game_name !== streamData.game_name ||
           previousInfo.title !== streamData.title;
@@ -926,7 +919,7 @@ class StreamerBot extends Client {
                     : null
                 };
 
-                await this.notificationManager.handleStreamNotification(
+                await this.notificationManager.updateLiveNotification(
                   streamerForNotif, 
                   streamInfoForNotif
                 );
@@ -952,19 +945,16 @@ class StreamerBot extends Client {
     try {
       logger.info(`⚫ STREAM TERMINÉ: ${username} n'est plus en live`);
       
-      // ✅ Nettoyer le tracking des streams traités
       for (const streamId of this.processedStreams) {
         if (streamId.startsWith(`${username}_`)) {
           this.processedStreams.delete(streamId);
         }
       }
       
-      // ✅ NETTOYER LE NOTIFICATION MANAGER
       if (this.notificationManager) {
         await this.notificationManager.removeLiveNotification(username);
       }
       
-      // Marquer comme inactif pour TOUS les serveurs
       const allGuilds = await this.db.masterDb.all('SELECT guild_id FROM registered_guilds WHERE is_active = 1');
       
       for (const { guild_id } of allGuilds) {
@@ -985,7 +975,6 @@ class StreamerBot extends Client {
     }
   }
 
-  // ✅ Méthode de secours (utilisée uniquement si NotificationManager indisponible)
   async sendStreamNotification(guildData, streamData) {
     try {
       const channel = await this.channels.fetch(guildData.notification_channel_id);
