@@ -104,29 +104,4 @@ module.exports = {
   }
 };
 ```
-
----
-
-## 🚀 Utilisation
-
-Une fois la commande ajoutée et le bot redémarré :
-```
-/force-restart-stream username:payne_2024
-```
-
-Cela va :
-1. ✅ Nettoyer **complètement** payne_2024 de tous les systèmes
-2. ✅ Marquer comme inactif en DB
-3. ✅ Forcer une vérification **immédiate**
-4. ✅ Le bot va détecter payne_2024 comme un **nouveau stream**
-5. ✅ Les notifications seront envoyées dans **tous les serveurs** qui le suivent ! 🎉
-
----
-
-## ⚡ Alternative rapide (sans créer la commande)
-
-Si vous ne voulez pas créer la commande, utilisez cette séquence :
-
-1. **Sur Railway, dans Variables, ajoutez temporairement :**
-```
    FORCE_CLEAN_ON_START=true
