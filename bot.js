@@ -636,66 +636,92 @@ class StreamerBot extends Client {
   }
 
   async checkStreamerBatch(streamers) {
-    try {
-      const usernames = streamers.map(s => s.twitch_username).join('&user_login=');
+  try {
+    const usernames = streamers.map(s => s.twitch_username).join('&user_login=');
+    
+    const response = await fetch(`https://api.twitch.tv/helix/streams?user_login=${usernames}`, {
+      headers: {
+        'Client-ID': this.config.twitchClientId,
+        'Authorization': `Bearer ${this.twitch.accessToken}`
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`API Twitch error: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    const liveStreams = data.data || [];
+    
+    const currentlyLive = liveStreams.map(stream => stream.user_login.toLowerCase());
+    
+    const activeStreams = await this.db.getActiveStreams();
+    const previouslyLive = activeStreams.map(s => s.twitch_username.toLowerCase());
+
+    // ✅ NOUVELLE LOGIQUE - Vérifier aussi le NotificationManager
+    const newStreams = liveStreams.filter(stream => {
+      const username = stream.user_login.toLowerCase();
+      const inDB = previouslyLive.includes(username);
+      const inNotifManager = this.notificationManager && this.notificationManager.isStreamActive(username);
+      const inMemory = this.liveStreamers.has(username);
       
-      const response = await fetch(`https://api.twitch.tv/helix/streams?user_login=${usernames}`, {
-        headers: {
-          'Client-ID': this.config.twitchClientId,
-          'Authorization': `Bearer ${this.twitch.accessToken}`
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error(`API Twitch error: ${response.status} ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      const liveStreams = data.data || [];
+      // C'est un nouveau stream si:
+      // - Pas en DB OU
+      // - En DB mais pas dans NotificationManager OU  
+      // - En DB mais pas en mémoire
+      const isNew = !inDB || !inNotifManager || !inMemory;
       
-      const currentlyLive = liveStreams.map(stream => stream.user_login.toLowerCase());
+      if (isNew) {
+        console.log(`🆕 ${username} considéré comme nouveau stream (inDB:${inDB}, inNotif:${inNotifManager}, inMem:${inMemory})`);
+      }
       
-      const activeStreams = await this.db.getActiveStreams();
-      const previouslyLive = activeStreams.map(s => s.twitch_username.toLowerCase());
+      return isNew;
+    });
 
-      const newStreams = liveStreams.filter(stream => 
-        !previouslyLive.includes(stream.user_login.toLowerCase())
-      );
+    const endedStreams = previouslyLive.filter(username => 
+      !currentlyLive.includes(username) &&
+      streamers.some(s => s.twitch_username === username)
+    );
 
-      const endedStreams = previouslyLive.filter(username => 
-        !currentlyLive.includes(username) &&
-        streamers.some(s => s.twitch_username === username)
-      );
+    // Streams qui sont vraiment en cours de mise à jour (déjà notifiés)
+    const updatedStreams = liveStreams.filter(stream => {
+      const username = stream.user_login.toLowerCase();
+      const inDB = previouslyLive.includes(username);
+      const inNotifManager = this.notificationManager && this.notificationManager.isStreamActive(username);
+      
+      // C'est une mise à jour seulement si déjà dans NotificationManager
+      return inDB && inNotifManager;
+    });
 
-      const updatedStreams = liveStreams.filter(stream => 
-        previouslyLive.includes(stream.user_login.toLowerCase())
-      );
+    // Traiter les nouveaux streams
+    for (const stream of newStreams) {
+      console.log(`🔥 Traitement NOUVEAU stream: ${stream.user_name}`);
+      await this.handleStreamStarted(stream);
+    }
 
-      for (const stream of newStreams) {
-        await this.handleStreamStarted(stream);
-      }
+    // Mettre à jour les streams existants (silencieusement)
+    for (const stream of updatedStreams) {
+      await this.handleStreamUpdated(stream, true);
+    }
 
-      for (const stream of updatedStreams) {
-        await this.handleStreamUpdated(stream, true);
-      }
+    // Terminer les streams
+    for (const username of endedStreams) {
+      await this.handleStreamEnded(username);
+    }
 
-      for (const username of endedStreams) {
-        await this.handleStreamEnded(username);
-      }
-
-    } catch (error) {
-      logger.error(`❌ Erreur vérification batch: ${error.message}`);
-      if (error.message.includes('401') && this.twitch) {
-        logger.warn('🔑 Token Twitch expiré, tentative de renouvellement...');
-        try {
-          await this.twitch.initClient();
-          logger.info('✅ Token Twitch renouvelé');
-        } catch (tokenError) {
-          logger.error(`❌ Impossible de renouveler le token: ${tokenError.message}`);
-        }
+  } catch (error) {
+    logger.error(`❌ Erreur vérification batch: ${error.message}`);
+    if (error.message.includes('401') && this.twitch) {
+      logger.warn('🔑 Token Twitch expiré, tentative de renouvellement...');
+      try {
+        await this.twitch.initClient();
+        logger.info('✅ Token Twitch renouvelé');
+      } catch (tokenError) {
+        logger.error(`❌ Impossible de renouveler le token: ${tokenError.message}`);
       }
     }
   }
+}
 
   // ✅ FIX PRINCIPAL: Gestion améliorée du démarrage de stream
   async handleStreamStarted(streamData) {
@@ -1135,3 +1161,4 @@ if (require.main === module) {
 }
 
 module.exports = StreamerBot;
+
