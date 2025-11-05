@@ -40,6 +40,7 @@ module.exports = {
         for (const streamId of bot.processedStreams) {
           if (streamId.startsWith(`${username}_`)) {
             bot.processedStreams.delete(streamId);
+            console.log(`✅ Supprimé de processedStreams: ${streamId}`);
           }
         }
       }
@@ -77,7 +78,7 @@ module.exports = {
         .addFields(
           {
             name: '🧹 Nettoyage',
-            value: `• NotificationManager vidé\n• Tracking vidé\n• ${dbCleaned} DB nettoyées`,
+            value: `• NotificationManager vidé\n• Tracking vidé\n• processedStreams nettoyé\n• ${dbCleaned} DB nettoyées`,
             inline: false
           },
           {
@@ -103,5 +104,3 @@ module.exports = {
     }
   }
 };
-```
-   FORCE_CLEAN_ON_START=true
