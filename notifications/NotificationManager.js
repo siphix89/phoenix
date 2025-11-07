@@ -1,3 +1,4 @@
+// ===== NotificationManager.js - VERSION SIMPLIFIÉE =====
 const { EmbedBuilder, Colors } = require('discord.js');
 const { logger, StreamerStatus } = require('../config');
 
@@ -39,8 +40,7 @@ class NotificationManager {
   }
 
   /**
-   * ✅ NOUVELLE MÉTHODE: Envoie une notification à UN SEUL serveur spécifique
-   * (utilisée pour envoyer aux multiples serveurs sans conflit)
+   * ✅ SIMPLIFIÉ: Envoie une notification à UN serveur avec moins de vérifications
    */
   async sendLiveNotificationToGuild(guildId, streamer, streamInfo) {
     try {
@@ -49,17 +49,6 @@ class NotificationManager {
       const guild = this.bot.guilds.cache.get(guildId);
       if (!guild) {
         console.log(`⚠️ Serveur ${guildId} non trouvé`);
-        return false;
-      }
-
-      // Vérifier si le streamer est suivi dans ce serveur
-      const guildStreamers = await this.bot.db.getGuildStreamers(guildId);
-      const isFollowed = guildStreamers?.some(s => 
-        s.twitch_username.toLowerCase() === streamer.name.toLowerCase()
-      );
-      
-      if (!isFollowed) {
-        console.log(`⏭️ ${streamer.name} n'est pas suivi dans ${guild.name}`);
         return false;
       }
 
@@ -77,7 +66,7 @@ class NotificationManager {
         : guildChannels.liveNonAffilieChannel;
 
       if (!channelId || channelId === '0' || channelId === 0) {
-        console.log(`⚠️ Pas de channel configuré pour ${guild.name} (${streamer.status})`);
+        console.log(`⚠️ Pas de channel configuré pour ${guild.name}`);
         return false;
       }
 
@@ -128,7 +117,7 @@ class NotificationManager {
         });
       }
 
-      // Compatibilité avec l'ancien système (premier message)
+      // Compatibilité avec l'ancien système
       if (!this.bot.liveMessages.has(streamer.name)) {
         this.bot.liveMessages.set(streamer.name, message.id);
       }
