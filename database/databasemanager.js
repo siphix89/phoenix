@@ -1,546 +1,596 @@
-const { EmbedBuilder, Colors } = require('discord.js');
-const { logger, StreamerStatus } = require('../config');
+const sqlite3 = require('sqlite3').verbose();
+const { open } = require('sqlite');
+const path = require('path');
+const fs = require('fs').promises;
 
-class NotificationManager {
-  constructor(bot) {
-    this.bot = bot;
-    this.activeStreams = new Map();
-    // Format: Map<streamerName, Map<guildId, {messageId, channelId}>>
-    this.guildMessages = new Map();
-  }
-
-  /**
-   * Vérifie si un streamer est déjà considéré comme en live
-   */
-  isStreamActive(streamerName) {
-    return this.activeStreams.has(streamerName);
-  }
-
-  /**
-   * Récupère les channels configurés pour un serveur depuis la DB
-   */
-  async getGuildChannels(guildId) {
-    try {
-      const guildConfig = await this.bot.db.getGuildConfig(guildId);
-      
-      if (!guildConfig) {
-        console.log(`⚠️ Aucune configuration trouvée pour le serveur ${guildId}`);
-        return null;
-      }
-
-      return {
-        liveAffilieChannel: guildConfig.live_affilie_channel_id || guildConfig.notification_channel_id,
-        liveNonAffilieChannel: guildConfig.live_non_affilie_channel_id || guildConfig.notification_channel_id
-      };
-    } catch (error) {
-      console.error(`❌ Erreur récupération config pour ${guildId}:`, error.message);
-      return null;
-    }
-  }
-
-  /**
-   * ✅ MÉTHODE CORRIGÉE: Envoie une notification à UN SEUL serveur spécifique
-   */
-  async sendLiveNotificationToGuild(guildId, streamer, streamInfo) {
-    try {
-      console.log(`🔍 Envoi notification pour ${streamer.name} sur serveur ${guildId}`);
-      
-      // ✅ ÉTAPE 1 : MARQUER COMME ACTIF IMMÉDIATEMENT (avant toute vérification)
-      // Cela évite les race conditions et les doublons
-      if (!this.activeStreams.has(streamer.name)) {
-        this.activeStreams.set(streamer.name, {
-          lastUpdate: Date.now(),
-          streamStartedAt: Date.now(),
-          streamInfo: { ...streamInfo }
-        });
-        console.log(`✅ ${streamer.name} marqué comme actif dans NotificationManager`);
-      } else {
-        console.log(`⚠️ ${streamer.name} déjà actif dans NotificationManager`);
-        // Si déjà actif, vérifier si on doit quand même envoyer pour CE serveur
-        const guildMessagesMap = this.guildMessages.get(streamer.name);
-        if (guildMessagesMap && guildMessagesMap.has(guildId)) {
-          console.log(`⏭️ Message déjà envoyé pour ${streamer.name} sur ${guildId}`);
-          return true; // Déjà envoyé sur ce serveur
-        }
-      }
-      
-      // ✅ ÉTAPE 2 : Vérifications du serveur
-      const guild = this.bot.guilds.cache.get(guildId);
-      if (!guild) {
-        console.log(`⚠️ Serveur ${guildId} non trouvé`);
-        return false;
-      }
-
-      // Vérifier si le streamer est suivi dans ce serveur
-      const guildStreamers = await this.bot.db.getGuildStreamers(guildId);
-      const isFollowed = guildStreamers?.some(s => 
-        s.twitch_username.toLowerCase() === streamer.name.toLowerCase()
-      );
-      
-      if (!isFollowed) {
-        console.log(`⏭️ ${streamer.name} n'est pas suivi dans ${guild.name}`);
-        return false;
-      }
-
-      // Récupérer la config du serveur
-      const guildChannels = await this.getGuildChannels(guildId);
-      
-      if (!guildChannels) {
-        console.log(`⚠️ Pas de configuration pour ${guild.name}`);
-        return false;
-      }
-
-      // Déterminer le channel approprié
-      const channelId = streamer.status === StreamerStatus.AFFILIE 
-        ? guildChannels.liveAffilieChannel 
-        : guildChannels.liveNonAffilieChannel;
-
-      if (!channelId || channelId === '0' || channelId === 0) {
-        console.log(`⚠️ Pas de channel configuré pour ${guild.name} (${streamer.status})`);
-        return false;
-      }
-
-      const channel = guild.channels.cache.get(channelId.toString());
-      
-      if (!channel) {
-        console.error(`❌ Channel ${channelId} non trouvé dans ${guild.name}`);
-        return false;
-      }
-
-      // Vérifier les permissions
-      const permissions = channel.permissionsFor(this.bot.user);
-      if (!permissions?.has('SendMessages') || !permissions?.has('EmbedLinks')) {
-        console.error(`❌ Permissions insuffisantes dans ${guild.name}`);
-        return false;
-      }
-
-      console.log(`📤 Envoi dans ${guild.name} (channel: ${channel.name})`);
-
-      // ✅ ÉTAPE 3 : Créer et envoyer l'embed
-      const embed = this.createStreamEmbed(streamer, streamInfo, false);
-      const content = `🚨 **${streamer.name}** vient de commencer un stream ! 🎉`;
-
-      // Envoyer la notification
-      const message = await channel.send({
-        content,
-        embeds: [embed],
-      });
-
-      console.log(`✅ Message envoyé dans ${guild.name} (ID: ${message.id})`);
-
-      // ✅ ÉTAPE 4 : Stocker les infos du message POUR CE SERVEUR
-      if (!this.guildMessages.has(streamer.name)) {
-        this.guildMessages.set(streamer.name, new Map());
-      }
-      
-      this.guildMessages.get(streamer.name).set(guildId, {
-        messageId: message.id,
-        channelId: channelId
-      });
-
-      // Compatibilité avec l'ancien système (premier message)
-      if (!this.bot.liveMessages.has(streamer.name)) {
-        this.bot.liveMessages.set(streamer.name, message.id);
-      }
-
-      this.bot.metrics?.recordNotification();
-      return true;
-      
-    } catch (error) {
-      console.error(`❌ Erreur envoi dans ${guildId}:`, error.message);
-      console.error(error.stack);
-      
-      // ✅ IMPORTANT : En cas d'erreur, nettoyer si nécessaire
-      // Si c'était le premier serveur et qu'on a échoué, supprimer de activeStreams
-      const guildMessagesMap = this.guildMessages.get(streamer.name);
-      if (!guildMessagesMap || guildMessagesMap.size === 0) {
-        console.log(`🧹 Nettoyage de ${streamer.name} suite à l'échec (aucun serveur notifié)`);
-        this.activeStreams.delete(streamer.name);
-        this.guildMessages.delete(streamer.name);
-      }
-      
-      return false;
-    }
-  }
-
-  /**
-   * Envoie une notification à TOUS les serveurs configurés
-   */
-  async sendLiveNotification(streamer, streamInfo) {
-    try {
-      console.log('🔍 Début sendLiveNotification pour:', streamer.name);
-      
-      if (this.isStreamActive(streamer.name)) {
-        console.log(`⚠️ Stream déjà actif pour ${streamer.name}, notification ignorée`);
-        return true;
-      }
-
-      const embed = this.createStreamEmbed(streamer, streamInfo, false);
-      const content = `🚨 **${streamer.name}** vient de commencer un stream ! 🎉`;
-
-      let successCount = 0;
-      const guildMessagesMap = new Map();
-
-      // Envoyer à TOUS les serveurs où le streamer est suivi
-      for (const [guildId, guild] of this.bot.guilds.cache) {
-        try {
-          const guildStreamers = await this.bot.db.getGuildStreamers(guildId);
-          const isFollowed = guildStreamers?.some(s => 
-            s.twitch_username.toLowerCase() === streamer.name.toLowerCase()
-          );
-          
-          if (!isFollowed) {
-            console.log(`⏭️ ${streamer.name} n'est pas suivi dans ${guild.name}`);
-            continue;
-          }
-
-          const guildChannels = await this.getGuildChannels(guildId);
-          
-          if (!guildChannels) {
-            console.log(`⚠️ Pas de configuration pour ${guild.name}`);
-            continue;
-          }
-
-          const channelId = streamer.status === StreamerStatus.AFFILIE 
-            ? guildChannels.liveAffilieChannel 
-            : guildChannels.liveNonAffilieChannel;
-
-          if (!channelId || channelId === '0' || channelId === 0) {
-            console.log(`⚠️ Pas de channel configuré pour ${guild.name} (${streamer.status})`);
-            continue;
-          }
-
-          const channel = guild.channels.cache.get(channelId.toString());
-          
-          if (!channel) {
-            console.error(`❌ Channel ${channelId} non trouvé dans ${guild.name}`);
-            continue;
-          }
-
-          const permissions = channel.permissionsFor(this.bot.user);
-          if (!permissions?.has('SendMessages') || !permissions?.has('EmbedLinks')) {
-            console.error(`❌ Permissions insuffisantes dans ${guild.name}`);
-            continue;
-          }
-
-          console.log(`📤 Envoi dans ${guild.name} (channel: ${channel.name})`);
-
-          const message = await channel.send({
-            content,
-            embeds: [embed],
-          });
-
-          console.log(`✅ Message envoyé dans ${guild.name} (ID: ${message.id})`);
-
-          guildMessagesMap.set(guildId, {
-            messageId: message.id,
-            channelId: channelId
-          });
-
-          successCount++;
-        } catch (error) {
-          console.error(`❌ Erreur envoi dans ${guild.name}:`, error.message);
-        }
-      }
-
-      if (successCount === 0) {
-        console.error('❌ Aucune notification envoyée dans aucun serveur');
-        return false;
-      }
-
-      this.activeStreams.set(streamer.name, {
-        lastUpdate: Date.now(),
-        streamStartedAt: Date.now(),
-        streamInfo: { ...streamInfo }
-      });
-
-      this.guildMessages.set(streamer.name, guildMessagesMap);
-
-      const firstMessage = guildMessagesMap.values().next().value;
-      if (firstMessage) {
-        this.bot.liveMessages.set(streamer.name, firstMessage.messageId);
-      }
-
-      this.bot.metrics?.recordNotification();
-      logger.info(`✅ Notifications live envoyées pour ${streamer.name} dans ${successCount} serveur(s)`);
-      return true;
-    } catch (error) {
-      console.error('❌ ERREUR COMPLÈTE:', error);
-      logger.error(`❌ Erreur envoi notification pour ${streamer.name}: ${error.message}`);
-      this.bot.metrics?.recordError();
-      return false;
-    }
-  }
-
-  /**
-   * Supprime les notifications de stream dans tous les serveurs
-   */
-  async removeLiveNotification(streamerName) {
-    try {
-      const guildMessagesMap = this.guildMessages.get(streamerName);
-      
-      if (!guildMessagesMap || guildMessagesMap.size === 0) {
-        console.log(`⚠️ Aucun message à supprimer pour ${streamerName}`);
-        this.activeStreams.delete(streamerName);
-        this.bot.liveMessages.delete(streamerName);
-        return;
-      }
-
-      let deletedCount = 0;
-
-      // Supprimer les messages dans TOUS les serveurs
-      for (const [guildId, messageData] of guildMessagesMap) {
-        try {
-          const guild = this.bot.guilds.cache.get(guildId);
-          if (!guild) continue;
-
-          const channel = guild.channels.cache.get(messageData.channelId.toString());
-          if (!channel) continue;
-
-          const message = await channel.messages.fetch(messageData.messageId);
-          if (message) {
-            await message.delete();
-            deletedCount++;
-            console.log(`✅ Message supprimé dans ${guild.name}`);
-          }
-        } catch (error) {
-          console.log(`⚠️ Impossible de supprimer dans le serveur ${guildId}:`, error.message);
-        }
-      }
-
-      // Nettoyer les caches
-      this.activeStreams.delete(streamerName);
-      this.guildMessages.delete(streamerName);
-      this.bot.liveMessages.delete(streamerName);
-
-      logger.info(`🔴 Stream terminé pour ${streamerName}, ${deletedCount} message(s) supprimé(s)`);
-    } catch (error) {
-      logger.error(`❌ Erreur suppression notification pour ${streamerName}: ${error.message}`);
-    }
-  }
-
-  /**
-   * Met à jour les notifications dans tous les serveurs
-   */
-  async updateLiveNotification(streamer, streamInfo) {
-    try {
-      const activeStream = this.activeStreams.get(streamer.name);
-      const guildMessagesMap = this.guildMessages.get(streamer.name);
-      
-      if (!guildMessagesMap || guildMessagesMap.size === 0) {
-        console.log(`📝 Aucun message existant pour ${streamer.name}, création d'une nouvelle notification`);
-        return await this.sendLiveNotification(streamer, streamInfo);
-      }
-
-      // Vérifier s'il y a eu des changements significatifs
-      if (activeStream && !this.hasSignificantChanges(activeStream.streamInfo, streamInfo)) {
-        const timeSinceUpdate = Date.now() - activeStream.lastUpdate;
-        if (timeSinceUpdate < 5 * 60 * 1000) {
-          console.log(`⏭️ Pas de changements significatifs pour ${streamer.name}`);
-          activeStream.lastUpdate = Date.now();
-          return true;
-        }
-      }
-
-      const embed = this.createStreamEmbed(streamer, streamInfo, true);
-      const content = `🚨 **${streamer.name}** est toujours en live ! 🎉`;
-
-      let updateCount = 0;
-
-      // Mettre à jour les messages dans TOUS les serveurs
-      for (const [guildId, messageData] of guildMessagesMap) {
-        try {
-          const guild = this.bot.guilds.cache.get(guildId);
-          if (!guild) continue;
-
-          const channel = guild.channels.cache.get(messageData.channelId.toString());
-          if (!channel) continue;
-
-          const message = await channel.messages.fetch(messageData.messageId);
-          if (message) {
-            await message.edit({
-              content,
-              embeds: [embed],
-            });
-            updateCount++;
-            console.log(`✅ Message mis à jour dans ${guild.name}`);
-          }
-        } catch (error) {
-          console.log(`⚠️ Impossible de mettre à jour dans ${guildId}:`, error.message);
-        }
-      }
-
-      if (updateCount === 0) {
-        console.log(`⚠️ Aucune mise à jour effectuée, recréation des notifications`);
-        this.guildMessages.delete(streamer.name);
-        this.activeStreams.delete(streamer.name);
-        return await this.sendLiveNotification(streamer, streamInfo);
-      }
-
-      if (activeStream) {
-        activeStream.streamInfo = { ...streamInfo };
-        activeStream.lastUpdate = Date.now();
-      }
-
-      logger.info(`✅ Notification mise à jour pour ${streamer.name} dans ${updateCount} serveur(s)`);
-      return true;
-    } catch (error) {
-      logger.error(`❌ Erreur mise à jour notification pour ${streamer.name}: ${error.message}`);
-      return false;
-    }
-  }
-
-  /**
-   * Envoie ou met à jour une notification de stream
-   */
-  async handleStreamNotification(streamer, streamInfo) {
-    try {
-      if (this.isStreamActive(streamer.name)) {
-        console.log(`⏩ Stream déjà actif pour ${streamer.name}, mise à jour...`);
-        return await this.updateLiveNotification(streamer, streamInfo);
-      } else {
-        console.log(`🆕 Nouveau stream détecté pour ${streamer.name}, création notification...`);
-        return await this.sendLiveNotification(streamer, streamInfo);
-      }
-    } catch (error) {
-      logger.error(`❌ Erreur gestion notification pour ${streamer.name}: ${error.message}`);
-      return false;
-    }
-  }
-
-  /**
-   * Crée un embed pour une notification de stream
-   */
-  createStreamEmbed(streamer, streamInfo, isUpdate = false) {
-    const embed = new EmbedBuilder()
-      .setTitle(`🔴 ${streamer.name} est en live !`)
-      .setDescription(streamInfo.title || 'Titre non spécifié')
-      .setColor(Colors.Red)
-      .setURL(streamer.url)
-      .addFields(
-        {
-          name: '🎮 Jeu',
-          value: streamInfo.game || 'Jeu non spécifié',
-          inline: true,
-        },
-        {
-          name: '👥 Spectateurs',
-          value: streamInfo.viewerCount?.toString() || '0',
-          inline: true,
-        },
-        {
-          name: '📊 Statut',
-          value: streamer.status === StreamerStatus.AFFILIE ? '⭐ Affilié' : '🌟 Non-affilié',
-          inline: true,
-        }
-      )
-      .setFooter({
-        text: isUpdate 
-          ? `📺 ${streamer.description} • Mis à jour`
-          : `📺 ${streamer.description}`,
-      })
-      .setTimestamp();
-
-    if (streamInfo.thumbnailUrl) {
-      embed.setImage(streamInfo.thumbnailUrl);
-    }
-
-    return embed;
-  }
-
-  /**
-   * Vérifie si les informations du stream ont changé significativement
-   */
-  hasSignificantChanges(oldInfo, newInfo) {
-    if (!oldInfo || !newInfo) return true;
+class DatabaseManager {
+    constructor(dbDirectory = null) {
+    // ✅ Détection automatique : Railway ou Local
+    const isRailway = process.env.RAILWAY_ENVIRONMENT !== undefined || 
+                     process.env.RAILWAY_PROJECT_ID !== undefined;
     
-    const titleChanged = (oldInfo.title || '') !== (newInfo.title || '');
-    const gameChanged = (oldInfo.game || '') !== (newInfo.game || '');
-    const viewerDiff = Math.abs((oldInfo.viewerCount || 0) - (newInfo.viewerCount || 0));
-    const significantViewerChange = viewerDiff > 10;
-    
-    return titleChanged || gameChanged || significantViewerChange;
-  }
-
-  /**
-   * Nettoie les streams inactifs depuis plus de 30 minutes
-   */
-  cleanupInactiveStreams() {
-    const now = Date.now();
-    const maxAge = 30 * 60 * 1000;
-    
-    let cleaned = 0;
-    for (const [streamerName, streamData] of this.activeStreams.entries()) {
-      if (now - streamData.lastUpdate > maxAge) {
-        console.log(`🧹 Nettoyage du stream inactif: ${streamerName}`);
-        this.activeStreams.delete(streamerName);
-        this.guildMessages.delete(streamerName);
-        this.bot.liveMessages.delete(streamerName);
-        cleaned++;
-      }
+    if (!dbDirectory) {
+        if (isRailway) {
+            // Sur Railway : chemin ABSOLU vers le volume
+            this.dbDirectory = '/app/database/data/guilds';
+            this.masterDbPath = '/app/database/data/master.db';
+            console.log('🚂 Railway détecté - Utilisation du volume persistant');
+            console.log(`   📁 Volume path: /app/database/data`);
+        } else {
+            // En local : chemin relatif
+            this.dbDirectory = './database/guilds';
+            this.masterDbPath = './database/master.db';
+            console.log('💻 Environnement local détecté');
+        }
+    } else {
+        this.dbDirectory = dbDirectory;
+        this.masterDbPath = './database/master.db';
     }
     
-    if (cleaned > 0) {
-      logger.info(`🧹 ${cleaned} stream(s) inactif(s) nettoyé(s)`);
-    }
-  }
-
-  /**
-   * Récupère l'état d'un stream actif
-   */
-  getStreamState(streamerName) {
-    return this.activeStreams.get(streamerName);
-  }
-
-  /**
-   * Récupère tous les streams actifs
-   */
-  getAllActiveStreams() {
-    return Array.from(this.activeStreams.entries());
-  }
-
-  /**
-   * Force le nettoyage d'un streamer spécifique
-   */
-  forceCleanup(streamerName) {
-    this.activeStreams.delete(streamerName);
-    this.guildMessages.delete(streamerName);
-    this.bot.liveMessages.delete(streamerName);
-    logger.info(`🔧 Nettoyage forcé pour ${streamerName}`);
-  }
-
-  /**
-   * Récupère des statistiques de debug
-   */
-  getDebugStats() {
-    const stats = {
-      activeStreamsCount: this.activeStreams.size,
-      activeStreamers: Array.from(this.activeStreams.keys()),
-      streamDetails: [],
-      guildsPerStream: {}
-    };
-
-    for (const [name, data] of this.activeStreams.entries()) {
-      const age = Math.floor((Date.now() - data.streamStartedAt) / 1000 / 60);
-      const lastUpdateAge = Math.floor((Date.now() - data.lastUpdate) / 1000);
-      
-      const guildMessagesMap = this.guildMessages.get(name);
-      const guildCount = guildMessagesMap ? guildMessagesMap.size : 0;
-      
-      stats.streamDetails.push({
-        name,
-        age: `${age}min`,
-        lastUpdate: `${lastUpdateAge}s ago`,
-        viewers: data.streamInfo?.viewerCount || 0,
-        game: data.streamInfo?.game || 'N/A',
-        guilds: guildCount
-      });
-
-      stats.guildsPerStream[name] = guildCount;
-    }
-
-    return stats;
-  }
+    this.connections = new Map();
+    this.masterDb = null;
+    
+    console.log(`📁 DB Directory: ${this.dbDirectory}`);
+    console.log(`📁 Master DB Path: ${this.masterDbPath}`);
 }
 
-module.exports = NotificationManager;
+    // ✅ MÉTHODE DE COMPATIBILITÉ POUR bot.js
+    async addGuild(guildId, guildName, channelId) {
+        const db = await this.getGuildDatabase(guildId, guildName);
+        
+        if (channelId) {
+            await this.setNotificationChannel(guildId, channelId);
+        }
+        
+        return { success: true };
+    }
+
+    // ✅ MÉTHODE DE COMPATIBILITÉ POUR bot.js
+    async getGuild(guildId) {
+        try {
+            const db = await this.getGuildDatabase(guildId);
+            const config = await db.get('SELECT * FROM guild_config WHERE id = 1');
+            
+            return {
+                id: guildId,
+                notification_channel_id: config?.notification_channel_id || null,
+                prefix: config?.prefix || '!',
+                ...config
+            };
+        } catch (error) {
+            return null;
+        }
+    }
+
+    // ✅ MÉTHODE DE COMPATIBILITÉ POUR bot.js
+    async addStreamerToGuild(guildId, twitchUsername, addedBy, customMessage = null) {
+        return await this.addStreamer(guildId, twitchUsername, twitchUsername, addedBy, customMessage);
+    }
+
+    // ✅ MÉTHODE DE COMPATIBILITÉ POUR bot.js
+    async removeStreamerFromGuild(guildId, twitchUsername) {
+        return await this.removeStreamer(guildId, twitchUsername);
+    }
+
+    // ✅ MÉTHODE DE COMPATIBILITÉ POUR bot.js (avec cache)
+    async getAllStreamers() {
+        const allGuilds = await this.masterDb.all('SELECT guild_id FROM registered_guilds WHERE is_active = 1');
+        const streamersMap = new Map();
+        
+        for (const { guild_id } of allGuilds) {
+            try {
+                const guildStreamers = await this.getGuildStreamers(guild_id);
+                for (const streamer of guildStreamers) {
+                    if (!streamersMap.has(streamer.twitch_username)) {
+                        streamersMap.set(streamer.twitch_username, {
+                            id: streamer.id,
+                            twitch_username: streamer.twitch_username,
+                            display_name: streamer.display_name,
+                            status: streamer.status,
+                            is_active: true
+                        });
+                    }
+                }
+            } catch (error) {
+                continue;
+            }
+        }
+        
+        return Array.from(streamersMap.values());
+    }
+
+    // ✅ MÉTHODE DE COMPATIBILITÉ POUR bot.js
+    async getActiveStreams(guildId = null) {
+        // Si guildId spécifié, retourner seulement pour ce serveur
+        if (guildId) {
+            try {
+                const db = await this.getGuildDatabase(guildId);
+                return await db.all(`
+                    SELECT s.twitch_username, s.display_name, s.status, ast.*
+                    FROM active_streams ast
+                    JOIN streamers s ON ast.streamer_id = s.id
+                `);
+            } catch (error) {
+                console.error(`Erreur getActiveStreams pour guild ${guildId}:`, error);
+                return [];
+            }
+        }
+
+        // Sinon, tous les serveurs
+        const allGuilds = await this.masterDb.all('SELECT guild_id FROM registered_guilds WHERE is_active = 1');
+        const activeStreamsMap = new Map();
+        
+        for (const { guild_id } of allGuilds) {
+            try {
+                const db = await this.getGuildDatabase(guild_id);
+                const streams = await db.all(`
+                    SELECT s.twitch_username, s.display_name, s.status, ast.*
+                    FROM active_streams ast
+                    JOIN streamers s ON ast.streamer_id = s.id
+                `);
+                
+                for (const stream of streams) {
+                    if (!activeStreamsMap.has(stream.twitch_username)) {
+                        activeStreamsMap.set(stream.twitch_username, stream);
+                    }
+                }
+            } catch (error) {
+                continue;
+            }
+        }
+        
+        return Array.from(activeStreamsMap.values());
+    }
+
+    // ✅ MÉTHODE DE COMPATIBILITÉ POUR bot.js
+    async updateNotifiedGuilds(twitchUsername, guildIds) {
+        return { success: true };
+    }
+
+    // ✅ MÉTHODE POUR OBTENIR LES STATS GLOBALES
+    async getStats() {
+        const allGuilds = await this.masterDb.all('SELECT COUNT(*) as count FROM registered_guilds WHERE is_active = 1');
+        const allStreamers = await this.getAllStreamers();
+        const activeStreams = await this.getActiveStreams();
+        
+        let totalFollows = 0;
+        let affiliatedCount = 0;
+        const guilds = await this.masterDb.all('SELECT guild_id FROM registered_guilds WHERE is_active = 1');
+        
+        for (const { guild_id } of guilds) {
+            try {
+                const db = await this.getGuildDatabase(guild_id);
+                const count = await db.get('SELECT COUNT(*) as count FROM streamers');
+                const affiliated = await db.get('SELECT COUNT(*) as count FROM streamers WHERE status = "affilie"');
+                totalFollows += count.count || 0;
+                affiliatedCount += affiliated.count || 0;
+            } catch (error) {
+                continue;
+            }
+        }
+        
+        return {
+            guilds: allGuilds[0].count,
+            streamers: allStreamers.length,
+            activeStreams: activeStreams.length,
+            totalFollows,
+            affiliatedStreamers: affiliatedCount
+        };
+    }
+
+    async init() {
+        await fs.mkdir(this.dbDirectory, { recursive: true });
+        await this.initMasterDatabase();
+    }
+
+    async getGuildDatabaseConnection(guildId, guildName = null) {
+        return await this.getGuildDatabase(guildId, guildName);
+    }
+
+    async initMasterDatabase() {
+        this.masterDb = await open({
+            filename: this.masterDbPath,
+            driver: sqlite3.Database
+        });
+
+        await this.masterDb.exec(`
+            CREATE TABLE IF NOT EXISTS registered_guilds (
+                guild_id TEXT PRIMARY KEY,
+                guild_name TEXT,
+                db_path TEXT,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                last_accessed DATETIME DEFAULT CURRENT_TIMESTAMP,
+                is_active BOOLEAN DEFAULT 1
+            )
+        `);
+    }
+
+    async getGuildDatabase(guildId, guildName = null) {
+        if (this.connections.has(guildId)) {
+            return this.connections.get(guildId);
+        }
+
+        const dbPath = path.join(this.dbDirectory, `guild_${guildId}.db`);
+        
+        const db = await open({
+            filename: dbPath,
+            driver: sqlite3.Database
+        });
+
+        await this.createGuildTables(db);
+        await this.registerGuild(guildId, guildName, dbPath);
+        this.connections.set(guildId, db);
+
+        return db;
+    }
+
+    async createGuildTables(db) {
+        // Configuration du serveur
+        await db.exec(`
+            CREATE TABLE IF NOT EXISTS guild_config (
+                id INTEGER PRIMARY KEY CHECK (id = 1),
+                notification_channel_id TEXT,
+                live_affilie_channel_id TEXT,
+                live_non_affilie_channel_id TEXT,
+                prefix TEXT DEFAULT '!',
+                language TEXT DEFAULT 'fr',
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+
+        await db.run(`
+            INSERT OR IGNORE INTO guild_config (id) VALUES (1)
+        `);
+
+        // Migration: Ajouter les nouvelles colonnes si elles n'existent pas
+        try {
+            const columns = await db.all("PRAGMA table_info(guild_config)");
+            
+            if (!columns.some(col => col.name === 'live_affilie_channel_id')) {
+                console.log('Migration: Ajout de live_affilie_channel_id...');
+                await db.exec(`ALTER TABLE guild_config ADD COLUMN live_affilie_channel_id TEXT`);
+            }
+            
+            if (!columns.some(col => col.name === 'live_non_affilie_channel_id')) {
+                console.log('Migration: Ajout de live_non_affilie_channel_id...');
+                await db.exec(`ALTER TABLE guild_config ADD COLUMN live_non_affilie_channel_id TEXT`);
+            }
+        } catch (error) {
+            console.warn('Migration channels:', error.message);
+        }
+
+        // Table streamers avec colonne status
+        await db.exec(`
+            CREATE TABLE IF NOT EXISTS streamers (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                twitch_username TEXT UNIQUE NOT NULL,
+                display_name TEXT,
+                custom_message TEXT,
+                notification_enabled BOOLEAN DEFAULT 1,
+                status TEXT DEFAULT 'non_affilie' CHECK(status IN ('affilie', 'non_affilie')),
+                added_by TEXT,
+                added_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+
+        // Vérifier si la colonne status existe déjà, sinon l'ajouter (migration)
+        try {
+            const columns = await db.all("PRAGMA table_info(streamers)");
+            const hasStatus = columns.some(col => col.name === 'status');
+            
+            if (!hasStatus) {
+                console.log('Migration: Ajout de la colonne status...');
+                await db.exec(`
+                    ALTER TABLE streamers 
+                    ADD COLUMN status TEXT DEFAULT 'non_affilie' CHECK(status IN ('affilie', 'non_affilie'))
+                `);
+            }
+        } catch (error) {
+            console.warn('Migration status:', error.message);
+        }
+
+        // Historique des streams
+        await db.exec(`
+            CREATE TABLE IF NOT EXISTS stream_history (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                streamer_id INTEGER,
+                stream_id TEXT,
+                title TEXT,
+                game_name TEXT,
+                viewer_count INTEGER,
+                started_at DATETIME,
+                ended_at DATETIME,
+                duration_minutes INTEGER,
+                FOREIGN KEY (streamer_id) REFERENCES streamers(id) ON DELETE CASCADE
+            )
+        `);
+
+        // Streams actifs
+        await db.exec(`
+            CREATE TABLE IF NOT EXISTS active_streams (
+                streamer_id INTEGER PRIMARY KEY,
+                stream_id TEXT,
+                title TEXT,
+                game_name TEXT,
+                viewer_count INTEGER,
+                started_at DATETIME,
+                notification_sent BOOLEAN DEFAULT 0,
+                FOREIGN KEY (streamer_id) REFERENCES streamers(id) ON DELETE CASCADE
+            )
+        `);
+
+        await db.exec(`
+            CREATE INDEX IF NOT EXISTS idx_streamers_username ON streamers(twitch_username);
+            CREATE INDEX IF NOT EXISTS idx_streamers_status ON streamers(status);
+            CREATE INDEX IF NOT EXISTS idx_stream_history_streamer ON stream_history(streamer_id);
+        `);
+    }
+
+    async registerGuild(guildId, guildName, dbPath) {
+        await this.masterDb.run(`
+            INSERT OR REPLACE INTO registered_guilds (guild_id, guild_name, db_path, last_accessed)
+            VALUES (?, ?, ?, datetime('now'))
+        `, [guildId, guildName, dbPath]);
+    }
+
+    // === MÉTHODES POUR GÉRER LES STREAMERS ===
+    async addStreamer(guildId, twitchUsername, displayName, addedBy, customMessage = null, status = 'non_affilie') {
+        const db = await this.getGuildDatabase(guildId);
+        
+        try {
+            const result = await db.run(`
+                INSERT INTO streamers (twitch_username, display_name, custom_message, added_by, status)
+                VALUES (?, ?, ?, ?, ?)
+            `, [twitchUsername.toLowerCase(), displayName, customMessage, addedBy, status]);
+            
+            return { success: true, streamerId: result.lastID };
+        } catch (error) {
+            if (error.code === 'SQLITE_CONSTRAINT_UNIQUE') {
+                return { success: false, error: 'Ce streamer est déjà suivi' };
+            }
+            throw error;
+        }
+    }
+
+    async removeStreamer(guildId, twitchUsername) {
+        const db = await this.getGuildDatabase(guildId);
+        
+        const result = await db.run(`
+            DELETE FROM streamers WHERE twitch_username = ?
+        `, [twitchUsername.toLowerCase()]);
+
+        return { success: result.changes > 0 };
+    }
+
+    async getGuildStreamers(guildId) {
+        const db = await this.getGuildDatabase(guildId);
+        
+        return await db.all(`
+            SELECT * FROM streamers 
+            WHERE notification_enabled = 1
+            ORDER BY status DESC, twitch_username
+        `);
+    }
+
+    async getStreamer(guildId, twitchUsername) {
+        const db = await this.getGuildDatabase(guildId);
+        
+        return await db.get(`
+            SELECT * FROM streamers WHERE twitch_username = ?
+        `, [twitchUsername.toLowerCase()]);
+    }
+
+    // 🆕 NOUVELLE MÉTHODE: Changer le statut d'un streamer
+    async updateStreamerStatus(guildId, twitchUsername, status) {
+        if (!['affilie', 'non_affilie'].includes(status)) {
+            return { success: false, error: 'Statut invalide. Utilisez "affilie" ou "non_affilie"' };
+        }
+
+        const db = await this.getGuildDatabase(guildId);
+        
+        const result = await db.run(`
+            UPDATE streamers 
+            SET status = ?
+            WHERE twitch_username = ?
+        `, [status, twitchUsername.toLowerCase()]);
+
+        return { 
+            success: result.changes > 0,
+            error: result.changes === 0 ? 'Streamer non trouvé' : null
+        };
+    }
+
+    // 🆕 NOUVELLE MÉTHODE: Obtenir les streamers par statut
+    async getStreamersByStatus(guildId, status) {
+        const db = await this.getGuildDatabase(guildId);
+        
+        return await db.all(`
+            SELECT * FROM streamers 
+            WHERE status = ? AND notification_enabled = 1
+            ORDER BY twitch_username
+        `, [status]);
+    }
+
+    // === GESTION DES STREAMS ACTIFS ===
+    async setStreamActive(guildId, twitchUsername, streamData) {
+        const db = await this.getGuildDatabase(guildId);
+        const streamer = await this.getStreamer(guildId, twitchUsername);
+        
+        if (!streamer) return { success: false, error: 'Streamer non trouvé' };
+
+        await db.run(`
+            INSERT OR REPLACE INTO active_streams 
+            (streamer_id, stream_id, title, game_name, viewer_count, started_at, notification_sent)
+            VALUES (?, ?, ?, ?, ?, ?, 0)
+        `, [
+            streamer.id,
+            streamData.id,
+            streamData.title,
+            streamData.game_name,
+            streamData.viewer_count,
+            streamData.started_at
+        ]);
+
+        return { success: true };
+    }
+
+    async setStreamInactive(guildId, twitchUsername) {
+        const db = await this.getGuildDatabase(guildId);
+        const streamer = await this.getStreamer(guildId, twitchUsername);
+        
+        if (!streamer) return { success: false };
+
+        const activeStream = await db.get(`
+            SELECT * FROM active_streams WHERE streamer_id = ?
+        `, [streamer.id]);
+
+        if (activeStream) {
+            const duration = Math.floor(
+                (new Date() - new Date(activeStream.started_at)) / 60000
+            );
+
+            await db.run(`
+                INSERT INTO stream_history 
+                (streamer_id, stream_id, title, game_name, viewer_count, started_at, ended_at, duration_minutes)
+                VALUES (?, ?, ?, ?, ?, ?, datetime('now'), ?)
+            `, [
+                streamer.id,
+                activeStream.stream_id,
+                activeStream.title,
+                activeStream.game_name,
+                activeStream.viewer_count,
+                activeStream.started_at,
+                duration
+            ]);
+        }
+
+        await db.run(`
+            DELETE FROM active_streams WHERE streamer_id = ?
+        `, [streamer.id]);
+
+        return { success: true };
+    }
+
+    async markNotificationSent(guildId, twitchUsername) {
+        const db = await this.getGuildDatabase(guildId);
+        const streamer = await this.getStreamer(guildId, twitchUsername);
+        
+        if (!streamer) return { success: false };
+
+        await db.run(`
+            UPDATE active_streams 
+            SET notification_sent = 1
+            WHERE streamer_id = ?
+        `, [streamer.id]);
+
+        return { success: true };
+    }
+
+    // === CONFIGURATION DU SERVEUR ===
+    async setNotificationChannel(guildId, channelId) {
+        const db = await this.getGuildDatabase(guildId);
+        
+        await db.run(`
+            UPDATE guild_config SET notification_channel_id = ?, updated_at = datetime('now')
+            WHERE id = 1
+        `, [channelId]);
+
+        return { success: true };
+    }
+
+    async getGuildConfig(guildId) {
+        const db = await this.getGuildDatabase(guildId);
+        
+        return await db.get(`SELECT * FROM guild_config WHERE id = 1`);
+    }
+
+    // 🆕 NOUVELLE MÉTHODE: Configurer les channels séparés
+    async setLiveChannels(guildId, affilieChannelId, nonAffilieChannelId) {
+        const db = await this.getGuildDatabase(guildId);
+        
+        await db.run(`
+            UPDATE guild_config 
+            SET live_affilie_channel_id = ?, 
+                live_non_affilie_channel_id = ?,
+                updated_at = datetime('now')
+            WHERE id = 1
+        `, [affilieChannelId, nonAffilieChannelId]);
+
+        return { success: true };
+    }
+
+    // 🆕 NOUVELLE MÉTHODE: Configurer un seul type de channel
+    async setLiveChannel(guildId, channelType, channelId) {
+        const db = await this.getGuildDatabase(guildId);
+        
+        const column = channelType === 'affilie' 
+            ? 'live_affilie_channel_id' 
+            : 'live_non_affilie_channel_id';
+        
+        await db.run(`
+            UPDATE guild_config 
+            SET ${column} = ?,
+                updated_at = datetime('now')
+            WHERE id = 1
+        `, [channelId]);
+
+        return { success: true };
+    }
+
+    // === STATISTIQUES ===
+    async getGuildStats(guildId) {
+        const db = await this.getGuildDatabase(guildId);
+        
+        const streamersCount = await db.get('SELECT COUNT(*) as count FROM streamers');
+        const activeStreamsCount = await db.get('SELECT COUNT(*) as count FROM active_streams');
+        const totalStreams = await db.get('SELECT COUNT(*) as count FROM stream_history');
+        const affiliatedCount = await db.get('SELECT COUNT(*) as count FROM streamers WHERE status = "affilie"');
+
+        return {
+            streamers: streamersCount.count,
+            activeStreams: activeStreamsCount.count,
+            totalStreams: totalStreams.count,
+            affiliatedStreamers: affiliatedCount.count
+        };
+    }
+
+    async getGlobalStats() {
+        const guilds = await this.masterDb.all(`
+            SELECT COUNT(*) as total, 
+                   SUM(CASE WHEN is_active = 1 THEN 1 ELSE 0 END) as active
+            FROM registered_guilds
+        `);
+
+        return {
+            totalGuilds: guilds[0].total,
+            activeGuilds: guilds[0].active,
+            cachedConnections: this.connections.size
+        };
+    }
+
+    // === MAINTENANCE ===
+    async closeGuildConnection(guildId) {
+        if (this.connections.has(guildId)) {
+            const db = this.connections.get(guildId);
+            await db.close();
+            this.connections.delete(guildId);
+        }
+    }
+
+    async closeAll() {
+        for (const [guildId, db] of this.connections) {
+            await db.close();
+        }
+        this.connections.clear();
+
+        if (this.masterDb) {
+            await this.masterDb.close();
+        }
+    }
+
+    async cleanupInactiveConnections(maxIdleMinutes = 30) {
+        console.log('Cleanup: implement idle connection tracking if needed');
+    }
+}
+
+module.exports = DatabaseManager;
