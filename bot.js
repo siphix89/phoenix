@@ -1,17 +1,4 @@
-async checkStreamerBatch(streamers) {
-    try {
-      const usernames = streamers.map(s => s.twitch_username).join('&user_login=');
-      
-      const response = await fetch(`https://api.twitch.tv/helix/streams?user_login=${usernames}`, {
-        headers: {
-          'Client-ID': this.config.twitchClientId,
-          'Authorization': `Bearer ${this.twitch.accessToken}`
-        }
-      });
-
-      if (!response.ok) {
-        if (response.status === 401) {
-          throw new Error('// ===== bot.js - VERSION COMPLÈTE ET FONCTIONNELLE =====
+// ===== bot.js - VERSION COMPLÈTE ET CORRIGÉE =====
 const { Client, GatewayIntentBits, Partials, EmbedBuilder, Colors, ActivityType, Collection } = require('discord.js');
 const path = require('path');
 const fs = require('fs');
@@ -68,7 +55,7 @@ const MAX_TWITCH_FAILURES = 5;
 const MAX_LIVE_STREAMERS = 1000;
 const BATCH_SIZE = 100;
 const BATCH_DELAY_MS = 1000;
-const TOKEN_CLEANUP_INTERVAL = 3600000; // 1 heure
+const TOKEN_CLEANUP_INTERVAL = 3600000;
 const INITIALIZATION_RETRY_DELAY = 5000;
 
 class StreamerBot extends Client {
@@ -784,18 +771,15 @@ class StreamerBot extends Client {
       
       const currentlyLive = liveStreams.map(stream => stream.user_login.toLowerCase());
       
-      // ✅ CORRECTION CRITIQUE: Filtrer VRAIMENT les nouveaux streams
+      // ✅ CORRECTION CRITIQUE: Double vérification pour éviter doublons
       const newStreams = liveStreams.filter(stream => {
         const username = stream.user_login.toLowerCase();
         
-        // Vérifier dans NotificationManager
         const isInNotifManager = this.notificationManager && 
                                  this.notificationManager.isStreamActive(username);
         
-        // Vérifier dans liveStreamers (double sécurité)
         const isInLiveStreamers = this.liveStreamers.has(username);
         
-        // C'est nouveau SEULEMENT si absent des DEUX
         return !isInNotifManager && !isInLiveStreamers;
       });
 
@@ -807,7 +791,6 @@ class StreamerBot extends Client {
         streamers.some(s => s.twitch_username === username)
       );
 
-      // ✅ CORRECTION: Logs détaillés
       if (newStreams.length > 0) {
         logger.info(`🆕 ${newStreams.length} NOUVEAU(X) stream(s) détecté(s)`);
         for (const stream of newStreams) {
@@ -819,7 +802,6 @@ class StreamerBot extends Client {
         );
       }
 
-      // ✅ CORRECTION: Ne mettre à jour QUE les streams déjà notifiés
       const updatedStreams = liveStreams.filter(stream => {
         const username = stream.user_login.toLowerCase();
         return this.notificationManager && 
@@ -859,18 +841,15 @@ class StreamerBot extends Client {
     }
   }
 
-  // ✅ MÉTHODE CORRIGÉE: handleStreamStarted avec double vérification
   async handleStreamStarted(streamData) {
     const username = streamData.user_login.toLowerCase();
     
     try {
-      // ✅ VÉRIFICATION #1: NotificationManager
       if (this.notificationManager && this.notificationManager.isStreamActive(username)) {
         logger.info(`⏩ ${username} déjà actif dans NotificationManager, IGNORÉ`);
         return;
       }
 
-      // ✅ VÉRIFICATION #2: liveStreamers (sécurité)
       if (this.liveStreamers.has(username)) {
         logger.info(`⏩ ${username} déjà dans liveStreamers, IGNORÉ`);
         return;
@@ -1104,7 +1083,7 @@ class StreamerBot extends Client {
           );
         }
       } catch (error) {
-        // Ignorer les erreurs individuelles
+        // Ignorer erreurs individuelles
       }
     });
 
