@@ -1,30 +1,68 @@
+// ===== NotificationManager.js - VERSION OPTIMISÉE (Meilleur des 2 versions) =====
 const { EmbedBuilder, Colors } = require('discord.js');
 const { logger, StreamerStatus } = require('../config');
 
 class NotificationManager {
   constructor(bot) {
     this.bot = bot;
+    
+    // ✅ Structure unifiée (inspirée V2) avec métadonnées enrichies (inspirée V1)
+    // Format: Map<streamerUsername, {
+    //   streamStartedAt: timestamp,
+    //   lastUpdate: timestamp,
+    //   globalStreamInfo: {...},
+    //   guilds: Map<guildId, { messageId, channelId, timestamp }>
+    // }>
     this.activeStreams = new Map();
-    // Format: Map<streamerName, Map<guildId, {messageId, channelId}>>
-    this.guildMessages = new Map();
+    
+    // ✅ Protection anti-doublons (V2)
+    this.processingStreams = new Set();
+    
+    this.logger = logger || console;
   }
 
   /**
-   * Vérifie si un streamer est déjà considéré comme en live
+   * ✅ OPTIMISÉ: Vérification robuste de l'état du stream
    */
-  isStreamActive(streamerName) {
-    return this.activeStreams.has(streamerName);
+  isStreamActive(streamerUsername) {
+    const username = streamerUsername.toLowerCase();
+    const streamData = this.activeStreams.get(username);
+    
+    if (!streamData || !streamData.guilds || streamData.guilds.size === 0) {
+      return false;
+    }
+    
+    return true;
   }
 
   /**
-   * Récupère les channels configurés pour un serveur depuis la DB
+   * ✅ NOUVEAU: Récupère toutes les infos d'un stream actif
+   */
+  getStreamState(streamerUsername) {
+    const username = streamerUsername.toLowerCase();
+    return this.activeStreams.get(username) || null;
+  }
+
+  /**
+   * ✅ NOUVEAU: Récupère les infos pour une guild spécifique
+   */
+  getStreamData(streamerUsername, guildId) {
+    const username = streamerUsername.toLowerCase();
+    const streamData = this.activeStreams.get(username);
+    
+    if (!streamData || !streamData.guilds) return null;
+    return streamData.guilds.get(guildId) || null;
+  }
+
+  /**
+   * ✅ OPTIMISÉ: Récupération config guild depuis DB
    */
   async getGuildChannels(guildId) {
     try {
       const guildConfig = await this.bot.db.getGuildConfig(guildId);
       
       if (!guildConfig) {
-        console.log(`⚠️ Aucune configuration trouvée pour le serveur ${guildId}`);
+        this.logger.warn(`⚠️ Configuration non trouvée pour guild ${guildId}`);
         return null;
       }
 
@@ -33,130 +71,148 @@ class NotificationManager {
         liveNonAffilieChannel: guildConfig.live_non_affilie_channel_id || guildConfig.notification_channel_id
       };
     } catch (error) {
-      console.error(`❌ Erreur récupération config pour ${guildId}:`, error.message);
+      this.logger.error(`❌ Erreur récupération config ${guildId}:`, error.message);
       return null;
     }
   }
 
   /**
-   * ✅ MÉTHODE CORRIGÉE: Envoie une notification à UN SEUL serveur spécifique
+   * ✅ OPTIMISÉ: Envoi notification à UNE guild (avec protection anti-doublons V2 + vérifications V1)
    */
   async sendLiveNotificationToGuild(guildId, streamer, streamInfo) {
+    const username = streamer.name.toLowerCase();
+    
     try {
-      console.log(`🔍 Envoi notification pour ${streamer.name} sur serveur ${guildId}`);
-      
-      // ✅ ÉTAPE 1 : MARQUER COMME ACTIF IMMÉDIATEMENT (avant toute vérification)
-      // Cela évite les race conditions et les doublons
-      if (!this.activeStreams.has(streamer.name)) {
-        this.activeStreams.set(streamer.name, {
-          lastUpdate: Date.now(),
-          streamStartedAt: Date.now(),
-          streamInfo: { ...streamInfo }
-        });
-        console.log(`✅ ${streamer.name} marqué comme actif dans NotificationManager`);
-      } else {
-        console.log(`⚠️ ${streamer.name} déjà actif dans NotificationManager`);
-        // Si déjà actif, vérifier si on doit quand même envoyer pour CE serveur
-        const guildMessagesMap = this.guildMessages.get(streamer.name);
-        if (guildMessagesMap && guildMessagesMap.has(guildId)) {
-          console.log(`⏭️ Message déjà envoyé pour ${streamer.name} sur ${guildId}`);
-          return true; // Déjà envoyé sur ce serveur
-        }
+      // 🔒 Protection anti-doublons (V2)
+      const processingKey = `${username}-${guildId}`;
+      if (this.processingStreams.has(processingKey)) {
+        this.logger.info(`⏭️ Notification déjà en cours pour ${username} sur ${guildId}`);
+        return false;
       }
       
-      // ✅ ÉTAPE 2 : Vérifications du serveur
+      this.processingStreams.add(processingKey);
+
+      // ✅ Vérifier si notification déjà active pour cette guild
+      const existingNotif = this.getStreamData(username, guildId);
+      if (existingNotif) {
+        this.logger.info(`⏭️ Notification déjà active pour ${username} sur ${guildId}`);
+        this.processingStreams.delete(processingKey);
+        return false;
+      }
+
+      // ✅ Récupérer la guild Discord
       const guild = this.bot.guilds.cache.get(guildId);
       if (!guild) {
-        console.log(`⚠️ Serveur ${guildId} non trouvé`);
+        this.logger.warn(`⚠️ Guild ${guildId} non trouvée`);
+        this.processingStreams.delete(processingKey);
         return false;
       }
 
-      // Vérifier si le streamer est suivi dans ce serveur
+      // ✅ Vérifier si le streamer est suivi (V1)
       const guildStreamers = await this.bot.db.getGuildStreamers(guildId);
-      const isFollowed = guildStreamers?.some(s => 
-        s.twitch_username.toLowerCase() === streamer.name.toLowerCase()
+      const streamerData = guildStreamers?.find(s => 
+        s.twitch_username.toLowerCase() === username
       );
       
-      if (!isFollowed) {
-        console.log(`⏭️ ${streamer.name} n'est pas suivi dans ${guild.name}`);
+      if (!streamerData || !streamerData.notification_enabled) {
+        this.logger.info(`⏭️ ${username} non suivi ou notifications désactivées sur ${guild.name}`);
+        this.processingStreams.delete(processingKey);
         return false;
       }
 
-      // Récupérer la config du serveur
+      // ✅ Récupérer les channels configurés
       const guildChannels = await this.getGuildChannels(guildId);
       
       if (!guildChannels) {
-        console.log(`⚠️ Pas de configuration pour ${guild.name}`);
+        this.logger.warn(`⚠️ Pas de configuration pour ${guild.name}`);
+        this.processingStreams.delete(processingKey);
         return false;
       }
 
-      // Déterminer le channel approprié
-      const channelId = streamer.status === StreamerStatus.AFFILIE 
+      // ✅ Déterminer le bon channel selon statut
+      const isAffilie = streamerData.status === 'affilie' || streamer.status === StreamerStatus.AFFILIE;
+      const targetChannelId = isAffilie 
         ? guildChannels.liveAffilieChannel 
         : guildChannels.liveNonAffilieChannel;
 
-      if (!channelId || channelId === '0' || channelId === 0) {
-        console.log(`⚠️ Pas de channel configuré pour ${guild.name} (${streamer.status})`);
+      const channelIdStr = String(targetChannelId);
+      if (!targetChannelId || channelIdStr === '0' || channelIdStr === '') {
+        this.logger.warn(`⚠️ Pas de channel configuré pour ${guild.name} (${isAffilie ? 'affilié' : 'non-affilié'})`);
+        this.processingStreams.delete(processingKey);
         return false;
       }
 
-      const channel = guild.channels.cache.get(channelId.toString());
+      // ✅ Récupérer le channel Discord
+      const channel = guild.channels.cache.get(channelIdStr);
       
       if (!channel) {
-        console.error(`❌ Channel ${channelId} non trouvé dans ${guild.name}`);
+        this.logger.error(`❌ Channel ${channelIdStr} non trouvé dans ${guild.name}`);
+        this.processingStreams.delete(processingKey);
         return false;
       }
 
-      // Vérifier les permissions
+      // ✅ Vérifier les permissions
       const permissions = channel.permissionsFor(this.bot.user);
       if (!permissions?.has('SendMessages') || !permissions?.has('EmbedLinks')) {
-        console.error(`❌ Permissions insuffisantes dans ${guild.name}`);
+        this.logger.error(`❌ Permissions insuffisantes dans ${guild.name}`);
+        this.processingStreams.delete(processingKey);
         return false;
       }
 
-      console.log(`📤 Envoi dans ${guild.name} (channel: ${channel.name})`);
+      this.logger.info(`📤 Envoi notification pour ${streamer.name} dans ${guild.name} (${channel.name})`);
 
-      // ✅ ÉTAPE 3 : Créer et envoyer l'embed
-      const embed = this.createStreamEmbed(streamer, streamInfo, false);
-      const content = `🚨 **${streamer.name}** vient de commencer un stream ! 🎉`;
+      // ✅ Créer l'embed
+      const embed = this.createLiveEmbed(streamer, streamInfo, false);
+      
+      // ✅ Message personnalisé (V2) avec fallback (V1)
+      let content = streamerData.custom_message || `🚨 **${streamer.name}** vient de commencer un stream ! 🎉`;
+      content = content
+        .replace('{streamer}', streamer.name)
+        .replace('{game}', streamInfo.game || 'Pas de catégorie')
+        .replace('{title}', streamInfo.title || 'Pas de titre');
 
-      // Envoyer la notification
-      const message = await channel.send({
-        content,
-        embeds: [embed],
-      });
+      // 📤 ENVOI DU MESSAGE
+      const message = await channel.send({ content, embeds: [embed] });
 
-      console.log(`✅ Message envoyé dans ${guild.name} (ID: ${message.id})`);
+      this.logger.info(`✅ Notification envoyée dans ${guild.name} (msg: ${message.id})`);
 
-      // ✅ ÉTAPE 4 : Stocker les infos du message POUR CE SERVEUR
-      if (!this.guildMessages.has(streamer.name)) {
-        this.guildMessages.set(streamer.name, new Map());
+      // ✅ ENREGISTREMENT dans activeStreams (structure unifiée optimisée)
+      if (!this.activeStreams.has(username)) {
+        this.activeStreams.set(username, {
+          streamStartedAt: Date.now(),
+          lastUpdate: Date.now(),
+          globalStreamInfo: { ...streamInfo },
+          guilds: new Map()
+        });
+        this.logger.info(`✅ ${streamer.name} marqué comme actif`);
       }
       
-      this.guildMessages.get(streamer.name).set(guildId, {
+      const streamData = this.activeStreams.get(username);
+      streamData.guilds.set(guildId, {
         messageId: message.id,
-        channelId: channelId
+        channelId: channel.id,
+        timestamp: Date.now()
       });
 
-      // Compatibilité avec l'ancien système (premier message)
-      if (!this.bot.liveMessages.has(streamer.name)) {
-        this.bot.liveMessages.set(streamer.name, message.id);
+      // ✅ Compatibilité avec l'ancien système (V1)
+      if (!this.bot.liveMessages.has(username)) {
+        this.bot.liveMessages.set(username, message.id);
       }
 
+      this.processingStreams.delete(processingKey);
       this.bot.metrics?.recordNotification();
+      
       return true;
-      
+
     } catch (error) {
-      console.error(`❌ Erreur envoi dans ${guildId}:`, error.message);
-      console.error(error.stack);
+      this.logger.error(`❌ Erreur envoi notification ${username} sur ${guildId}:`, error.message);
+      this.processingStreams.delete(`${username}-${guildId}`);
       
-      // ✅ IMPORTANT : En cas d'erreur, nettoyer si nécessaire
-      // Si c'était le premier serveur et qu'on a échoué, supprimer de activeStreams
-      const guildMessagesMap = this.guildMessages.get(streamer.name);
-      if (!guildMessagesMap || guildMessagesMap.size === 0) {
-        console.log(`🧹 Nettoyage de ${streamer.name} suite à l'échec (aucun serveur notifié)`);
-        this.activeStreams.delete(streamer.name);
-        this.guildMessages.delete(streamer.name);
+      // ✅ Nettoyage si aucune guild n'a de notification
+      const streamData = this.activeStreams.get(username);
+      if (!streamData || !streamData.guilds || streamData.guilds.size === 0) {
+        this.activeStreams.delete(username);
+        this.bot.liveMessages.delete(username);
       }
       
       return false;
@@ -164,263 +220,243 @@ class NotificationManager {
   }
 
   /**
-   * Envoie une notification à TOUS les serveurs configurés
+   * ✅ OPTIMISÉ: Envoi notifications à TOUTES les guilds configurées
    */
   async sendLiveNotification(streamer, streamInfo) {
     try {
-      console.log('🔍 Début sendLiveNotification pour:', streamer.name);
+      const username = streamer.name.toLowerCase();
       
-      if (this.isStreamActive(streamer.name)) {
-        console.log(`⚠️ Stream déjà actif pour ${streamer.name}, notification ignorée`);
+      this.logger.info(`🔍 Début sendLiveNotification pour: ${streamer.name}`);
+      
+      // ✅ Vérifier si déjà actif
+      if (this.isStreamActive(username)) {
+        this.logger.warn(`⚠️ Stream déjà actif pour ${username}, notification ignorée`);
         return true;
       }
 
-      const embed = this.createStreamEmbed(streamer, streamInfo, false);
-      const content = `🚨 **${streamer.name}** vient de commencer un stream ! 🎉`;
-
       let successCount = 0;
-      const guildMessagesMap = new Map();
 
-      // Envoyer à TOUS les serveurs où le streamer est suivi
+      // ✅ Envoyer à toutes les guilds où le bot est présent
       for (const [guildId, guild] of this.bot.guilds.cache) {
-        try {
-          const guildStreamers = await this.bot.db.getGuildStreamers(guildId);
-          const isFollowed = guildStreamers?.some(s => 
-            s.twitch_username.toLowerCase() === streamer.name.toLowerCase()
-          );
-          
-          if (!isFollowed) {
-            console.log(`⏭️ ${streamer.name} n'est pas suivi dans ${guild.name}`);
-            continue;
-          }
-
-          const guildChannels = await this.getGuildChannels(guildId);
-          
-          if (!guildChannels) {
-            console.log(`⚠️ Pas de configuration pour ${guild.name}`);
-            continue;
-          }
-
-          const channelId = streamer.status === StreamerStatus.AFFILIE 
-            ? guildChannels.liveAffilieChannel 
-            : guildChannels.liveNonAffilieChannel;
-
-          if (!channelId || channelId === '0' || channelId === 0) {
-            console.log(`⚠️ Pas de channel configuré pour ${guild.name} (${streamer.status})`);
-            continue;
-          }
-
-          const channel = guild.channels.cache.get(channelId.toString());
-          
-          if (!channel) {
-            console.error(`❌ Channel ${channelId} non trouvé dans ${guild.name}`);
-            continue;
-          }
-
-          const permissions = channel.permissionsFor(this.bot.user);
-          if (!permissions?.has('SendMessages') || !permissions?.has('EmbedLinks')) {
-            console.error(`❌ Permissions insuffisantes dans ${guild.name}`);
-            continue;
-          }
-
-          console.log(`📤 Envoi dans ${guild.name} (channel: ${channel.name})`);
-
-          const message = await channel.send({
-            content,
-            embeds: [embed],
-          });
-
-          console.log(`✅ Message envoyé dans ${guild.name} (ID: ${message.id})`);
-
-          guildMessagesMap.set(guildId, {
-            messageId: message.id,
-            channelId: channelId
-          });
-
-          successCount++;
-        } catch (error) {
-          console.error(`❌ Erreur envoi dans ${guild.name}:`, error.message);
-        }
+        const sent = await this.sendLiveNotificationToGuild(guildId, streamer, streamInfo);
+        if (sent) successCount++;
       }
 
       if (successCount === 0) {
-        console.error('❌ Aucune notification envoyée dans aucun serveur');
+        this.logger.error(`❌ Aucune notification envoyée pour ${username}`);
         return false;
       }
 
-      this.activeStreams.set(streamer.name, {
-        lastUpdate: Date.now(),
-        streamStartedAt: Date.now(),
-        streamInfo: { ...streamInfo }
-      });
-
-      this.guildMessages.set(streamer.name, guildMessagesMap);
-
-      const firstMessage = guildMessagesMap.values().next().value;
-      if (firstMessage) {
-        this.bot.liveMessages.set(streamer.name, firstMessage.messageId);
-      }
-
-      this.bot.metrics?.recordNotification();
-      logger.info(`✅ Notifications live envoyées pour ${streamer.name} dans ${successCount} serveur(s)`);
+      this.logger.info(`✅ Notifications envoyées pour ${streamer.name} dans ${successCount} serveur(s)`);
       return true;
+
     } catch (error) {
-      console.error('❌ ERREUR COMPLÈTE:', error);
-      logger.error(`❌ Erreur envoi notification pour ${streamer.name}: ${error.message}`);
+      this.logger.error(`❌ Erreur sendLiveNotification pour ${streamer.name}:`, error.message);
       this.bot.metrics?.recordError();
       return false;
     }
   }
 
   /**
-   * Supprime les notifications de stream dans tous les serveurs
+   * ✅ OPTIMISÉ: Mise à jour notifications (avec détection changements V1 + Promise.allSettled V2)
    */
-  async removeLiveNotification(streamerName) {
+  async updateLiveNotification(streamer, streamInfo) {
+    const username = streamer.name.toLowerCase();
+    
     try {
-      const guildMessagesMap = this.guildMessages.get(streamerName);
+      const streamData = this.activeStreams.get(username);
       
-      if (!guildMessagesMap || guildMessagesMap.size === 0) {
-        console.log(`⚠️ Aucun message à supprimer pour ${streamerName}`);
-        this.activeStreams.delete(streamerName);
-        this.bot.liveMessages.delete(streamerName);
-        return;
+      if (!streamData || !streamData.guilds || streamData.guilds.size === 0) {
+        this.logger.warn(`⚠️ Aucune notification active à mettre à jour pour ${username}`);
+        return false;
+      }
+
+      // ✅ Vérifier si changements significatifs (V1)
+      const hasSignificantChanges = this.hasSignificantChanges(
+        streamData.globalStreamInfo, 
+        streamInfo
+      );
+
+      const timeSinceUpdate = Date.now() - streamData.lastUpdate;
+      
+      if (!hasSignificantChanges && timeSinceUpdate < 5 * 60 * 1000) {
+        this.logger.info(`⏭️ Pas de changements significatifs pour ${username}`);
+        streamData.lastUpdate = Date.now();
+        return true;
+      }
+
+      this.logger.info(`🔄 Mise à jour de ${streamData.guilds.size} notification(s) pour ${username}`);
+
+      const embed = this.createLiveEmbed(streamer, streamInfo, true);
+      const content = `🔴 **${streamer.name}** est toujours en live !`;
+
+      // ✅ Mise à jour avec Promise.allSettled (V2)
+      const updatePromises = Array.from(streamData.guilds.entries()).map(
+        async ([guildId, notifData]) => {
+          try {
+            const channel = await this.bot.channels.fetch(notifData.channelId).catch(() => null);
+            if (!channel) {
+              this.logger.warn(`⚠️ Channel ${notifData.channelId} non trouvé`);
+              streamData.guilds.delete(guildId);
+              return false;
+            }
+
+            const message = await channel.messages.fetch(notifData.messageId).catch(() => null);
+            if (!message) {
+              this.logger.warn(`⚠️ Message ${notifData.messageId} non trouvé`);
+              streamData.guilds.delete(guildId);
+              return false;
+            }
+
+            await message.edit({ content, embeds: [embed] });
+            
+            notifData.timestamp = Date.now();
+            this.logger.info(`✅ Notification mise à jour pour ${username} sur ${guildId}`);
+            
+            return true;
+
+          } catch (error) {
+            this.logger.error(`❌ Erreur mise à jour ${username} sur ${guildId}:`, error.message);
+            return false;
+          }
+        }
+      );
+
+      const results = await Promise.allSettled(updatePromises);
+      const successCount = results.filter(r => r.status === 'fulfilled' && r.value).length;
+
+      // ✅ Mettre à jour les métadonnées globales
+      if (successCount > 0) {
+        streamData.globalStreamInfo = { ...streamInfo };
+        streamData.lastUpdate = Date.now();
+      }
+
+      // ✅ Nettoyer si toutes les mises à jour ont échoué
+      if (successCount === 0 && streamData.guilds.size === 0) {
+        this.logger.warn(`⚠️ Toutes les mises à jour ont échoué, nettoyage de ${username}`);
+        this.activeStreams.delete(username);
+        this.bot.liveMessages.delete(username);
+        return false;
+      }
+
+      this.logger.info(`📊 ${successCount}/${streamData.guilds.size} notifications mises à jour pour ${username}`);
+      return successCount > 0;
+
+    } catch (error) {
+      this.logger.error(`❌ Erreur mise à jour notifications ${username}:`, error.message);
+      return false;
+    }
+  }
+
+  /**
+   * ✅ OPTIMISÉ: Suppression notifications avec option embed "terminé" (V2)
+   */
+  async removeLiveNotification(streamerUsername, keepAsEnded = false) {
+    const username = streamerUsername.toLowerCase();
+    
+    try {
+      this.logger.info(`🗑️ Suppression notifications pour ${username} (keepAsEnded: ${keepAsEnded})`);
+      
+      const streamData = this.activeStreams.get(username);
+      
+      if (!streamData || !streamData.guilds || streamData.guilds.size === 0) {
+        this.logger.info(`ℹ️ Aucune notification à supprimer pour ${username}`);
+        this.activeStreams.delete(username);
+        this.bot.liveMessages.delete(username);
+        return true;
       }
 
       let deletedCount = 0;
+      let errorCount = 0;
 
-      // Supprimer les messages dans TOUS les serveurs
-      for (const [guildId, messageData] of guildMessagesMap) {
+      // ✅ Supprimer ou éditer selon l'option
+      for (const [guildId, notifData] of streamData.guilds) {
         try {
-          const guild = this.bot.guilds.cache.get(guildId);
-          if (!guild) continue;
-
-          const channel = guild.channels.cache.get(messageData.channelId.toString());
-          if (!channel) continue;
-
-          const message = await channel.messages.fetch(messageData.messageId);
-          if (message) {
-            await message.delete();
-            deletedCount++;
-            console.log(`✅ Message supprimé dans ${guild.name}`);
+          const channel = await this.bot.channels.fetch(notifData.channelId).catch(() => null);
+          if (!channel) {
+            this.logger.warn(`⚠️ Channel ${notifData.channelId} non trouvé`);
+            continue;
           }
-        } catch (error) {
-          console.log(`⚠️ Impossible de supprimer dans le serveur ${guildId}:`, error.message);
-        }
-      }
 
-      // Nettoyer les caches
-      this.activeStreams.delete(streamerName);
-      this.guildMessages.delete(streamerName);
-      this.bot.liveMessages.delete(streamerName);
+          const message = await channel.messages.fetch(notifData.messageId).catch(() => null);
+          if (!message) {
+            this.logger.warn(`⚠️ Message ${notifData.messageId} non trouvé`);
+            continue;
+          }
 
-      logger.info(`🔴 Stream terminé pour ${streamerName}, ${deletedCount} message(s) supprimé(s)`);
-    } catch (error) {
-      logger.error(`❌ Erreur suppression notification pour ${streamerName}: ${error.message}`);
-    }
-  }
-
-  /**
-   * Met à jour les notifications dans tous les serveurs
-   */
-  async updateLiveNotification(streamer, streamInfo) {
-    try {
-      const activeStream = this.activeStreams.get(streamer.name);
-      const guildMessagesMap = this.guildMessages.get(streamer.name);
-      
-      if (!guildMessagesMap || guildMessagesMap.size === 0) {
-        console.log(`📝 Aucun message existant pour ${streamer.name}, création d'une nouvelle notification`);
-        return await this.sendLiveNotification(streamer, streamInfo);
-      }
-
-      // Vérifier s'il y a eu des changements significatifs
-      if (activeStream && !this.hasSignificantChanges(activeStream.streamInfo, streamInfo)) {
-        const timeSinceUpdate = Date.now() - activeStream.lastUpdate;
-        if (timeSinceUpdate < 5 * 60 * 1000) {
-          console.log(`⏭️ Pas de changements significatifs pour ${streamer.name}`);
-          activeStream.lastUpdate = Date.now();
-          return true;
-        }
-      }
-
-      const embed = this.createStreamEmbed(streamer, streamInfo, true);
-      const content = `🚨 **${streamer.name}** est toujours en live ! 🎉`;
-
-      let updateCount = 0;
-
-      // Mettre à jour les messages dans TOUS les serveurs
-      for (const [guildId, messageData] of guildMessagesMap) {
-        try {
-          const guild = this.bot.guilds.cache.get(guildId);
-          if (!guild) continue;
-
-          const channel = guild.channels.cache.get(messageData.channelId.toString());
-          if (!channel) continue;
-
-          const message = await channel.messages.fetch(messageData.messageId);
-          if (message) {
-            await message.edit({
-              content,
-              embeds: [embed],
+          if (keepAsEnded) {
+            // ✅ OPTION: Éditer pour marquer "terminé" (V2)
+            const endEmbed = this.createStreamEndedEmbed(username, streamData.globalStreamInfo);
+            await message.edit({ 
+              content: '⚫ Stream terminé', 
+              embeds: [endEmbed] 
             });
-            updateCount++;
-            console.log(`✅ Message mis à jour dans ${guild.name}`);
+            this.logger.info(`✅ Message édité (terminé) pour ${username} sur ${guildId}`);
+          } else {
+            // ✅ OPTION: Supprimer complètement (V1)
+            await message.delete();
+            this.logger.info(`✅ Message supprimé pour ${username} sur ${guildId}`);
           }
+
+          deletedCount++;
+
         } catch (error) {
-          console.log(`⚠️ Impossible de mettre à jour dans ${guildId}:`, error.message);
+          errorCount++;
+          this.logger.error(`❌ Erreur suppression ${username} sur ${guildId}:`, error.message);
         }
       }
 
-      if (updateCount === 0) {
-        console.log(`⚠️ Aucune mise à jour effectuée, recréation des notifications`);
-        this.guildMessages.delete(streamer.name);
-        this.activeStreams.delete(streamer.name);
-        return await this.sendLiveNotification(streamer, streamInfo);
-      }
+      // ✅ NETTOYER tous les caches (V1)
+      this.activeStreams.delete(username);
+      this.bot.liveMessages.delete(username);
 
-      if (activeStream) {
-        activeStream.streamInfo = { ...streamInfo };
-        activeStream.lastUpdate = Date.now();
-      }
-
-      logger.info(`✅ Notification mise à jour pour ${streamer.name} dans ${updateCount} serveur(s)`);
+      this.logger.info(`🔴 Stream terminé pour ${username}: ${deletedCount} traités, ${errorCount} échecs`);
       return true;
+
     } catch (error) {
-      logger.error(`❌ Erreur mise à jour notification pour ${streamer.name}: ${error.message}`);
+      this.logger.error(`❌ Erreur suppression notifications ${username}:`, error.message);
+      
+      // ✅ Forcer nettoyage même en cas d'erreur
+      this.activeStreams.delete(username);
+      this.bot.liveMessages.delete(username);
+      
       return false;
     }
   }
 
   /**
-   * Envoie ou met à jour une notification de stream
+   * ✅ NOUVEAU: Gestion intelligente notifications (envoi OU mise à jour)
    */
   async handleStreamNotification(streamer, streamInfo) {
     try {
-      if (this.isStreamActive(streamer.name)) {
-        console.log(`⏩ Stream déjà actif pour ${streamer.name}, mise à jour...`);
+      const username = streamer.name.toLowerCase();
+      
+      if (this.isStreamActive(username)) {
+        this.logger.info(`⏩ Stream déjà actif pour ${username}, mise à jour...`);
         return await this.updateLiveNotification(streamer, streamInfo);
       } else {
-        console.log(`🆕 Nouveau stream détecté pour ${streamer.name}, création notification...`);
+        this.logger.info(`🆕 Nouveau stream détecté pour ${username}, création notification...`);
         return await this.sendLiveNotification(streamer, streamInfo);
       }
     } catch (error) {
-      logger.error(`❌ Erreur gestion notification pour ${streamer.name}: ${error.message}`);
+      this.logger.error(`❌ Erreur gestion notification pour ${streamer.name}:`, error.message);
       return false;
     }
   }
 
   /**
-   * Crée un embed pour une notification de stream
+   * ✅ OPTIMISÉ: Création embed live
    */
-  createStreamEmbed(streamer, streamInfo, isUpdate = false) {
+  createLiveEmbed(streamer, streamInfo, isUpdate = false) {
     const embed = new EmbedBuilder()
       .setTitle(`🔴 ${streamer.name} est en live !`)
-      .setDescription(streamInfo.title || 'Titre non spécifié')
+      .setDescription(streamInfo.title || 'Pas de titre')
       .setColor(Colors.Red)
       .setURL(streamer.url)
       .addFields(
         {
           name: '🎮 Jeu',
-          value: streamInfo.game || 'Jeu non spécifié',
+          value: streamInfo.game || 'Pas de catégorie',
           inline: true,
         },
         {
@@ -436,8 +472,8 @@ class NotificationManager {
       )
       .setFooter({
         text: isUpdate 
-          ? `📺 ${streamer.description} • Mis à jour`
-          : `📺 ${streamer.description}`,
+          ? `📺 ${streamer.description || 'Stream'} • Mis à jour`
+          : `📺 ${streamer.description || 'Stream'}`,
       })
       .setTimestamp();
 
@@ -449,7 +485,27 @@ class NotificationManager {
   }
 
   /**
-   * Vérifie si les informations du stream ont changé significativement
+   * ✅ NOUVEAU: Embed de fin de stream (V2)
+   */
+  createStreamEndedEmbed(streamerName, streamInfo) {
+    const embed = new EmbedBuilder()
+      .setTitle(`⚫ ${streamerName} n'est plus en live`)
+      .setDescription('Le stream est terminé, merci d\'avoir regardé !')
+      .setColor(Colors.Grey)
+      .addFields(
+        { 
+          name: '📊 Dernier jeu', 
+          value: streamInfo?.game || 'Inconnu', 
+          inline: true 
+        }
+      )
+      .setTimestamp();
+
+    return embed;
+  }
+
+  /**
+   * ✅ OPTIMISÉ: Détection changements significatifs (V1)
    */
   hasSignificantChanges(oldInfo, newInfo) {
     if (!oldInfo || !newInfo) return true;
@@ -463,83 +519,123 @@ class NotificationManager {
   }
 
   /**
-   * Nettoie les streams inactifs depuis plus de 30 minutes
+   * ✅ OPTIMISÉ: Nettoyage streams inactifs (V1 + V2)
    */
   cleanupInactiveStreams() {
     const now = Date.now();
-    const maxAge = 30 * 60 * 1000;
+    const maxAge = 30 * 60 * 1000; // 30 minutes
     
-    let cleaned = 0;
-    for (const [streamerName, streamData] of this.activeStreams.entries()) {
-      if (now - streamData.lastUpdate > maxAge) {
-        console.log(`🧹 Nettoyage du stream inactif: ${streamerName}`);
-        this.activeStreams.delete(streamerName);
-        this.guildMessages.delete(streamerName);
-        this.bot.liveMessages.delete(streamerName);
-        cleaned++;
+    let cleanedStreamers = 0;
+    let cleanedNotifications = 0;
+    
+    for (const [username, streamData] of this.activeStreams.entries()) {
+      // Nettoyer les guilds inactives individuellement
+      for (const [guildId, notifData] of streamData.guilds.entries()) {
+        if (now - notifData.timestamp > maxAge) {
+          this.logger.info(`🧹 Nettoyage notification obsolète: ${username} sur ${guildId}`);
+          streamData.guilds.delete(guildId);
+          cleanedNotifications++;
+        }
+      }
+
+      // Si plus aucune guild, supprimer le streamer complètement
+      if (streamData.guilds.size === 0) {
+        const age = Math.floor((now - streamData.lastUpdate) / 60000);
+        this.logger.info(`🧹 Nettoyage streamer inactif: ${username} (${age}min)`);
+        
+        this.activeStreams.delete(username);
+        this.bot.liveMessages.delete(username);
+        cleanedStreamers++;
       }
     }
     
-    if (cleaned > 0) {
-      logger.info(`🧹 ${cleaned} stream(s) inactif(s) nettoyé(s)`);
+    if (cleanedStreamers > 0 || cleanedNotifications > 0) {
+      this.logger.info(`🧹 Nettoyage: ${cleanedStreamers} streamer(s), ${cleanedNotifications} notification(s)`);
     }
   }
 
   /**
-   * Récupère l'état d'un stream actif
+   * ✅ NOUVEAU: Force nettoyage d'un streamer spécifique (V1)
    */
-  getStreamState(streamerName) {
-    return this.activeStreams.get(streamerName);
+  forceCleanup(streamerUsername) {
+    const username = streamerUsername.toLowerCase();
+    this.activeStreams.delete(username);
+    this.bot.liveMessages.delete(username);
+    this.logger.info(`🔧 Nettoyage forcé pour ${username}`);
   }
 
   /**
-   * Récupère tous les streams actifs
+   * ✅ OPTIMISÉ: Statistiques complètes (V1 + V2)
    */
-  getAllActiveStreams() {
-    return Array.from(this.activeStreams.entries());
-  }
-
-  /**
-   * Force le nettoyage d'un streamer spécifique
-   */
-  forceCleanup(streamerName) {
-    this.activeStreams.delete(streamerName);
-    this.guildMessages.delete(streamerName);
-    this.bot.liveMessages.delete(streamerName);
-    logger.info(`🔧 Nettoyage forcé pour ${streamerName}`);
-  }
-
-  /**
-   * Récupère des statistiques de debug
-   */
-  getDebugStats() {
+  getStats() {
     const stats = {
-      activeStreamsCount: this.activeStreams.size,
-      activeStreamers: Array.from(this.activeStreams.keys()),
-      streamDetails: [],
-      guildsPerStream: {}
+      activeStreamers: this.activeStreams.size,
+      totalNotifications: 0,
+      notificationsByStreamer: {},
+      streamDetails: []
     };
 
-    for (const [name, data] of this.activeStreams.entries()) {
-      const age = Math.floor((Date.now() - data.streamStartedAt) / 1000 / 60);
-      const lastUpdateAge = Math.floor((Date.now() - data.lastUpdate) / 1000);
-      
-      const guildMessagesMap = this.guildMessages.get(name);
-      const guildCount = guildMessagesMap ? guildMessagesMap.size : 0;
+    for (const [username, streamData] of this.activeStreams.entries()) {
+      const notifCount = streamData.guilds.size;
+      stats.totalNotifications += notifCount;
+      stats.notificationsByStreamer[username] = notifCount;
+
+      const age = Math.floor((Date.now() - streamData.streamStartedAt) / 1000 / 60);
+      const lastUpdateAge = Math.floor((Date.now() - streamData.lastUpdate) / 1000);
       
       stats.streamDetails.push({
-        name,
-        age: `${age}min`,
-        lastUpdate: `${lastUpdateAge}s ago`,
-        viewers: data.streamInfo?.viewerCount || 0,
-        game: data.streamInfo?.game || 'N/A',
-        guilds: guildCount
+        name: username,
+        ageMinutes: age,
+        lastUpdateSeconds: lastUpdateAge,
+        viewers: streamData.globalStreamInfo?.viewerCount || 0,
+        game: streamData.globalStreamInfo?.game || 'N/A',
+        guilds: notifCount
       });
-
-      stats.guildsPerStream[name] = guildCount;
     }
 
     return stats;
+  }
+
+  /**
+   * ✅ OPTIMISÉ: Debug stats détaillées (V1)
+   */
+  getDebugStats() {
+    return this.getStats();
+  }
+
+  /**
+   * ✅ NOUVEAU: Affichage console des notifications actives (V2)
+   */
+  logActiveNotifications() {
+    if (this.activeStreams.size === 0) {
+      this.logger.info('📭 Aucune notification active');
+      return;
+    }
+
+    this.logger.info(`📊 Notifications actives (${this.activeStreams.size} streamers):`);
+    
+    for (const [username, streamData] of this.activeStreams.entries()) {
+      const age = Math.floor((Date.now() - streamData.streamStartedAt) / 60000);
+      this.logger.info(`   🔴 ${username}: ${streamData.guilds.size} guild(s) - ${age}min`);
+      
+      for (const [guildId, notifData] of streamData.guilds.entries()) {
+        const notifAge = Math.floor((Date.now() - notifData.timestamp) / 60000);
+        this.logger.info(`      └─ Guild ${guildId}: msg ${notifData.messageId} (${notifAge}min)`);
+      }
+    }
+  }
+
+  /**
+   * ✅ NOUVEAU: Récupère tous les streams actifs (V1)
+   */
+  getAllActiveStreams() {
+    return Array.from(this.activeStreams.entries()).map(([username, data]) => ({
+      username,
+      streamStartedAt: data.streamStartedAt,
+      lastUpdate: data.lastUpdate,
+      streamInfo: data.globalStreamInfo,
+      guildCount: data.guilds.size
+    }));
   }
 }
 
