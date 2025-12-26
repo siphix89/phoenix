@@ -28,6 +28,7 @@ class DatabaseManager {
     }
     
     this.connections = new Map();
+    this.guildDatabases = new Map(); // ✅ NOUVEAU: Accès direct pour NotificationManager
     this.masterDb = null;
     
     console.log(`📁 DB Directory: ${this.dbDirectory}`);
@@ -219,7 +220,10 @@ class DatabaseManager {
 
         await this.createGuildTables(db);
         await this.registerGuild(guildId, guildName, dbPath);
+        
+        // ✅ Stocker dans les deux Maps pour compatibilité
         this.connections.set(guildId, db);
+        this.guildDatabases.set(guildId, db);
 
         return db;
     }
@@ -288,6 +292,25 @@ class DatabaseManager {
         } catch (error) {
             console.warn('Migration status:', error.message);
         }
+
+        // ✅ NOUVEAU: Table notifications (pour tracking des messages Discord)
+        await db.exec(`
+            CREATE TABLE IF NOT EXISTS notifications (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                twitch_username TEXT NOT NULL,
+                message_id TEXT NOT NULL,
+                channel_id TEXT NOT NULL,
+                sent_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                deleted_at DATETIME DEFAULT NULL,
+                stream_id TEXT
+            )
+        `);
+
+        await db.exec(`
+            CREATE INDEX IF NOT EXISTS idx_notif_username ON notifications(twitch_username);
+            CREATE INDEX IF NOT EXISTS idx_notif_deleted ON notifications(deleted_at);
+            CREATE INDEX IF NOT EXISTS idx_notif_message ON notifications(message_id);
+        `);
 
         // Historique des streams
         await db.exec(`
@@ -486,6 +509,57 @@ class DatabaseManager {
         return { success: true };
     }
 
+    // ✅ NOUVEAU: Enregistrer une notification Discord envoyée
+    async recordNotification(guildId, twitchUsername, messageId, channelId, streamId = null) {
+        const db = await this.getGuildDatabase(guildId);
+        
+        try {
+            await db.run(`
+                INSERT INTO notifications (twitch_username, message_id, channel_id, stream_id)
+                VALUES (?, ?, ?, ?)
+            `, [twitchUsername.toLowerCase(), messageId, channelId, streamId]);
+            
+            return { success: true };
+        } catch (error) {
+            console.error(`Erreur enregistrement notification: ${error.message}`);
+            return { success: false };
+        }
+    }
+
+    // ✅ NOUVEAU: Récupérer les notifications actives d'un streamer
+    async getActiveNotifications(guildId, twitchUsername) {
+        const db = await this.getGuildDatabase(guildId);
+        
+        return await db.all(`
+            SELECT * FROM notifications 
+            WHERE twitch_username = ? AND deleted_at IS NULL
+            ORDER BY sent_at DESC
+        `, [twitchUsername.toLowerCase()]);
+    }
+
+    // ✅ NOUVEAU: Marquer une notification comme supprimée
+    async markNotificationDeleted(guildId, twitchUsername, messageId = null) {
+        const db = await this.getGuildDatabase(guildId);
+        
+        if (messageId) {
+            // Supprimer une notification spécifique
+            await db.run(`
+                UPDATE notifications 
+                SET deleted_at = datetime('now')
+                WHERE twitch_username = ? AND message_id = ?
+            `, [twitchUsername.toLowerCase(), messageId]);
+        } else {
+            // Supprimer toutes les notifications du streamer
+            await db.run(`
+                UPDATE notifications 
+                SET deleted_at = datetime('now')
+                WHERE twitch_username = ? AND deleted_at IS NULL
+            `, [twitchUsername.toLowerCase()]);
+        }
+        
+        return { success: true };
+    }
+
     // === CONFIGURATION DU SERVEUR ===
     async setNotificationChannel(guildId, channelId) {
         const db = await this.getGuildDatabase(guildId);
@@ -574,6 +648,7 @@ class DatabaseManager {
             const db = this.connections.get(guildId);
             await db.close();
             this.connections.delete(guildId);
+            this.guildDatabases.delete(guildId);
         }
     }
 
@@ -582,6 +657,7 @@ class DatabaseManager {
             await db.close();
         }
         this.connections.clear();
+        this.guildDatabases.clear();
 
         if (this.masterDb) {
             await this.masterDb.close();
