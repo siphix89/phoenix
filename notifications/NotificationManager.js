@@ -349,7 +349,8 @@ class NotificationManager {
   }
 
   /**
-   * ✅ OPTIMISÉ: Suppression notifications avec option embed "terminé" (V2)
+   * ✅ OPTIMISÉ: Suppression notifications avec fallback DB
+   * Récupère les notifications depuis la DB si la RAM est vide
    */
   async removeLiveNotification(streamerUsername, keepAsEnded = false) {
     const username = streamerUsername.toLowerCase();
@@ -357,13 +358,66 @@ class NotificationManager {
     try {
       this.logger.info(`🗑️ Suppression notifications pour ${username} (keepAsEnded: ${keepAsEnded})`);
       
-      const streamData = this.activeStreams.get(username);
+      let streamData = this.activeStreams.get(username);
       
+      // ✅ NOUVEAU: Si pas en RAM, récupérer depuis la DB
       if (!streamData || !streamData.guilds || streamData.guilds.size === 0) {
-        this.logger.info(`ℹ️ Aucune notification à supprimer pour ${username}`);
-        this.activeStreams.delete(username);
-        this.bot.liveMessages.delete(username);
-        return true;
+        this.logger.warn(`⚠️ Notifications non trouvées en RAM pour ${username}, recherche en DB...`);
+        
+        try {
+          // Récupérer toutes les guilds actives
+          const allGuilds = await this.bot.db.masterDb.all(
+            'SELECT guild_id FROM registered_guilds WHERE is_active = 1'
+          );
+          
+          // Reconstruire streamData à partir des infos DB
+          streamData = {
+            guilds: new Map(),
+            globalStreamInfo: {}
+          };
+          
+          // Pour chaque guild, vérifier si elle a une notification active pour ce streamer
+          for (const { guild_id } of allGuilds) {
+            try {
+              const guildDb = this.bot.db.guildDatabases.get(guild_id);
+              if (!guildDb) continue;
+              
+              const notifications = await guildDb.all(
+                `SELECT * FROM notifications 
+                 WHERE twitch_username = ? AND deleted_at IS NULL`,
+                [username]
+              );
+              
+              // Si on trouve des notifications actives, les ajouter
+              for (const notif of notifications) {
+                streamData.guilds.set(guild_id, {
+                  messageId: notif.message_id,
+                  channelId: notif.channel_id,
+                  timestamp: new Date(notif.sent_at).getTime()
+                });
+              }
+            } catch (guildError) {
+              this.logger.error(`❌ Erreur récupération notifs guild ${guild_id}: ${guildError.message}`);
+            }
+          }
+          
+          // Si toujours aucune notification trouvée
+          if (streamData.guilds.size === 0) {
+            this.logger.info(`ℹ️ Aucune notification trouvée pour ${username} (ni RAM ni DB)`);
+            this.activeStreams.delete(username);
+            this.bot.liveMessages.delete(username);
+            return true;
+          }
+          
+          this.logger.info(`✅ ${streamData.guilds.size} notification(s) récupérée(s) depuis la DB`);
+          
+        } catch (dbError) {
+          this.logger.error(`❌ Erreur récupération DB: ${dbError.message}`);
+          // Nettoyage quand même
+          this.activeStreams.delete(username);
+          this.bot.liveMessages.delete(username);
+          return false;
+        }
       }
 
       let deletedCount = 0;
@@ -374,44 +428,85 @@ class NotificationManager {
         try {
           const channel = await this.bot.channels.fetch(notifData.channelId).catch(() => null);
           if (!channel) {
-            this.logger.warn(`⚠️ Channel ${notifData.channelId} non trouvé`);
+            this.logger.warn(`⚠️ Channel ${notifData.channelId} non trouvé pour guild ${guildId}`);
+            
+            // Marquer comme supprimé en DB même si channel introuvable
+            try {
+              const guildDb = this.bot.db.guildDatabases.get(guildId);
+              if (guildDb) {
+                await guildDb.run(
+                  `UPDATE notifications 
+                   SET deleted_at = datetime('now') 
+                   WHERE twitch_username = ? AND message_id = ?`,
+                  [username, notifData.messageId]
+                );
+              }
+            } catch (e) {}
+            
             continue;
           }
 
           const message = await channel.messages.fetch(notifData.messageId).catch(() => null);
           if (!message) {
-            this.logger.warn(`⚠️ Message ${notifData.messageId} non trouvé`);
+            this.logger.warn(`⚠️ Message ${notifData.messageId} non trouvé dans ${channel.name}`);
+            
+            // Marquer comme supprimé en DB
+            try {
+              const guildDb = this.bot.db.guildDatabases.get(guildId);
+              if (guildDb) {
+                await guildDb.run(
+                  `UPDATE notifications 
+                   SET deleted_at = datetime('now') 
+                   WHERE twitch_username = ? AND message_id = ?`,
+                  [username, notifData.messageId]
+                );
+              }
+            } catch (e) {}
+            
             continue;
           }
 
           if (keepAsEnded) {
-            // ✅ OPTION: Éditer pour marquer "terminé" (V2)
+            // ✅ OPTION: Éditer pour marquer "terminé"
             const endEmbed = this.createStreamEndedEmbed(username, streamData.globalStreamInfo);
             await message.edit({ 
               content: '⚫ Stream terminé', 
               embeds: [endEmbed] 
             });
-            this.logger.info(`✅ Message édité (terminé) pour ${username} sur ${guildId}`);
+            this.logger.info(`✅ Message édité (terminé) pour ${username} dans ${channel.name}`);
           } else {
-            // ✅ OPTION: Supprimer complètement (V1)
+            // ✅ OPTION: Supprimer complètement
             await message.delete();
-            this.logger.info(`✅ Message supprimé pour ${username} sur ${guildId}`);
+            this.logger.info(`✅ Message supprimé pour ${username} dans ${channel.name}`);
           }
+
+          // ✅ Marquer comme supprimé en DB
+          try {
+            const guildDb = this.bot.db.guildDatabases.get(guildId);
+            if (guildDb) {
+              await guildDb.run(
+                `UPDATE notifications 
+                 SET deleted_at = datetime('now') 
+                 WHERE twitch_username = ? AND message_id = ?`,
+                [username, notifData.messageId]
+              );
+            }
+          } catch (e) {}
 
           deletedCount++;
 
         } catch (error) {
           errorCount++;
-          this.logger.error(`❌ Erreur suppression ${username} sur ${guildId}:`, error.message);
+          this.logger.error(`❌ Erreur suppression ${username} sur guild ${guildId}: ${error.message}`);
         }
       }
 
-      // ✅ NETTOYER tous les caches (V1)
+      // ✅ NETTOYER tous les caches
       this.activeStreams.delete(username);
       this.bot.liveMessages.delete(username);
 
-      this.logger.info(`🔴 Stream terminé pour ${username}: ${deletedCount} traités, ${errorCount} échecs`);
-      return true;
+      this.logger.info(`🔴 Stream terminé pour ${username}: ${deletedCount} supprimés, ${errorCount} échecs`);
+      return deletedCount > 0;
 
     } catch (error) {
       this.logger.error(`❌ Erreur suppression notifications ${username}:`, error.message);
