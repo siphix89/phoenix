@@ -1,4 +1,4 @@
-// ===== NotificationManager.js - VERSION OPTIMISÉE (Meilleur des 2 versions) =====
+// ===== NotificationManager.js - VERSION CORRIGÉE (Fix suppression auto) =====
 const { EmbedBuilder, Colors } = require('discord.js');
 const { logger, StreamerStatus } = require('../config');
 
@@ -8,10 +8,10 @@ class NotificationManager {
     
     // ✅ Structure unifiée (inspirée V2) avec métadonnées enrichies (inspirée V1)
     // Format: Map<streamerUsername, {
-    //   streamStartedAt: timestamp,
-    //   lastUpdate: timestamp,
-    //   globalStreamInfo: {...},
-    //   guilds: Map<guildId, { messageId, channelId, timestamp }>
+    //    streamStartedAt: timestamp,
+    //    lastUpdate: timestamp,
+    //    globalStreamInfo: {...},
+    //    guilds: Map<guildId, { messageId, channelId, timestamp }>
     // }>
     this.activeStreams = new Map();
     
@@ -614,29 +614,23 @@ class NotificationManager {
   }
 
   /**
-   * ✅ OPTIMISÉ: Nettoyage streams inactifs (V1 + V2)
+   * ✅ CORRIGÉ: Nettoyage uniquement des streamers zombies
+   * Ne supprime PLUS les notifications actives de la RAM après 30min
    */
   cleanupInactiveStreams() {
     const now = Date.now();
-    const maxAge = 30 * 60 * 1000; // 30 minutes
+    // Sécurité: 1 heure SANS aucune mise à jour du statut
+    const zombieThreshold = 60 * 60 * 1000; 
     
     let cleanedStreamers = 0;
-    let cleanedNotifications = 0;
     
     for (const [username, streamData] of this.activeStreams.entries()) {
-      // Nettoyer les guilds inactives individuellement
-      for (const [guildId, notifData] of streamData.guilds.entries()) {
-        if (now - notifData.timestamp > maxAge) {
-          this.logger.info(`🧹 Nettoyage notification obsolète: ${username} sur ${guildId}`);
-          streamData.guilds.delete(guildId);
-          cleanedNotifications++;
-        }
-      }
+      // Calcul du temps depuis la dernière mise à jour reçue
+      const timeSinceLastUpdate = now - streamData.lastUpdate;
 
-      // Si plus aucune guild, supprimer le streamer complètement
-      if (streamData.guilds.size === 0) {
-        const age = Math.floor((now - streamData.lastUpdate) / 60000);
-        this.logger.info(`🧹 Nettoyage streamer inactif: ${username} (${age}min)`);
+      // Si le stream n'a pas donné signe de vie (update) depuis 1h, on le considère buggé/mort
+      if (timeSinceLastUpdate > zombieThreshold) {
+        this.logger.warn(`🧹 Nettoyage forcé streamer "zombie" (pas de maj depuis 1h): ${username}`);
         
         this.activeStreams.delete(username);
         this.bot.liveMessages.delete(username);
@@ -644,8 +638,8 @@ class NotificationManager {
       }
     }
     
-    if (cleanedStreamers > 0 || cleanedNotifications > 0) {
-      this.logger.info(`🧹 Nettoyage: ${cleanedStreamers} streamer(s), ${cleanedNotifications} notification(s)`);
+    if (cleanedStreamers > 0) {
+      this.logger.info(`🧹 Nettoyage terminé : ${cleanedStreamers} streamers zombies retirés de la RAM.`);
     }
   }
 
