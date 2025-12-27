@@ -83,8 +83,8 @@ module.exports = {
         if (bot.notificationManager) {
           const notifStats = bot.notificationManager.getDebugStats();
           notifManagerInfo = `✅ Actif\n` +
-            `  • Streams actifs: ${notifStats.activeStreamsCount}\n` +
-            `  • Streamers: ${notifStats.activeStreamers.join(', ') || 'Aucun'}`;
+            `  • Streams actifs: ${notifStats.activeStreamers}\n` + // Correction propriété
+            `  • Streamers: ${Object.keys(notifStats.notificationsByStreamer).join(', ') || 'Aucun'}`;
         }
 
         // Embed principal
@@ -145,9 +145,9 @@ module.exports = {
         // Détails des streams dans NotificationManager
         if (bot.notificationManager) {
           const notifStats = bot.notificationManager.getDebugStats();
-          if (notifStats.streamDetails.length > 0) {
+          if (notifStats.streamDetails && notifStats.streamDetails.length > 0) {
             const detailsList = notifStats.streamDetails.map(s => 
-              `• **${s.name}** - Live depuis ${s.age}, ${s.viewers} viewers, ${s.guilds} serveur(s)`
+              `• **${s.name}** - Live depuis ${s.ageMinutes}min, ${s.viewers} viewers, ${s.guilds} serveur(s)`
             ).join('\n');
             embed.addFields({
               name: '💾 Streams dans NotificationManager',
@@ -206,8 +206,9 @@ module.exports = {
         // Aussi nettoyer le NotificationManager
         if (bot.notificationManager) {
           const activeStreamers = bot.notificationManager.getAllActiveStreams();
-          for (const [streamerName] of activeStreamers) {
-            bot.notificationManager.forceCleanup(streamerName);
+          // ✅ CORRECTION ICI: On boucle sur les objets stream, pas sur [streamerName]
+          for (const stream of activeStreamers) {
+            bot.notificationManager.forceCleanup(stream.username);
           }
         }
 
