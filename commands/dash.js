@@ -1,9 +1,8 @@
 // ===========================================
-// COMMANDE /dash CORRIGÉE POUR RAILWAY
+// COMMANDE /dash - VERSION STABLE POUR RAILWAY
 // ===========================================
 
 const { SlashCommandBuilder, EmbedBuilder, Colors } = require('discord.js');
-const crypto = require('crypto');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -50,15 +49,15 @@ module.exports = {
             if (!bot.dashboardAPI) {
                 const errorEmbed = new EmbedBuilder()
                     .setTitle('❌ Dashboard indisponible')
-                    .setDescription('Le dashboard n\'est pas actuellement disponible.')
+                    .setDescription('Le dashboard n\'est pas actuellement disponible. Le bot est peut-être en cours de démarrage.')
                     .setColor(Colors.Red)
-                    .setFooter({ text: 'Contactez un administrateur' });
+                    .setFooter({ text: 'Réessayez dans quelques instants' });
 
                 return await interaction.editReply({ embeds: [errorEmbed] });
             }
 
-            // Générer le token directement (pas de fetch)
-            const tokenResponse = generateTokenDirectly(user, guild, bot.dashboardAPI);
+            // Générer le token directement
+            const tokenResponse = await generateToken(user, guild, bot);
 
             if (!tokenResponse.success) {
                 const errorEmbed = new EmbedBuilder()
@@ -66,7 +65,7 @@ module.exports = {
                     .setDescription('Impossible de générer le token d\'accès.')
                     .setColor(Colors.Red)
                     .addFields({
-                        name: '🔧 Détails de l\'erreur',
+                        name: '🔧 Détails',
                         value: tokenResponse.error || 'Erreur inconnue',
                         inline: false
                     });
@@ -78,71 +77,59 @@ module.exports = {
             let embed;
             switch (type) {
                 case 'web':
-                    embed = createWebDashboardEmbed(tokenResponse, user, guild);
+                    embed = createWebEmbed(tokenResponse, user, guild);
                     break;
                 case 'mobile':
-                    embed = createMobileDashboardEmbed(tokenResponse, user, guild);
+                    embed = createMobileEmbed(tokenResponse, user, guild);
                     break;
                 case 'refresh':
-                    embed = createRefreshTokenEmbed(tokenResponse, user, guild);
+                    embed = createRefreshEmbed(tokenResponse, user, guild);
                     break;
                 default:
-                    embed = createWebDashboardEmbed(tokenResponse, user, guild);
+                    embed = createWebEmbed(tokenResponse, user, guild);
             }
 
             await interaction.editReply({ embeds: [embed] });
-
-            console.log(`🔑 Token dashboard généré: ${user.tag} (${user.id}) sur ${guild.name}`);
+            console.log(`🔑 Token généré: ${user.tag} sur ${guild.name}`);
 
         } catch (error) {
             console.error('❌ Erreur commande /dash:', error);
             
-            const errorEmbed = new EmbedBuilder()
-                .setTitle('❌ Erreur système')
-                .setDescription('Une erreur interne s\'est produite.')
-                .setColor(Colors.Red)
-                .addFields({
-                    name: 'Détails',
-                    value: error.message || 'Erreur inconnue'
-                })
-                .setFooter({ text: 'Veuillez réessayer dans quelques instants' });
-
             try {
+                const errorEmbed = new EmbedBuilder()
+                    .setTitle('❌ Erreur système')
+                    .setDescription('Une erreur s\'est produite.')
+                    .setColor(Colors.Red)
+                    .setFooter({ text: 'Réessayez dans quelques instants' });
+
                 await interaction.editReply({ embeds: [errorEmbed] });
-            } catch (replyError) {
-                console.error('❌ Impossible de répondre:', replyError);
+            } catch (e) {
+                console.error('❌ Impossible de répondre:', e);
             }
         }
     }
 };
 
-// ===========================================
-// GÉNÉRATION DIRECTE DU TOKEN
-// ===========================================
-
-function generateTokenDirectly(user, guild, dashboardAPI) {
+async function generateToken(user, guild, bot) {
     try {
-        if (!dashboardAPI || !dashboardAPI.tokens) {
-            return {
-                success: false,
-                error: 'API Dashboard non disponible'
-            };
+        const crypto = require('crypto');
+        
+        if (!bot.dashboardAPI || !bot.dashboardAPI.tokens) {
+            return { success: false, error: 'API Dashboard non disponible' };
         }
 
-        // Générer le token
         const token = crypto.randomBytes(32).toString('hex');
-        const expires = Date.now() + (24 * 60 * 60 * 1000); // 24h
+        const expires = Date.now() + (24 * 60 * 60 * 1000);
 
-        // Invalider les anciens tokens de cet utilisateur sur ce serveur
-        for (const [existingToken, data] of dashboardAPI.tokens.entries()) {
+        // Supprimer anciens tokens
+        for (const [key, data] of bot.dashboardAPI.tokens.entries()) {
             if (data.user.id === user.id && data.guild.id === guild.id) {
-                dashboardAPI.tokens.delete(existingToken);
-                console.log(`🗑️ Ancien token supprimé pour ${user.tag}`);
+                bot.dashboardAPI.tokens.delete(key);
             }
         }
 
-        // Stocker le nouveau token
-        dashboardAPI.tokens.set(token, {
+        // Stocker nouveau token
+        bot.dashboardAPI.tokens.set(token, {
             user: { id: user.id, tag: user.tag },
             guild: { 
                 id: guild.id, 
@@ -154,37 +141,27 @@ function generateTokenDirectly(user, guild, dashboardAPI) {
             createdAt: Date.now()
         });
 
-        console.log(`🔑 Token généré: ${user.tag} sur ${guild.name}`);
-
-        // URL Railway (modifier avec votre vraie URL)
-        const dashboardUrl = process.env.DASHBOARD_URL || 'https://phoenix-production-a5cf.up.railway.app';
+        const baseUrl = process.env.DASHBOARD_URL || 'https://phoenix-production-a5cf.up.railway.app';
         
         return {
             success: true,
             token,
             expires,
-            dashboardUrl: `${dashboardUrl}/dashboard.html?token=${token}`
+            dashboardUrl: `${baseUrl}/dashboard.html?token=${token}`
         };
 
     } catch (error) {
-        console.error('❌ Erreur génération token:', error);
-        return {
-            success: false,
-            error: error.message || 'Erreur de génération du token'
-        };
+        console.error('❌ Erreur génération:', error);
+        return { success: false, error: error.message };
     }
 }
 
-// ===========================================
-// EMBEDS
-// ===========================================
-
-function createWebDashboardEmbed(tokenResponse, user, guild) {
+function createWebEmbed(tokenResponse, user, guild) {
     const expiresAt = new Date(tokenResponse.expires);
     
     return new EmbedBuilder()
         .setTitle('🌐 Dashboard Web - Accès Généré')
-        .setDescription('Votre lien d\'accès sécurisé au dashboard Phoenix Bot a été généré avec succès !')
+        .setDescription('Votre lien d\'accès sécurisé a été généré !')
         .setColor(Colors.Green)
         .addFields(
             {
@@ -194,7 +171,7 @@ function createWebDashboardEmbed(tokenResponse, user, guild) {
             },
             {
                 name: '⏰ Validité',
-                value: `Expire le **${expiresAt.toLocaleDateString('fr-FR')}** à **${expiresAt.toLocaleTimeString('fr-FR')}**`,
+                value: `Expire le ${expiresAt.toLocaleDateString('fr-FR')} à ${expiresAt.toLocaleTimeString('fr-FR')}`,
                 inline: true
             },
             {
@@ -204,45 +181,42 @@ function createWebDashboardEmbed(tokenResponse, user, guild) {
             },
             {
                 name: '📋 Fonctionnalités',
-                value: '🎮 Gestion streamers\n📊 Statistiques\n⚙️ Configuration\n🔧 Paramètres',
+                value: '🎮 Gestion streamers\n📊 Statistiques\n⚙️ Configuration',
                 inline: false
             }
         )
         .setThumbnail(user.displayAvatarURL())
-        .setFooter({ 
-            text: '⚠️ Ne partagez jamais ce lien', 
-            iconURL: guild.iconURL() 
-        })
+        .setFooter({ text: '⚠️ Ne partagez jamais ce lien' })
         .setTimestamp();
 }
 
-function createMobileDashboardEmbed(tokenResponse, user, guild) {
+function createMobileEmbed(tokenResponse, user, guild) {
     const expiresAt = new Date(tokenResponse.expires);
     
     return new EmbedBuilder()
         .setTitle('📱 Dashboard Mobile')
-        .setDescription('Version mobile optimisée !')
+        .setDescription('Version mobile optimisée')
         .setColor(Colors.Blue)
         .addFields(
             {
-                name: '📱 Lien mobile',
+                name: '📱 Lien',
                 value: `[**📲 Ouvrir**](${tokenResponse.dashboardUrl})`,
                 inline: false
             },
             {
                 name: '⏰ Validité',
-                value: `24 heures\n${expiresAt.toLocaleString('fr-FR')}`,
+                value: `24h - ${expiresAt.toLocaleString('fr-FR')}`,
                 inline: false
             }
         )
-        .setFooter({ text: '💡 Ajoutez à l\'écran d\'accueil' })
+        .setFooter({ text: 'Ajoutez à l\'écran d\'accueil' })
         .setTimestamp();
 }
 
-function createRefreshTokenEmbed(tokenResponse, user, guild) {
+function createRefreshEmbed(tokenResponse, user, guild) {
     return new EmbedBuilder()
         .setTitle('🔑 Token Rafraîchi')
-        .setDescription('Nouveau token généré !')
+        .setDescription('Nouveau token généré')
         .setColor(Colors.Yellow)
         .addFields(
             {
@@ -258,17 +232,3 @@ function createRefreshTokenEmbed(tokenResponse, user, guild) {
         )
         .setTimestamp();
 }
-```
-
-## Changements importants :
-
-1. **Suppression du `fetch`** - Utilise uniquement l'accès direct à `bot.dashboardAPI`
-2. **URL dynamique** - Utilise `process.env.DASHBOARD_URL` ou votre URL Railway
-3. **Gestion d'erreurs améliorée** - Plus de détails pour déboguer
-4. **Plus rapide** - Pas d'appel HTTP, réponse instantanée
-
-## Ajoutez aussi une variable d'environnement sur Railway :
-
-Dans Railway → Variables :
-```
-DASHBOARD_URL=https://phoenix-production-a5cf.up.railway.app
