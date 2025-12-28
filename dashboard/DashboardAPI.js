@@ -504,12 +504,16 @@ class DashboardAPI {
   }
 
   start(port = 3001) {
-    this.server = this.app.listen(port, () => {
-      console.log(`🌐 Dashboard API démarrée sur le port ${port}`);
-      console.log(`📊 Dashboard multi-serveurs accessible via: http://localhost:${port}/dashboard.html?token=TOKEN`);
-      console.log(`🔐 Chaque token est lié à un serveur Discord spécifique`);
-    });
-  }
+  // ⚠️ IMPORTANT: Utiliser le PORT de Railway si disponible
+  const finalPort = process.env.PORT || port;
+  
+  this.server = this.app.listen(finalPort, '0.0.0.0', () => {  // ← '0.0.0.0' important !
+    console.log(`🌐 Dashboard API démarrée sur le port ${finalPort}`);
+    console.log(`📊 URL locale: http://localhost:${finalPort}`);
+    console.log(`📊 URL Railway: https://phoenix-production-a5cf.up.railway.app`);
+    console.log(`🔐 Utilisez /dash type:web sur Discord pour obtenir un lien`);
+  });
+}
 
   // Méthode pour nettoyer les tokens expirés
   cleanupExpiredTokens() {
@@ -528,5 +532,6 @@ class DashboardAPI {
     }
   }
 }
+
 
 module.exports = DashboardAPI;
