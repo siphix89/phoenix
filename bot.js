@@ -354,6 +354,8 @@ class StreamerBot extends Client {
       
       logger.info('🌐 Dashboard API démarrée sur le port 3001');
     } catch (error) {
+       const port = process.env.PORT || 3001;
+    this.dashboardAPI.start(port);
       logger.error(`❌ Erreur démarrage Dashboard API: ${error.message}`);
     }
   }
@@ -1047,3 +1049,4 @@ if (require.main === module) {
 }
 
 module.exports = StreamerBot;
+
