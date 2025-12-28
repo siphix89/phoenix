@@ -1,4 +1,4 @@
-// ===== bot.js - VERSION FINALE CORRIGÉE (Logic ID Check) =====
+// ===== bot.js =====
 const { Client, GatewayIntentBits, Partials, EmbedBuilder, Colors, ActivityType, Collection } = require('discord.js');
 const path = require('path');
 const fs = require('fs');
@@ -37,14 +37,7 @@ try {
   DashboardAPI = null;
 }
 
-// Import du dashboard externe (garder pour compatibilité)
-let dashboardServer;
-try {
-  dashboardServer = require('./dashboard-server.js');
-} catch (error) {
-  console.log('⚠️ dashboard-server.js non trouvé');
-  dashboardServer = null;
-}
+
 
 // Import des boutons
 const ButtonManager = require('./boutons/gestion.js');
@@ -75,7 +68,6 @@ class StreamerBot extends Client {
     this.db = new DatabaseManager('./database/guilds');
     this.twitch = TwitchManager ? new TwitchManager(config, logger) : null;
     
-    // 🧠 Mémoire vive des streams
     this.liveStreamers = new Map();
     this.liveMessages = new Map();
     
@@ -84,7 +76,6 @@ class StreamerBot extends Client {
     this.checkInterval = null;
     this.commands = new Collection();
     this.dashboardAPI = null;
-    this.keepAliveServer = null;
     this.notificationManager = null;
     this.buttonManager = null;
     this.twitchFailures = 0;
@@ -153,7 +144,7 @@ class StreamerBot extends Client {
           .setDescription('Je suis maintenant prêt à surveiller vos streamers préférés !')
           .setColor(Colors.Green)
           .addFields(
-            { name: '🚀 Commandes principales', value: '`/addstreamer` - Ajouter un streamer\n`/streamers` - Voir la liste\n`/setchannel` - Configurer les notifications', inline: false },
+            { name: '🚀 Commandes principales', value: '`/ajouter-streamer` - Ajouter un streamer\n`/streamers` - Voir la liste\n`/setchannel` - Configurer les notifications', inline: false },
             { name: '⚙️ Configuration', value: 'Utilisez `/setchannel` dans le channel où vous voulez recevoir les notifications !', inline: false }
           )
           .setFooter({ text: `Serveur ID: ${guild.id}` })
@@ -177,7 +168,7 @@ class StreamerBot extends Client {
           .setDescription('Je suis là pour vous tenir au courant quand vos streamers préférés sont en live !')
           .setColor(Colors.Blue)
           .addFields(
-            { name: '🎯 Pour commencer', value: 'Utilisez `/addstreamer <nom_twitch>` pour ajouter vos streamers', inline: false },
+            { name: '🎯 Pour commencer', value: 'Utilisez `/ajouter-streamer <nom_twitch>` pour ajouter vos streamers', inline: false },
             { name: '📺 Notifications', value: 'Configurez avec `/setchannel` le channel pour les notifications', inline: false }
           );
 
@@ -215,7 +206,6 @@ class StreamerBot extends Client {
 
       await this.initializeTwitchServices();
 
-      // 🔄 RESTAURATION DE LA MÉMOIRE (Avec gestion d'ID)
       if (this.notificationManager) {
         await this.restoreActiveSessions();
       }
@@ -245,10 +235,6 @@ class StreamerBot extends Client {
     }
   }
 
-  /**
-   * ✅ Restaure la mémoire RAM depuis la DB au démarrage
-   * Stocke l'ID du stream pour pouvoir comparer plus tard
-   */
   async restoreActiveSessions() {
     try {
       logger.info('🔄 Restauration des sessions de stream actives depuis la DB...');
@@ -262,7 +248,6 @@ class StreamerBot extends Client {
       for (const streamData of activeStreamsDB) {
         const username = streamData.twitch_username.toLowerCase();
         
-        // 1. Restaurer dans liveStreamers (Bot memory)
         this.liveStreamers.set(username, {
           startTime: streamData.started_at || Date.now(),
           lastUpdate: Date.now(),
@@ -272,19 +257,18 @@ class StreamerBot extends Client {
             game_name: streamData.game_name,
             title: streamData.title,
             viewer_count: streamData.viewer_count,
-            id: streamData.id // IMPORTANT: On stocke l'ID venant de la DB
+            id: streamData.id
           },
           streamId: streamData.id
         });
 
-        // 2. Restaurer dans NotificationManager
         if (this.notificationManager && !this.notificationManager.activeStreams.has(username)) {
-            this.notificationManager.activeStreams.set(username, {
-                streamStartedAt: streamData.started_at || Date.now(),
-                lastUpdate: Date.now(),
-                globalStreamInfo: { ...this.liveStreamers.get(username).streamInfo },
-                guilds: new Map()
-            });
+          this.notificationManager.activeStreams.set(username, {
+            streamStartedAt: streamData.started_at || Date.now(),
+            lastUpdate: Date.now(),
+            globalStreamInfo: { ...this.liveStreamers.get(username).streamInfo },
+            guilds: new Map()
+          });
         }
       }
       
@@ -340,11 +324,14 @@ class StreamerBot extends Client {
     }
   }
 
+  
   async initializeDashboardAPI() {
     try {
       logger.info('🔧 Initialisation du Dashboard API...');
       this.dashboardAPI = new DashboardAPI(this);
-      this.dashboardAPI.start(3001);
+      
+      const port = process.env.PORT || 3001;
+      this.dashboardAPI.start(port);
       
       setInterval(() => {
         if (this.dashboardAPI) {
@@ -352,10 +339,8 @@ class StreamerBot extends Client {
         }
       }, TOKEN_CLEANUP_INTERVAL);
       
-      logger.info('🌐 Dashboard API démarrée sur le port 3001');
+      logger.info(`🌐 Dashboard API démarrée sur le port ${port}`);
     } catch (error) {
-       const port = process.env.PORT || 3001;
-    this.dashboardAPI.start(port);
       logger.error(`❌ Erreur démarrage Dashboard API: ${error.message}`);
     }
   }
@@ -526,7 +511,7 @@ class StreamerBot extends Client {
       this.metrics.recordError();
     }
   }
-  
+
   async onInteractionCreate(interaction) {
     try {
       if (!this.buttonManager && ButtonManager) {
@@ -611,7 +596,6 @@ class StreamerBot extends Client {
     
     logger.info(`🔔 Système de notifications actif (Intervalle: ${this.config.notificationIntervalMinutes || 5} min)`);
     
-    // Première vérif
     this.checkStreamersLive().catch(e => logger.error(e.message));
     
     const intervalMs = (this.config.notificationIntervalMinutes || 5) * 60 * 1000;
@@ -647,17 +631,12 @@ class StreamerBot extends Client {
     } catch (error) {
       logger.error(`❌ Erreur vérification globale: ${error.message}`);
       this.metrics.recordError();
-      // Gestion erreur token
       if (error.message.includes('401') || error.message === 'TOKEN_EXPIRED') {
-          await this.twitch.initClient();
+        await this.twitch.initClient();
       }
     }
   }
 
-  /**
-   * ✅ VERSION CORRIGÉE : Compare l'ID du stream pour détecter les Nouveaux Lives
-   * même si la DB est "bloquée" sur actif.
-   */
   async checkStreamerBatch(streamers) {
     try {
       const usernames = streamers.map(s => s.twitch_username).join('&user_login=');
@@ -675,47 +654,30 @@ class StreamerBot extends Client {
       const liveStreams = data.data || [];
       
       const currentlyLiveUsernames = liveStreams.map(s => s.user_login.toLowerCase());
-      
-      // Récupérer l'état réel de la DB pour comparer les IDs
       const activeStreamsDB = await this.db.getActiveStreams();
 
-      // --- LOGIQUE CORRIGÉE : COMPARAISON PAR ID ---
-      
       const newStreams = liveStreams.filter(stream => {
         const username = stream.user_login.toLowerCase();
         
-        // 1. Est-ce qu'on le connait déjà en RAM ?
         if (this.liveStreamers.has(username)) return false;
-        
-        // Sécurité supplémentaire si notificationManager a ses propres données
         if (this.notificationManager && this.notificationManager.isStreamActive(username)) return false;
 
-        // 2. Vérification DB intelligente
         const dbEntry = activeStreamsDB.find(s => s.twitch_username.toLowerCase() === username);
         
         if (dbEntry) {
-            // C'est marqué actif en DB. Mais est-ce le MÊME stream ?
-            // On compare les IDs de stream (Twitch change l'ID à chaque nouveau live)
-            if (dbEntry.id && dbEntry.id === stream.id) {
-                // C'est le MÊME stream -> On le charge silencieusement en RAM, pas de notif
-                logger.info(`🔄 Restauration silencieuse (Redémarrage détecté): ${username}`);
-                this.handleStreamUpdated(stream, true); 
-                return false; // Pas de nouvelle notif
-            }
-            // Si l'ID est différent, c'est un NOUVEAU stream (l'ancien en DB est obsolète/buggé)
-            // On laisse passer => return true
+          if (dbEntry.id && dbEntry.id === stream.id) {
+            logger.info(`🔄 Restauration silencieuse (Redémarrage détecté): ${username}`);
+            this.handleStreamUpdated(stream, true); 
+            return false;
+          }
         }
 
-        // Si pas en RAM et (pas en DB ou ID différent) => C'est un nouveau live !
         return true; 
       });
 
-      // --- DÉTECTION FIN DE STREAM ---
-      
-      // On combine ce qu'on a en RAM et ce qu'on a en DB pour ne rien oublier
       const knownActiveUsernames = new Set([
-          ...this.liveStreamers.keys(),
-          ...activeStreamsDB.map(s => s.twitch_username.toLowerCase())
+        ...this.liveStreamers.keys(),
+        ...activeStreamsDB.map(s => s.twitch_username.toLowerCase())
       ]);
       
       const endedStreams = Array.from(knownActiveUsernames).filter(username => 
@@ -723,15 +685,12 @@ class StreamerBot extends Client {
         streamers.some(s => s.twitch_username === username)
       );
 
-      // --- EXÉCUTION ---
-
       if (newStreams.length > 0) {
         logger.info(`🆕 ${newStreams.length} NOUVEAU(X) stream(s) détecté(s)`);
         await Promise.allSettled(newStreams.map(s => this.handleStreamStarted(s)));
       }
 
       const updatedStreams = liveStreams.filter(stream => {
-        // On met à jour si on le connait déjà en RAM
         return this.liveStreamers.has(stream.user_login.toLowerCase());
       });
 
@@ -752,7 +711,6 @@ class StreamerBot extends Client {
   async handleStreamStarted(streamData) {
     const username = streamData.user_login.toLowerCase();
     
-    // Double sécurité
     if (this.liveStreamers.has(username)) return;
 
     logger.info(`🔴 NOUVEAU STREAM: ${streamData.user_name}`);
@@ -776,39 +734,35 @@ class StreamerBot extends Client {
   async handleStreamUpdated(streamData, silent = false) {
     const username = streamData.user_login.toLowerCase();
     
-    // Mise à jour DB
     try {
-        const allGuilds = await this.db.masterDb.all('SELECT guild_id FROM registered_guilds WHERE is_active = 1');
-        await Promise.allSettled(allGuilds.map(async ({ guild_id }) => {
-            const streamer = await this.db.getStreamer(guild_id, username);
-            if (streamer) {
-                await this.db.setStreamActive(guild_id, username, {
-                    id: streamData.id,
-                    title: streamData.title,
-                    game_name: streamData.game_name,
-                    viewer_count: streamData.viewer_count,
-                    started_at: streamData.started_at
-                });
-            }
-        }));
+      const allGuilds = await this.db.masterDb.all('SELECT guild_id FROM registered_guilds WHERE is_active = 1');
+      await Promise.allSettled(allGuilds.map(async ({ guild_id }) => {
+        const streamer = await this.db.getStreamer(guild_id, username);
+        if (streamer) {
+          await this.db.setStreamActive(guild_id, username, {
+            id: streamData.id,
+            title: streamData.title,
+            game_name: streamData.game_name,
+            viewer_count: streamData.viewer_count,
+            started_at: streamData.started_at
+          });
+        }
+      }));
     } catch (e) {}
 
-    // Mise à jour RAM
     const liveData = this.liveStreamers.get(username);
     if (liveData) {
       liveData.lastUpdate = Date.now();
       liveData.streamInfo = { ...streamData };
     } else {
-       // Si absent de la RAM (récupération silencieuse), on l'ajoute
-       this.liveStreamers.set(username, {
-           startTime: Date.parse(streamData.started_at) || Date.now(),
-           lastUpdate: Date.now(),
-           streamInfo: { ...streamData },
-           streamId: streamData.id
-       });
+      this.liveStreamers.set(username, {
+        startTime: Date.parse(streamData.started_at) || Date.now(),
+        lastUpdate: Date.now(),
+        streamInfo: { ...streamData },
+        streamId: streamData.id
+      });
     }
 
-    // Mise à jour visuelle (NotificationManager)
     if (!silent && this.notificationManager && this.notificationManager.isStreamActive(username)) {
       const previousInfo = liveData?.streamInfo;
       const needsUpdate = !previousInfo || 
@@ -825,12 +779,10 @@ class StreamerBot extends Client {
     try {
       logger.info(`⚫ FIN DE STREAM: ${username}`);
       
-      // 1. Supprimer le message Discord (C'est ici que ça bloquait avant si RAM vide)
       if (this.notificationManager) {
         await this.notificationManager.removeLiveNotification(username);
       }
       
-      // 2. Mettre à jour la DB pour dire "C'est fini"
       const allGuilds = await this.db.masterDb.all('SELECT guild_id FROM registered_guilds WHERE is_active = 1');
       await Promise.allSettled(
         allGuilds.map(async ({ guild_id }) => {
@@ -841,7 +793,6 @@ class StreamerBot extends Client {
         })
       );
       
-      // 3. Nettoyer la RAM
       this.liveStreamers.delete(username);
 
     } catch (error) {
@@ -850,98 +801,97 @@ class StreamerBot extends Client {
   }
 
   async getGuildsFollowingStreamer(username, streamData) {
-      const guildsFollowing = [];
-      const allGuilds = await this.db.masterDb.all('SELECT guild_id FROM registered_guilds WHERE is_active = 1');
-      const promises = allGuilds.map(async ({ guild_id }) => {
-        try {
-          const streamer = await this.db.getStreamer(guild_id, username);
-          if (streamer && streamer.notification_enabled) {
-            const config = await this.db.getGuildConfig(guild_id);
-            await this.db.setStreamActive(guild_id, username, {
-              id: streamData.id,
-              title: streamData.title || 'Pas de titre',
-              game_name: streamData.game_name || 'Pas de catégorie',
-              viewer_count: streamData.viewer_count || 0,
-              started_at: streamData.started_at
-            });
-            return {
-              id: guild_id,
-              notification_channel_id: config?.notification_channel_id,
-              live_affilie_channel_id: config?.live_affilie_channel_id,
-              live_non_affilie_channel_id: config?.live_non_affilie_channel_id,
-              custom_message: streamer.custom_message,
-              streamer_data: streamer
-            };
-          }
-          return null;
-        } catch (error) { return null; }
-      });
-      const results = await Promise.allSettled(promises);
-      for (const result of results) {
-        if (result.status === 'fulfilled' && result.value) guildsFollowing.push(result.value);
-      }
-      return guildsFollowing;
+    const guildsFollowing = [];
+    const allGuilds = await this.db.masterDb.all('SELECT guild_id FROM registered_guilds WHERE is_active = 1');
+    const promises = allGuilds.map(async ({ guild_id }) => {
+      try {
+        const streamer = await this.db.getStreamer(guild_id, username);
+        if (streamer && streamer.notification_enabled) {
+          const config = await this.db.getGuildConfig(guild_id);
+          await this.db.setStreamActive(guild_id, username, {
+            id: streamData.id,
+            title: streamData.title || 'Pas de titre',
+            game_name: streamData.game_name || 'Pas de catégorie',
+            viewer_count: streamData.viewer_count || 0,
+            started_at: streamData.started_at
+          });
+          return {
+            id: guild_id,
+            notification_channel_id: config?.notification_channel_id,
+            live_affilie_channel_id: config?.live_affilie_channel_id,
+            live_non_affilie_channel_id: config?.live_non_affilie_channel_id,
+            custom_message: streamer.custom_message,
+            streamer_data: streamer
+          };
+        }
+        return null;
+      } catch (error) { return null; }
+    });
+    const results = await Promise.allSettled(promises);
+    for (const result of results) {
+      if (result.status === 'fulfilled' && result.value) guildsFollowing.push(result.value);
+    }
+    return guildsFollowing;
   }
 
   async sendNotificationsToGuilds(guildsFollowing, streamData) {
-      const notificationPromises = guildsFollowing.map(async (guildData) => {
-          const isAffilie = guildData.streamer_data?.status === 'affilie';
-          let targetChannelId = isAffilie ? guildData.live_affilie_channel_id : guildData.live_non_affilie_channel_id;
-          if (!targetChannelId) targetChannelId = guildData.notification_channel_id;
-          
-          if (!targetChannelId) return { guildId: guildData.id, success: false };
+    const notificationPromises = guildsFollowing.map(async (guildData) => {
+      const isAffilie = guildData.streamer_data?.status === 'affilie';
+      let targetChannelId = isAffilie ? guildData.live_affilie_channel_id : guildData.live_non_affilie_channel_id;
+      if (!targetChannelId) targetChannelId = guildData.notification_channel_id;
+      
+      if (!targetChannelId) return { guildId: guildData.id, success: false };
 
-          const streamerForNotif = {
-              name: streamData.user_name,
-              url: `https://twitch.tv/${streamData.user_login}`,
-              status: isAffilie ? StreamerStatus.AFFILIE : StreamerStatus.NON_AFFILIE,
-              description: guildData.custom_message || `Streamer ${streamData.user_name}`
-          };
-          const streamInfoForNotif = {
-              title: streamData.title,
-              game: streamData.game_name,
-              viewerCount: streamData.viewer_count,
-              thumbnailUrl: streamData.thumbnail_url?.replace('{width}', '320').replace('{height}', '180')
-          };
+      const streamerForNotif = {
+        name: streamData.user_name,
+        url: `https://twitch.tv/${streamData.user_login}`,
+        status: isAffilie ? StreamerStatus.AFFILIE : StreamerStatus.NON_AFFILIE,
+        description: guildData.custom_message || `Streamer ${streamData.user_name}`
+      };
+      const streamInfoForNotif = {
+        title: streamData.title,
+        game: streamData.game_name,
+        viewerCount: streamData.viewer_count,
+        thumbnailUrl: streamData.thumbnail_url?.replace('{width}', '320').replace('{height}', '180')
+      };
 
-          let success = false;
-          if (this.notificationManager) {
-              success = await this.notificationManager.sendLiveNotificationToGuild(guildData.id, streamerForNotif, streamInfoForNotif);
-          }
-          if (success) await this.db.markNotificationSent(guildData.id, streamData.user_login.toLowerCase());
-          return { guildId: guildData.id, success };
-      });
-      return await Promise.allSettled(notificationPromises).then(r => r.map(i => i.status === 'fulfilled' ? i.value : {success:false}));
+      let success = false;
+      if (this.notificationManager) {
+        success = await this.notificationManager.sendLiveNotificationToGuild(guildData.id, streamerForNotif, streamInfoForNotif);
+      }
+      if (success) await this.db.markNotificationSent(guildData.id, streamData.user_login.toLowerCase());
+      return { guildId: guildData.id, success };
+    });
+    return await Promise.allSettled(notificationPromises).then(r => r.map(i => i.status === 'fulfilled' ? i.value : {success:false}));
   }
 
   async updateStreamNotifications(username, streamData) {
-      const guildsFollowing = await this.db.masterDb.all('SELECT guild_id FROM registered_guilds WHERE is_active = 1');
-      const updatePromises = guildsFollowing.map(async ({ guild_id }) => {
-          try {
-              const streamer = await this.db.getStreamer(guild_id, username);
-              if (streamer && streamer.notification_enabled) {
-                  const streamerForNotif = {
-                      name: streamData.user_name,
-                      url: `https://twitch.tv/${streamData.user_login}`,
-                      status: streamer.status === 'affilie' ? StreamerStatus.AFFILIE : StreamerStatus.NON_AFFILIE,
-                      description: streamer.custom_message
-                  };
-                  const streamInfoForNotif = {
-                      title: streamData.title,
-                      game: streamData.game_name,
-                      viewerCount: streamData.viewer_count,
-                      thumbnailUrl: streamData.thumbnail_url?.replace('{width}', '320').replace('{height}', '180')
-                  };
-                  await this.notificationManager.updateLiveNotification(streamerForNotif, streamInfoForNotif);
-              }
-          } catch (e) {}
-      });
-      await Promise.allSettled(updatePromises);
+    const guildsFollowing = await this.db.masterDb.all('SELECT guild_id FROM registered_guilds WHERE is_active = 1');
+    const updatePromises = guildsFollowing.map(async ({ guild_id }) => {
+      try {
+        const streamer = await this.db.getStreamer(guild_id, username);
+        if (streamer && streamer.notification_enabled) {
+          const streamerForNotif = {
+            name: streamData.user_name,
+            url: `https://twitch.tv/${streamData.user_login}`,
+            status: streamer.status === 'affilie' ? StreamerStatus.AFFILIE : StreamerStatus.NON_AFFILIE,
+            description: streamer.custom_message
+          };
+          const streamInfoForNotif = {
+            title: streamData.title,
+            game: streamData.game_name,
+            viewerCount: streamData.viewer_count,
+            thumbnailUrl: streamData.thumbnail_url?.replace('{width}', '320').replace('{height}', '180')
+          };
+          await this.notificationManager.updateLiveNotification(streamerForNotif, streamInfoForNotif);
+        }
+      } catch (e) {}
+    });
+    await Promise.allSettled(updatePromises);
   }
 
   async sendStreamNotification(guildData, streamData) {
-      // Fallback simple si pas de notification manager
-      return false; 
+    return false; 
   }
 
   async getRealTimeStats() {
@@ -1010,6 +960,7 @@ class StreamerBot extends Client {
   }
 }
 
+// ===== FONCTION MAIN =====
 async function main() {
   try {
     const config = BotConfig.fromEnv();
@@ -1023,16 +974,16 @@ async function main() {
     const bot = new StreamerBot(config);
     
     ['SIGINT', 'SIGTERM'].forEach(signal => {
-        process.on(signal, async () => {
-            logger.info(`🛑 Signal ${signal} reçu`);
-            await bot.shutdown();
-            process.exit(0);
-        });
+      process.on(signal, async () => {
+        logger.info(`🛑 Signal ${signal} reçu`);
+        await bot.shutdown();
+        process.exit(0);
+      });
     });
 
     process.on('unhandledRejection', (reason) => {
-        logger.error('❌ Erreur non gérée:', reason);
-        bot.metrics.recordError();
+      logger.error('❌ Erreur non gérée:', reason);
+      bot.metrics.recordError();
     });
 
     logger.info('🚀 Démarrage du bot multi-serveurs...');
@@ -1049,4 +1000,3 @@ if (require.main === module) {
 }
 
 module.exports = StreamerBot;
-
