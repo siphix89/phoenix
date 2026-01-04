@@ -5,7 +5,7 @@ const fs = require('fs').promises;
 
 class DatabaseManager {
     constructor(dbDirectory = null) {
-    // ✅ Détection automatique : Railway ou Local
+    //  Détection automatique : Railway 
     const isRailway = process.env.RAILWAY_ENVIRONMENT !== undefined || 
                      process.env.RAILWAY_PROJECT_ID !== undefined;
     
@@ -28,14 +28,13 @@ class DatabaseManager {
     }
     
     this.connections = new Map();
-    this.guildDatabases = new Map(); // ✅ NOUVEAU: Accès direct pour NotificationManager
+    this.guildDatabases = new Map();
     this.masterDb = null;
     
     console.log(`📁 DB Directory: ${this.dbDirectory}`);
     console.log(`📁 Master DB Path: ${this.masterDbPath}`);
 }
 
-    // ✅ MÉTHODE DE COMPATIBILITÉ POUR bot.js
     async addGuild(guildId, guildName, channelId) {
         const db = await this.getGuildDatabase(guildId, guildName);
         
@@ -46,7 +45,6 @@ class DatabaseManager {
         return { success: true };
     }
 
-    // ✅ MÉTHODE DE COMPATIBILITÉ POUR bot.js
     async getGuild(guildId) {
         try {
             const db = await this.getGuildDatabase(guildId);
@@ -63,17 +61,14 @@ class DatabaseManager {
         }
     }
 
-    // ✅ MÉTHODE DE COMPATIBILITÉ POUR bot.js
     async addStreamerToGuild(guildId, twitchUsername, addedBy, customMessage = null) {
         return await this.addStreamer(guildId, twitchUsername, twitchUsername, addedBy, customMessage);
     }
 
-    // ✅ MÉTHODE DE COMPATIBILITÉ POUR bot.js
     async removeStreamerFromGuild(guildId, twitchUsername) {
         return await this.removeStreamer(guildId, twitchUsername);
     }
 
-    // ✅ MÉTHODE DE COMPATIBILITÉ POUR bot.js (avec cache)
     async getAllStreamers() {
         const allGuilds = await this.masterDb.all('SELECT guild_id FROM registered_guilds WHERE is_active = 1');
         const streamersMap = new Map();
@@ -100,9 +95,7 @@ class DatabaseManager {
         return Array.from(streamersMap.values());
     }
 
-    // ✅ MÉTHODE DE COMPATIBILITÉ POUR bot.js
     async getActiveStreams(guildId = null) {
-        // Si guildId spécifié, retourner seulement pour ce serveur
         if (guildId) {
             try {
                 const db = await this.getGuildDatabase(guildId);
@@ -117,7 +110,6 @@ class DatabaseManager {
             }
         }
 
-        // Sinon, tous les serveurs
         const allGuilds = await this.masterDb.all('SELECT guild_id FROM registered_guilds WHERE is_active = 1');
         const activeStreamsMap = new Map();
         
@@ -143,12 +135,10 @@ class DatabaseManager {
         return Array.from(activeStreamsMap.values());
     }
 
-    // ✅ MÉTHODE DE COMPATIBILITÉ POUR bot.js
     async updateNotifiedGuilds(twitchUsername, guildIds) {
         return { success: true };
     }
 
-    // ✅ MÉTHODE POUR OBTENIR LES STATS GLOBALES
     async getStats() {
         const allGuilds = await this.masterDb.all('SELECT COUNT(*) as count FROM registered_guilds WHERE is_active = 1');
         const allStreamers = await this.getAllStreamers();
@@ -221,7 +211,6 @@ class DatabaseManager {
         await this.createGuildTables(db);
         await this.registerGuild(guildId, guildName, dbPath);
         
-        // ✅ Stocker dans les deux Maps pour compatibilité
         this.connections.set(guildId, db);
         this.guildDatabases.set(guildId, db);
 
@@ -229,7 +218,6 @@ class DatabaseManager {
     }
 
     async createGuildTables(db) {
-        // Configuration du serveur
         await db.exec(`
             CREATE TABLE IF NOT EXISTS guild_config (
                 id INTEGER PRIMARY KEY CHECK (id = 1),
@@ -246,7 +234,6 @@ class DatabaseManager {
             INSERT OR IGNORE INTO guild_config (id) VALUES (1)
         `);
 
-        // Migration: Ajouter les nouvelles colonnes si elles n'existent pas
         try {
             const columns = await db.all("PRAGMA table_info(guild_config)");
             
@@ -263,7 +250,6 @@ class DatabaseManager {
             console.warn('Migration channels:', error.message);
         }
 
-        // Table streamers avec colonne status
         await db.exec(`
             CREATE TABLE IF NOT EXISTS streamers (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -277,7 +263,6 @@ class DatabaseManager {
             )
         `);
 
-        // Vérifier si la colonne status existe déjà, sinon l'ajouter (migration)
         try {
             const columns = await db.all("PRAGMA table_info(streamers)");
             const hasStatus = columns.some(col => col.name === 'status');
@@ -293,7 +278,6 @@ class DatabaseManager {
             console.warn('Migration status:', error.message);
         }
 
-        // ✅ NOUVEAU: Table notifications (pour tracking des messages Discord)
         await db.exec(`
             CREATE TABLE IF NOT EXISTS notifications (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -312,7 +296,6 @@ class DatabaseManager {
             CREATE INDEX IF NOT EXISTS idx_notif_message ON notifications(message_id);
         `);
 
-        // Historique des streams
         await db.exec(`
             CREATE TABLE IF NOT EXISTS stream_history (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -328,7 +311,6 @@ class DatabaseManager {
             )
         `);
 
-        // Streams actifs
         await db.exec(`
             CREATE TABLE IF NOT EXISTS active_streams (
                 streamer_id INTEGER PRIMARY KEY,
@@ -356,7 +338,6 @@ class DatabaseManager {
         `, [guildId, guildName, dbPath]);
     }
 
-    // === MÉTHODES POUR GÉRER LES STREAMERS ===
     async addStreamer(guildId, twitchUsername, displayName, addedBy, customMessage = null, status = 'non_affilie') {
         const db = await this.getGuildDatabase(guildId);
         
@@ -403,7 +384,6 @@ class DatabaseManager {
         `, [twitchUsername.toLowerCase()]);
     }
 
-    // 🆕 NOUVELLE MÉTHODE: Changer le statut d'un streamer
     async updateStreamerStatus(guildId, twitchUsername, status) {
         if (!['affilie', 'non_affilie'].includes(status)) {
             return { success: false, error: 'Statut invalide. Utilisez "affilie" ou "non_affilie"' };
@@ -423,7 +403,6 @@ class DatabaseManager {
         };
     }
 
-    // 🆕 NOUVELLE MÉTHODE: Obtenir les streamers par statut
     async getStreamersByStatus(guildId, status) {
         const db = await this.getGuildDatabase(guildId);
         
@@ -434,7 +413,6 @@ class DatabaseManager {
         `, [status]);
     }
 
-    // === GESTION DES STREAMS ACTIFS ===
     async setStreamActive(guildId, twitchUsername, streamData) {
         const db = await this.getGuildDatabase(guildId);
         const streamer = await this.getStreamer(guildId, twitchUsername);
@@ -491,6 +469,19 @@ class DatabaseManager {
             DELETE FROM active_streams WHERE streamer_id = ?
         `, [streamer.id]);
 
+        // Marquer toutes les notifications comme supprimées
+        try {
+            const result = await db.run(`
+                UPDATE notifications 
+                SET deleted_at = datetime('now')
+                WHERE twitch_username = ? AND deleted_at IS NULL
+            `, [twitchUsername.toLowerCase()]);
+            
+            console.log(`✅ ${result.changes} notification(s) marquée(s) comme supprimée(s) pour ${twitchUsername}`);
+        } catch (notifError) {
+            console.error(`❌ Erreur nettoyage notifications: ${notifError.message}`);
+        }
+
         return { success: true };
     }
 
@@ -509,7 +500,6 @@ class DatabaseManager {
         return { success: true };
     }
 
-    // ✅ NOUVEAU: Enregistrer une notification Discord envoyée
     async recordNotification(guildId, twitchUsername, messageId, channelId, streamId = null) {
         const db = await this.getGuildDatabase(guildId);
         
@@ -526,7 +516,6 @@ class DatabaseManager {
         }
     }
 
-    // ✅ NOUVEAU: Récupérer les notifications actives d'un streamer
     async getActiveNotifications(guildId, twitchUsername) {
         const db = await this.getGuildDatabase(guildId);
         
@@ -537,19 +526,16 @@ class DatabaseManager {
         `, [twitchUsername.toLowerCase()]);
     }
 
-    // ✅ NOUVEAU: Marquer une notification comme supprimée
     async markNotificationDeleted(guildId, twitchUsername, messageId = null) {
         const db = await this.getGuildDatabase(guildId);
         
         if (messageId) {
-            // Supprimer une notification spécifique
             await db.run(`
                 UPDATE notifications 
                 SET deleted_at = datetime('now')
                 WHERE twitch_username = ? AND message_id = ?
             `, [twitchUsername.toLowerCase(), messageId]);
         } else {
-            // Supprimer toutes les notifications du streamer
             await db.run(`
                 UPDATE notifications 
                 SET deleted_at = datetime('now')
@@ -560,7 +546,47 @@ class DatabaseManager {
         return { success: true };
     }
 
-    // === CONFIGURATION DU SERVEUR ===
+    //  Nettoyer les notifications orphelines
+    async cleanupOrphanedNotifications(guildId = null) {
+        try {
+            if (guildId) {
+                const db = await this.getGuildDatabase(guildId);
+                const result = await db.run(`
+                    UPDATE notifications 
+                    SET deleted_at = datetime('now')
+                    WHERE deleted_at IS NULL 
+                    AND twitch_username NOT IN (
+                        SELECT s.twitch_username 
+                        FROM streamers s 
+                        JOIN active_streams ast ON s.id = ast.streamer_id
+                    )
+                `);
+                console.log(`✅ Guild ${guildId}: ${result.changes} notifications orphelines nettoyées`);
+                return result.changes;
+            } else {
+                const allGuilds = await this.masterDb.all(
+                    'SELECT guild_id FROM registered_guilds WHERE is_active = 1'
+                );
+                let totalCleaned = 0;
+                
+                for (const { guild_id } of allGuilds) {
+                    try {
+                        const cleaned = await this.cleanupOrphanedNotifications(guild_id);
+                        totalCleaned += cleaned;
+                    } catch (error) {
+                        console.error(`❌ Erreur nettoyage guild ${guild_id}: ${error.message}`);
+                    }
+                }
+                
+                console.log(`✅ Total: ${totalCleaned} notifications orphelines nettoyées`);
+                return totalCleaned;
+            }
+        } catch (error) {
+            console.error(`❌ Erreur cleanupOrphanedNotifications: ${error.message}`);
+            return 0;
+        }
+    }
+
     async setNotificationChannel(guildId, channelId) {
         const db = await this.getGuildDatabase(guildId);
         
@@ -578,7 +604,6 @@ class DatabaseManager {
         return await db.get(`SELECT * FROM guild_config WHERE id = 1`);
     }
 
-    // 🆕 NOUVELLE MÉTHODE: Configurer les channels séparés
     async setLiveChannels(guildId, affilieChannelId, nonAffilieChannelId) {
         const db = await this.getGuildDatabase(guildId);
         
@@ -593,7 +618,6 @@ class DatabaseManager {
         return { success: true };
     }
 
-    // 🆕 NOUVELLE MÉTHODE: Configurer un seul type de channel
     async setLiveChannel(guildId, channelType, channelId) {
         const db = await this.getGuildDatabase(guildId);
         
@@ -611,7 +635,6 @@ class DatabaseManager {
         return { success: true };
     }
 
-    // === STATISTIQUES ===
     async getGuildStats(guildId) {
         const db = await this.getGuildDatabase(guildId);
         
@@ -642,7 +665,6 @@ class DatabaseManager {
         };
     }
 
-    // === MAINTENANCE ===
     async closeGuildConnection(guildId) {
         if (this.connections.has(guildId)) {
             const db = this.connections.get(guildId);
