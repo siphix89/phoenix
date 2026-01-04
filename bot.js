@@ -776,29 +776,63 @@ class StreamerBot extends Client {
   }
 
   async handleStreamEnded(username) {
-    try {
-      logger.info(`⚫ FIN DE STREAM: ${username}`);
-      
-      if (this.notificationManager) {
-        await this.notificationManager.removeLiveNotification(username);
+  try {
+    logger.info(`⚫ FIN DE STREAM: ${username}`);
+    
+    //  Supprimer les notifications Discord en premier
+    if (this.notificationManager) {
+      const removed = await this.notificationManager.removeLiveNotification(username, false);
+      if (removed) {
+        logger.info(`✅ Notifications Discord supprimées pour ${username}`);
+      } else {
+        logger.warn(`⚠️ Échec suppression notifications pour ${username}`);
       }
-      
-      const allGuilds = await this.db.masterDb.all('SELECT guild_id FROM registered_guilds WHERE is_active = 1');
-      await Promise.allSettled(
-        allGuilds.map(async ({ guild_id }) => {
+    }
+    
+    //  Nettoyer les active_streams dans toutes les guilds
+    const allGuilds = await this.db.masterDb.all(
+      'SELECT guild_id FROM registered_guilds WHERE is_active = 1'
+    );
+    
+    let inactiveCount = 0;
+    await Promise.allSettled(
+      allGuilds.map(async ({ guild_id }) => {
+        try {
           const streamer = await this.db.getStreamer(guild_id, username);
           if (streamer) {
-            await this.db.setStreamInactive(guild_id, username);
+            const result = await this.db.setStreamInactive(guild_id, username);
+            if (result.success) {
+              inactiveCount++;
+              logger.info(`   ✓ Guild ${guild_id}: stream marqué inactif`);
+            }
           }
-        })
-      );
-      
-      this.liveStreamers.delete(username);
+        } catch (error) {
+          logger.error(`   ✗ Erreur guild ${guild_id}: ${error.message}`);
+        }
+      })
+    );
+    
+    logger.info(`✅ Stream marqué inactif dans ${inactiveCount} guild(s)`);
+    
+    //  Nettoyer la RAM
+    this.liveStreamers.delete(username);
+    
+    logger.info(`✅ ${username} complètement nettoyé (RAM + DB + Discord)`);
 
-    } catch (error) {
-      logger.error(`❌ Erreur fin stream ${username}: ${error.message}`);
+  } catch (error) {
+    logger.error(`❌ Erreur fin stream ${username}: ${error.message}`);
+    
+    // En cas d'erreur, forcer le nettoyage
+    try {
+      this.liveStreamers.delete(username);
+      if (this.notificationManager) {
+        this.notificationManager.forceCleanup(username);
+      }
+    } catch (cleanupError) {
+      logger.error(`❌ Erreur nettoyage forcé: ${cleanupError.message}`);
     }
   }
+}
 
   async getGuildsFollowingStreamer(username, streamData) {
     const guildsFollowing = [];
@@ -1000,3 +1034,4 @@ if (require.main === module) {
 }
 
 module.exports = StreamerBot;
+
